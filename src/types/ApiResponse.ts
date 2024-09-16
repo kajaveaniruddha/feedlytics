@@ -10,7 +10,8 @@ export interface ApiResponse {
 
 export interface userDetailsType {
   name: string;
-  introduction:string
+  introduction: string;
+  questions: string[];
 }
 
 export interface ApiResponseUserDetails {

@@ -9,7 +9,7 @@ export async function GET(
   try {
     const user = await UserModel.findOne(
       { username: params.username },
-      { name: 1, _id: 0, introduction: 1 }
+      { name: 1, _id: 0, introduction: 1, questions: 1 }
     );
 
     return new Response(

@@ -29,36 +29,36 @@ import {
 export const description = "An interactive pie chart"
 
 const ratingData = [
-  { rating: "1-star", visitors: 275, fill: "#233d4d" },  
-  { rating: "2-star", visitors: 200, fill: "#fe7f2d" },  
-  { rating: "3-star", visitors: 187, fill: "#fcca46" },  
-  { rating: "4-star", visitors: 173, fill: "#a1c181" },   
   { rating: "5-star", visitors: 90, fill: "#619b8a" },   
+  { rating: "4-star", visitors: 173, fill: "#a1c181" },   
+  { rating: "3-star", visitors: 187, fill: "#fcca46" },  
+  { rating: "2-star", visitors: 200, fill: "#fe7f2d" },  
+  { rating: "1-star", visitors: 275, fill: "#233d4d" },  
 ]
 
 const chartConfig = {
   visitors: {
     label: "Visitors",
   },
-  "1-star": {
-    label: "1-star",
-    color: "#233d4d",  
-  },
-  "2-star": {
-    label: "2-star",
-    color: "#fe7f2d",  
-  },
-  "3-star": {
-    label: "3-star",
-    color: "#fcca46",  
+  "5-star": {
+    label: "5-star",
+    color: "#619b8a", 
   },
   "4-star": {
     label: "4-star",
     color: "#a1c181",
   },
-  "5-star": {
-    label: "5-star",
-    color: "#619b8a", 
+  "3-star": {
+    label: "3-star",
+    color: "#fcca46",  
+  },
+  "2-star": {
+    label: "2-star",
+    color: "#fe7f2d",  
+  },
+  "1-star": {
+    label: "1-star",
+    color: "#233d4d",  
   },
 } satisfies ChartConfig
 
@@ -142,7 +142,7 @@ export default function RadialRatingsChart() {
                   <Sector {...props} outerRadius={outerRadius + 10} />
                   <Sector
                     {...props}
-                    outerRadius={outerRadius + 25}
+                    outerRadius={outerRadius + 20}
                     innerRadius={outerRadius + 12}
                   />
                 </g>

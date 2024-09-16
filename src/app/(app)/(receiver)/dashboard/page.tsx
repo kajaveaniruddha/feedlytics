@@ -1,31 +1,44 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Message } from "@/model/User";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AcceptMessageSchema } from "@/schemas/acceptMessageSchema";
 import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
+import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types/ApiResponse";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import EditFormDetails from "@/components/edit-form-details";
 import MessageTable from "./MessageTable";
 
 const TotalMessagesPieChart = dynamic(
   () => import("@/components/total-messages-pie-chart"),
   { loading: () => <Skeleton className=" w-full h-full bg-white " /> }
 );
+const EditFormDetails = dynamic(
+  () => import("@/components/edit-form-details"),
+  { loading: () => <Skeleton className=" w-full h-full bg-white " /> }
+);
 const Page = () => {
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
+  const { toast } = useToast();
   const { data: session } = useSession();
+  const username = session?.user.username;
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const profileUrl = `${baseUrl}/u/${username}`;
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(profileUrl);
+    toast({
+      title: "URL Copied",
+      description: "Profile url has been copied to clipboard.",
+    });
+  };
   const form = useForm({
     resolver: zodResolver(AcceptMessageSchema),
   });
@@ -45,10 +58,11 @@ const Page = () => {
     }
   }, [setValue, toast]);
 
+
   useEffect(() => {
     if (!session || !session.user) return;
     fetchAcceptMessage();
-  }, [session, fetchAcceptMessage, setValue]);
+  }, [session, fetchAcceptMessage]);
 
   const handleSwitchChange = async () => {
     try {
@@ -66,16 +80,7 @@ const Page = () => {
     }
   };
 
-  const username = session?.user.username;
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = `${baseUrl}/u/${username}`;
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(profileUrl);
-    toast({
-      title: "URL Copied",
-      description: "Profile url has been copied to clipboard.",
-    });
-  };
+
   if (!session || !session.user) {
     return (
       <div className=" flex justify-center items-center">Please Login</div>
@@ -112,7 +117,8 @@ const Page = () => {
             />
           </Card>
           <Card className=" p-3 mt-2 flex justify-between items-center">
-            Update Collection page details <EditFormDetails />
+            Update Feedback Page Details
+            <EditFormDetails />
           </Card>
         </div>
         <div className="w-full">

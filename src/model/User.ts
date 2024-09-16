@@ -35,6 +35,7 @@ export interface User extends Document {
   isAcceptingMessage: boolean;
   isVerified: boolean;
   introduction: string;
+  questions: string[];
   message: Message[];
   messageCount: number;
   maxMessages: number;
@@ -75,6 +76,14 @@ const UserSchema: Schema<User> = new Schema({
     type: String,
     default:
       "I hope you're doing well.I'm reaching out to ask if you could kindly provide a short feedback about the product. Your feedback would be greatly appreciated.",
+    trim: true,
+  },
+  questions: {
+    type: [String],
+    default: [
+      "How much would you rate the product?",
+      "What did you liked/disliked about the product?",
+    ],
     trim: true,
   },
   messageCount: {
