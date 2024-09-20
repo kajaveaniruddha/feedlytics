@@ -135,16 +135,17 @@ const page = ({ params }: { params: { username: string } }) => {
               )}
               {!userDetails?.questions ?
                 <Skeleton className=" w-full mt-4 mx-auto h-20 bg-slate-200" /> : <>
-                  {userDetails.questions[0].length > 0 || userDetails.questions[1].length ? <h2 className=" font-bold tracking-tighter mt-4 text-left">
+                  {userDetails.questions[0].length > 0 || userDetails.questions[1].length ? <><h2 className=" font-bold tracking-tighter mt-4 text-left">
                     QUESTIONS:
-                  </h2> : <></>}
-                  <div className=" w-8 h-1 bg-[#fca311] rounded mb-1" />
-                  <ul className=" text-xs list-disc w-[90%] ml-8 text-left">
-                    {userDetails?.questions.map((question, index) =>
-                      <li key={index} className="text-sm">
-                        {question}
-                      </li>)}
-                  </ul>
+                  </h2>
+                    <div className=" w-8 h-1 bg-[#fca311] rounded mb-1" />
+                    <ul className=" text-xs list-disc w-[90%] ml-8 text-left">
+                      {userDetails?.questions.map((question, index) =>
+                        <li key={index} className="text-sm">
+                          {question}
+                        </li>)}
+                    </ul></>
+                    : <></>}
                 </>
               }
 

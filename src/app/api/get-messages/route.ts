@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
-  // const limit = parseInt(url.searchParams.get("limit") || "10", 10);
+  const rating = parseInt(url.searchParams.get("rating") || "0", 10);
   const limit = 10;
   const skip = (page - 1) * limit;
 
@@ -26,13 +26,15 @@ export async function GET(request: Request) {
 
   try {
     const user = await UserModel.findById(userId);
+    const matchCondition: any = { _id: userId };
 
     const users = await UserModel.aggregate([
-      { $match: { _id: userId } },
+      { $match: matchCondition },
       { $unwind: "$message" },
+      ...(rating > 0 && rating <= 5
+        ? [{ $match: { "message.stars": rating } }]
+        : []),
       { $sort: { "message.createdAt": -1 } },
-      { $skip: skip },
-      { $limit: limit },
       {
         $group: {
           _id: "$_id",
@@ -40,6 +42,17 @@ export async function GET(request: Request) {
         },
       },
     ]);
+    
+    // Second aggregation query: Get total count of messages
+    const totalCountResult = await UserModel.aggregate([
+      { $match: matchCondition },
+      { $unwind: "$message" },
+      ...(rating > 0 && rating <= 5
+        ? [{ $match: { "message.stars": rating } }]
+        : []),
+      { $count: "totalMessages" },
+    ]);
+    // console.log(totalCountResult[0].totalMessages);
 
     if (!users || users.length === 0) {
       return new Response(
@@ -47,11 +60,9 @@ export async function GET(request: Request) {
           success: true,
           messageCount: user?.messageCount || 0,
           maxMessages: user?.maxMessages,
-          message: [],
+          messages: [],
         }),
-        {
-          status: 200,
-        }
+        { status: 200 }
       );
     }
 
@@ -61,8 +72,7 @@ export async function GET(request: Request) {
         messageCount: user?.messageCount || 0,
         maxMessages: user?.maxMessages,
         messages: users[0].messages,
-        currentPage: page,
-        totalPages: Math.ceil((user?.messageCount || 0) / limit),
+        messagesFound: totalCountResult[0].totalMessages,
       }),
       { status: 200 }
     );

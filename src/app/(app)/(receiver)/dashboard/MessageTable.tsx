@@ -6,8 +6,8 @@ import { useSession } from "next-auth/react";
 import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCcw } from "lucide-react";
-import MessageRow from "@/components/message-row";
+import { Filter, Loader2, RefreshCcw, Star } from "lucide-react";
+import MessageRow from "./message-row";
 import {
   Table,
   TableBody,
@@ -19,60 +19,57 @@ import {
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useMessageContext } from "../MessageProvider";
+import { Pagination, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 const MessageTable = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [filteredMessages, setFilteredMessages] = useState<Message[]>([]);
   const [currPage, setCurrPage] = useState<number>(1);
+  const [position, setPosition] = useState<string>("0");
+  const [itemsPerPage] = useState<number>(10);
   const { data: session } = useSession();
   const { toast } = useToast();
-  const { messageCount, setMessageCount } =
-    useMessageContext();
-
-  const totalPages = Math.ceil(messageCount / 10);
+  const { messageCount, setMessageCount } = useMessageContext();
 
   const handleDeleteMessage = (messageId: string) => {
     setMessages(messages.filter((message) => message._id !== messageId));
     setMessageCount(messageCount - 1);
   };
 
-  const fetchMessages = useCallback(
-    async (refresh: boolean = false) => {
-      setIsLoading(true);
-      try {
-        const res = await axios.get<ApiResponse>(
-          `/api/get-messages/?page=${currPage}`
-        );
-        const messagesData: Message[] = res.data?.messages || [];
-        setMessages(messagesData);
-        setMessageCount(res.data?.messageCount as number);
-        if (refresh) {
-          toast({
-            title: "Refreshed messages",
-            description: "Showing latest messages",
-          });
-        }
-      } catch (error) {
-        const axiosError = error as AxiosError<ApiResponse>;
-        toast({
-          title: "Error",
-          description: axiosError.response?.data.message,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [currPage, setIsLoading, setMessages, setMessageCount]
-  );
+  const handleSetPosition = (value: string) => {
+    setPosition(value);
+  };
+
+  const fetchMessages = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get<ApiResponse>(
+        `/api/get-messages/?rating=${position}`
+      );
+      const messagesData: Message[] = res.data?.messages || [];
+      setMessages(messagesData);
+      setMessageCount(res.data?.messageCount as number);
+      setFilteredMessages(messagesData.slice(0, itemsPerPage));
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast({
+        title: "Error",
+        description: axiosError.response?.data.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [position, setMessageCount, toast, itemsPerPage]);
 
   useEffect(() => {
     if (!session || !session.user) return;
@@ -80,6 +77,9 @@ const MessageTable = () => {
   }, [session, fetchMessages]);
 
   const handlePageChange = (page: number) => {
+    const startIdx = (page - 1) * itemsPerPage;
+    const endIdx = page * itemsPerPage;
+    setFilteredMessages(messages.slice(startIdx, endIdx));
     setCurrPage(page);
   };
 
@@ -93,7 +93,7 @@ const MessageTable = () => {
             variant="outline"
             onClick={(e) => {
               e.preventDefault();
-              fetchMessages(true);
+              fetchMessages();
             }}
           >
             {isLoading ? (
@@ -104,7 +104,37 @@ const MessageTable = () => {
           </Button>
         </div>
       </CardHeader>
-      <Table>
+      <div className="ml-6 mb-4 -mt-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Filter size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Filter by rating</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={position}
+              onValueChange={(value) => handleSetPosition(value)}
+            >
+              <DropdownMenuRadioItem value="0">All</DropdownMenuRadioItem>
+              {[...Array(5)].map((_, i) => (
+                <DropdownMenuRadioItem key={i} value={`${i + 1}`}>
+                  {[...Array(i + 1)].map((_, j) => (
+                    <Star
+                      key={i}
+                      className="text-yellow-400 fill-yellow-400"
+                      size={20}
+                    />
+                  ))}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Table className="mx-auto w-[95%] border">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[10%]">Sr.no.</TableHead>
@@ -129,11 +159,11 @@ const MessageTable = () => {
                 <Skeleton className="bg-slate-200 h-10 w-20" />
               </TableCell>
             </TableRow>
-          ) : messages.length > 0 ? (
-            messages.map((message, index) => (
+          ) : filteredMessages.length > 0 ? (
+            filteredMessages.map((message, index) => (
               <MessageRow
                 key={index}
-                id={(currPage - 1) * 10 + index + 1}
+                id={(currPage - 1) * itemsPerPage + index + 1}
                 message={message}
                 onMessageDelete={handleDeleteMessage}
               />
@@ -148,39 +178,27 @@ const MessageTable = () => {
           )}
         </TableBody>
       </Table>
+      <p className="ml-6 mt-2 text-xs font-semibold text-gray-800">
+        Showing: {messages.length}/{messageCount}
+      </p>
       <Pagination>
         <PaginationPrevious
-          onClick={() => handlePageChange(Math.max(1, currPage - 1))}
+          onClick={() => handlePageChange(currPage - 1)}
           className={
             currPage === 1
-              ? "pointer-events-none hover:cursor-not-allowed"
-              : "hover:cursor-pointer"
+              ? "pointer-events-none hover:cursor-not-allowed opacity-50"
+              : "hover:cursor-pointer opacity-100"
           }
         >
           Previous
         </PaginationPrevious>
-        <PaginationContent>
-          {Array.from({ length: totalPages }, (_, index) => {
-            const page = index + 1;
-            return (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={page === currPage}
-                  onClick={() => handlePageChange(page)}
-                  className="hover:cursor-pointer"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            );
-          })}
-        </PaginationContent>
+
         <PaginationNext
-          onClick={() => handlePageChange(Math.min(totalPages, currPage + 1))}
+          onClick={() => handlePageChange(currPage + 1)}
           className={
-            currPage === totalPages
-              ? "pointer-events-none hover:cursor-not-allowed"
-              : " hover:cursor-pointer"
+            currPage * itemsPerPage >= messages.length
+              ? "pointer-events-none hover:cursor-not-allowed opacity-50"
+              : "hover:cursor-pointer opacity-100"
           }
         >
           Next

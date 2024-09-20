@@ -3,8 +3,7 @@ import { z } from "zod";
 export const updateFeedbackForm = z.object({
   introduction: z
     .string()
-    .min(3, { message: "Introduction should have a minimum of 3 characters." })
-    .max(100, { message: "Introduction can have a maximum of 100 characters." }),
+    .max(200, { message: "Introduction can have a maximum of 200 characters." }),
 
   questions: z
     .array(

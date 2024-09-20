@@ -6,6 +6,8 @@ export interface ApiResponse {
   messageCount?: number;
   maxMessages?: number;
   messages?: Array<Message>;
+  totalPages?: number;
+  messagesFound?:number
 }
 
 export interface userDetailsType {

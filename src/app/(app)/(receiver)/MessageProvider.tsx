@@ -30,7 +30,6 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchMessageData = useCallback(async () => {
     if (!username) return;
-
     try {
       const res = await axios.get<ApiResponse>(
         `/api/analytics/get-project-details/${username}`

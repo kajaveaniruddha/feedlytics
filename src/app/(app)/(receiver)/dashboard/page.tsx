@@ -25,8 +25,6 @@ const EditFormDetails = dynamic(
 );
 const Page = () => {
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
   const { toast } = useToast();
   const { data: session } = useSession();
   const username = session?.user.username;

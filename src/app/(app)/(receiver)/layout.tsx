@@ -17,9 +17,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <main lang="en">
       <AuthProvider>
-        <body className={`${inter.className} flex bg-[#f5f5f5]`}>
+        <div className={`${inter.className} flex bg-[#f5f5f5]`}>
           <Navbar />
           <MessageProvider>
             <main className=" overflow-y-auto w-[90%] max-sm:w-[95%] max-sm:mx-auto sm:ml-64">
@@ -27,8 +27,8 @@ export default function RootLayout({
             </main>
           </MessageProvider>
           <Toaster />
-        </body>
+        </div>
       </AuthProvider>
-    </html>
+    </main>
   );
 }

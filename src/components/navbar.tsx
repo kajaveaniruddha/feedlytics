@@ -151,9 +151,9 @@ const navbar = () => {
             <Link
               key={index}
               href={item.key}
-              className={`flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all ${
+              className={`flex items-center px-6 transition-all py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 mx-auto rounded-lg w-[95%] ${
                 activePage === item.key
-                  ? "scale-105 transition-all  bg-gray-100 text-gray-900 "
+                  ? " bg-gray-100 mx-auto rounded-lg p-1 w-[95%] text-gray-900 "
                   : ""
               }`}
               onClick={() => setActivePage(item.key)}

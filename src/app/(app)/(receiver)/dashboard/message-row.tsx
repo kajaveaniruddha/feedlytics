@@ -10,14 +10,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "./ui/button";
+import { Button } from "../../../../components/ui/button";
 import { Message } from "@/model/User";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "../../../../components/ui/use-toast";
 import { ApiResponse } from "@/types/ApiResponse";
 import axios from "axios";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { memo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Trash, Trash2 } from "lucide-react";
 
 type MessageCardProps = {
   id: number;
@@ -43,49 +44,46 @@ const MessageCard = ({ id, message, onMessageDelete }: MessageCardProps) => {
   return (
     <TableRow key={id}>
       <TableCell className="font-medium">{id}</TableCell>
-      <TableCell className="font-medium">{message.stars}</TableCell>
+      <TableCell className={`font-bold ${message.stars == 5 && "text-green-600"} ${message.stars == 1 && "text-red-600"}`}>{message.stars}</TableCell>
       <TableCell>
-        <div>
-          {isLongMessage && !showMore ? (
-            <>
-              {msg.substring(0, 200)}...
+        {isLongMessage && !showMore ? (
+          <>
+            {msg.substring(0, 200)}...
+            <br />
+            <Button
+              variant="link"
+              onClick={() => setShowMore(true)}
+            >
+              read more
+            </Button>
+          </>
+        ) : (
+          <>{msg}</>
+        )}
+        <AnimatePresence initial={false}>
+          {showMore && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <p>{msg.substring(100)}</p>
               <Button
                 variant="link"
-                onClick={() => setShowMore(true)}
+                onClick={() => setShowMore(false)}
               >
-                read more
+                read less
               </Button>
-            </>
-          ) : (
-            <>{msg}</>
+            </motion.div>
           )}
-          <AnimatePresence initial={false}>
-            {showMore && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <p>{msg.substring(100)}</p>
-                <Button
-                  variant="link"
-                  onClick={() => setShowMore(false)}
-                >
-                  read less
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        </AnimatePresence>
       </TableCell>
       <TableCell>
         <AlertDialog>
           <AlertDialogTrigger>
-            <Button variant="destructive" size="sm">
-              Delete
-            </Button>
-          </AlertDialogTrigger>
+            <Trash2 size={20} className=" opacity-70 hover:opacity-100 transition-all" />
+        </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

@@ -20,6 +20,15 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
+    if (user.messageCount >= user.maxMessages) {
+      return Response.json(
+        {
+          success: false,
+          message: `${username} has reached his feedback limit.`,
+        },
+        { status: 400 }
+      );
+    }
     const newMessage = { stars, content, createdAt: new Date() };
     if (!content || content.length <= 10) {
       return Response.json(
@@ -33,7 +42,34 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
+    // const feedbacks = [
+    //   {
+    //     stars: 5,
+    //     content: "Absolutely loved it! Highly recommend.",
+    //   },
+    //   {
+    //     stars: 2,
+    //     content: "It was okay, but there are better options.",
+    //   },
+    //   {
+    //     stars: 4,
+    //     content: "Great experience overall, would use again.",
+    //   },
+    //   {
+    //     stars: 1,
+    //     content: "Not what I expected, very disappointing.",
+    //   },
+    //   {
+    //     stars: 3,
+    //     content: "It was decent, but I had some issues.",
+    //   },
+    // ];
+    // [...Array(50)].map((_, j) =>
+    //   feedbacks.forEach((fb) => {
+    //     user.message.push(fb as Message);
+    //     user.messageCount += 1;
+    //   })
+    // );
     user.message.push(newMessage as Message);
     user.messageCount += 1;
     await user.save();

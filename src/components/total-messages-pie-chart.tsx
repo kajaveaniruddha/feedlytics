@@ -19,7 +19,7 @@ const chartData = [{ month: "january", total: 50, collected: 0 }];
 
 const chartConfig = {
   total: {
-    label: "total",
+    label: "remaining",
     color: "#fff346",
   },
   collected: {
@@ -37,9 +37,9 @@ export default function Component({
 }: props) {
   const { messageCount, maxMessages } =
   useMessageContext();
-  chartData[0].collected = messageCount || 0;
-  chartData[0].total = maxMessages;
-  const totalVisitors = chartData[0].total - chartData[0].collected;
+  chartData[0].collected = 282||0;
+  chartData[0].total =  maxMessages - messageCount;
+  const totalVisitors = maxMessages - messageCount;
 
   return (
     <Card className="flex flex-col">

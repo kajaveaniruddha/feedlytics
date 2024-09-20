@@ -13,13 +13,23 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
-  if (!token && url.pathname.startsWith("/dashboard")) {
+  if (
+    !token &&
+    (url.pathname.startsWith("/dashboard") ||
+      url.pathname.startsWith("/analytics"))
+  ) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 // where all we want to run this middleware
 export const config = {
-  matcher: ["/sign-in", "/sign-up", "/dashboard/:path*", "/verify/:path*"],
+  matcher: [
+    "/sign-in",
+    "/sign-up",
+    "/dashboard/:path*",
+    "/analytics/:path*",
+    "/verify/:path*",
+  ],
 };
