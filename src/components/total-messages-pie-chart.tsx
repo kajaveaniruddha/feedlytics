@@ -37,7 +37,7 @@ export default function Component({
 }: props) {
   const { messageCount, maxMessages } =
   useMessageContext();
-  chartData[0].collected = 282||0;
+  chartData[0].collected = messageCount;
   chartData[0].total =  maxMessages - messageCount;
   const totalVisitors = maxMessages - messageCount;
 

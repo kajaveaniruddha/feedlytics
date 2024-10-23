@@ -4,6 +4,7 @@ export interface Message extends Document {
   stars: number;
   content: string;
   createdAt: Date;
+  sentiment: string;
 }
 
 const MessageSchema: Schema<Message> = new Schema({
@@ -22,6 +23,10 @@ const MessageSchema: Schema<Message> = new Schema({
     type: Date,
     required: true,
     default: Date.now,
+  },
+  sentiment: {
+    type: String,
+    default: "",
   },
 });
 
