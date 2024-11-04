@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Button } from "./ui/button";
-import { useMessageContext } from "@/app/(app)/(receiver)/MessageProvider";
+import { useMessageContext } from "@/context/MessageProvider";
 const chartData = [{ month: "january", total: 50, collected: 0 }];
 
 const chartConfig = {

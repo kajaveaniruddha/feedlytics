@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import MessageTable from "./MessageTable";
+import MessageTable from "./table-box";
+import { useMessageContext } from "../../../../context/MessageProvider";
 
 const TotalMessagesPieChart = dynamic(
   () => import("@/components/total-messages-pie-chart"),
@@ -24,9 +25,9 @@ const EditFormDetails = dynamic(
   { loading: () => <Skeleton className=" w-full h-full bg-white " /> }
 );
 const Page = () => {
-  const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const { toast } = useToast();
-  const { data: session } = useSession();
+  const { session } = useMessageContext();
+  const [isSwitchLoading, setIsSwitchLoading] = useState(false);
   const username = session?.user.username;
   const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const profileUrl = `${baseUrl}/u/${username}`;

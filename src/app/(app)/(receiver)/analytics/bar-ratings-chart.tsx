@@ -67,7 +67,7 @@ export default function BarChartRatings({ oneStar, twoStar, threeStar, fourStar,
     <Card>
       <CardHeader>
         <CardTitle>Ratings Distribution</CardTitle>
-        <CardDescription>Distribution of 1 to 5 star ratings</CardDescription>
+        <CardDescription>Distribution of ratings</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>

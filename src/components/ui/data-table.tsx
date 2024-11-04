@@ -9,6 +9,8 @@ import {
     PaginationState,
     SortingState,
     useReactTable,
+    ColumnFiltersState,
+    getFilteredRowModel,
 } from "@tanstack/react-table"
 import {
     AlertDialog,
@@ -33,7 +35,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useMessageContext } from "@/context/MessageProvider";
 
 interface DataTableProps<TData extends { _id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -45,15 +48,18 @@ export function DataTable<TData extends { _id: string }, TValue>({
     data: initialData,
 }: DataTableProps<TData, TValue>) {
     const { toast } = useToast();
+    const { messageCount, setMessageCount } =
+        useMessageContext();
     const [data, setData] = useState<TData[]>(initialData);
     const [sorting, setSorting] = useState<SortingState>([])
-    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
     const handleDelete = async (id: string) => {
         try {
             await axios.delete(`/api/delete-message/${id}`);
             // Remove the deleted message from the local state
             setData((prevData) => prevData.filter((item) => item._id !== id));
+            setMessageCount(messageCount - 1)
             toast({
                 title: "Success",
                 description: "Message deleted successfully",
@@ -71,6 +77,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
         data,
         columns,
         state: { sorting, pagination },
+        getFilteredRowModel: getFilteredRowModel(),
         onSortingChange: setSorting,
         onPaginationChange: setPagination,
         getSortedRowModel: getSortedRowModel(),
@@ -78,14 +85,49 @@ export function DataTable<TData extends { _id: string }, TValue>({
         getPaginationRowModel: getPaginationRowModel(),
         initialState: {
             pagination: {
-                pageSize: 5,
+                pageSize: 10,
             },
         },
     })
-
+    const totalPages = Math.ceil(data.length / pagination.pageSize);
     return (
         <>
-            <div className="rounded-md border w-[95%] mx-auto">
+            <div className="flex items-center justify-end space-x-1 mr-6">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.firstPage()}
+                    disabled={!table.getCanPreviousPage()}
+                >
+                    <ChevronsLeft size={18} />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                >
+                    <ChevronLeft size={18} />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                >
+                    <ChevronRight size={18} />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.lastPage()}
+                    disabled={!table.getCanNextPage()}
+                >
+                    <ChevronsRight size={18} />
+                </Button>
+            </div>
+            <div className="flex items-center justify-end mr-6 text-xs"> showing page ( {pagination.pageIndex + 1 + " of " + totalPages} )</div>
+            <div className="rounded-md shadow-lg border w-full mx-auto bg-white">
                 <Table>
                     <TableHeader>
                         {table?.getHeaderGroups().map((headerGroup) => (
@@ -132,7 +174,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(row.original._id)}>
+                                                    <AlertDialogAction className=" bg-red-500" onClick={() => handleDelete(row.original._id)}>
                                                         Continue
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
@@ -151,24 +193,6 @@ export function DataTable<TData extends { _id: string }, TValue>({
                     </TableBody>
                 </Table>
             </div >
-            <div className="flex items-center justify-end space-x-2 py-4 mr-6">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
-            </div>
         </>
     )
 }

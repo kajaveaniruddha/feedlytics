@@ -7,7 +7,8 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { Skeleton } from "@/components/ui/skeleton";
 import BarChartRatings from "./bar-ratings-chart";
 import PieChartMessageCount from "./pie-chart-message-count";
-import { useMessageContext } from "../MessageProvider";
+import { useMessageContext } from "../../../../context/MessageProvider";
+import PieChartMessageSentimentAnalysis from "./pie-chart-message-sentiment-analysis";
 
 type Props = {};
 
@@ -19,13 +20,11 @@ const Page = (props: Props) => {
     "4star": 0,
     "5star": 0,
   });
-  const [ratingsArray, setRatingsArray] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { data: session } = useSession();
-  const { messageCount, maxMessages } = useMessageContext();
+  const { session, messageCount, maxMessages } = useMessageContext();
 
-  const fetchRatings = useCallback(async (refresh: boolean = false) => {
+  const fetchRatings = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await axios.get("/api/get-ratings");
@@ -41,15 +40,6 @@ const Page = (props: Props) => {
         "4star": ratingsData["4star"] || 0,
         "5star": ratingsData["5star"] || 0,
       });
-
-      setRatingsArray(res.data.ratings);
-
-      if (refresh) {
-        toast({
-          title: "Refreshed messages",
-          description: "Showing latest messages",
-        });
-      }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
@@ -64,7 +54,7 @@ const Page = (props: Props) => {
   useEffect(() => {
     if (!session || !session.user) return;
     fetchRatings();
-  }, [session, fetchRatings]);
+  }, [session]);
 
   return (
     <section className="container py-8 min-h-screen">
@@ -81,9 +71,13 @@ const Page = (props: Props) => {
             fiveStar={ratingsObject["5star"]}
           />
         )}
+        <PieChartMessageSentimentAnalysis />
       </div>
     </section>
   );
 };
 
 export default Page;
+
+
+// write fetch inside BarChartRatings component if we have to call separate api for every graph

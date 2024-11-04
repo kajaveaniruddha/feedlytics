@@ -17,6 +17,7 @@ interface MessageContextType {
   maxMessages: number;
   setMessageCount: (count: number) => void;
   setMaxMessages: (max: number) => void;
+  session: any
 }
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -44,7 +45,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
           axiosError.response?.data.message || "Failed to load message data",
       });
     }
-  }, [username, toast]);
+  }, [username]);
 
   useEffect(() => {
     fetchMessageData();
@@ -52,7 +53,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MessageContext.Provider
-      value={{ messageCount, maxMessages, setMessageCount, setMaxMessages }}
+      value={{ session, messageCount, maxMessages, setMessageCount, setMaxMessages }}
     >
       {children}
     </MessageContext.Provider>

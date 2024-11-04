@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/navbar";
-import { MessageProvider } from "./MessageProvider";
+import { MessageProvider } from "../../../context/MessageProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
