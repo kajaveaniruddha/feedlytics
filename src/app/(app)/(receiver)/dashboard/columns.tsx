@@ -52,7 +52,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
               }}
               className="hover:cursor-pointer text-red-500"
             >
-              clear sort
+              clear sorting
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -122,7 +122,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
               }}
               className="hover:cursor-pointer text-red-500"
             >
-              clear sort
+              clear sorting
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -17,14 +17,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-type Props = {
-  oneStar: number;
-  twoStar: number;
-  threeStar: number;
-  fourStar: number;
-  fiveStar: number;
-};
+import { useCallback, useEffect, useState } from "react";
+import axios, { AxiosError } from "axios";
+import { useToast } from "@/components/ui/use-toast";
+import { ApiResponse } from "@/types/ApiResponse";
+import { useMessageContext } from "@/context/MessageProvider";
 
 
 const chartConfig = {
@@ -53,14 +50,59 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function BarChartRatings({ oneStar, twoStar, threeStar, fourStar, fiveStar }: Props) {
+
+
+export default function BarChartRatings() {
+
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { session } = useMessageContext();
+  const [ratingsObject, setRatingsObject] = useState({
+    "1star": 0,
+    "2star": 0,
+    "3star": 0,
+    "4star": 0,
+    "5star": 0,
+  });
+  const fetchRatings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get("/api/get-ratings");
+      const ratingsData = res.data.ratings.reduce((acc: any, item: any) => {
+        acc[item.stars] = (acc[item.stars] || 0) + 1;
+        return acc;
+      }, {});
+
+      setRatingsObject({
+        "1star": ratingsData["1star"] || 0,
+        "2star": ratingsData["2star"] || 0,
+        "3star": ratingsData["3star"] || 0,
+        "4star": ratingsData["4star"] || 0,
+        "5star": ratingsData["5star"] || 0,
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast({
+        title: "Error",
+        description: axiosError.response?.data.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!session || !session.user) return;
+    fetchRatings();
+  }, [session]);
+
   // Update the chart data with dynamic values from props
   const chartData = [
-    { rating: "5star", visitors: fiveStar || 0, fill: chartConfig["5star"].color },
-    { rating: "4star", visitors: fourStar || 0, fill: chartConfig["4star"].color },
-    { rating: "3star", visitors: threeStar || 0, fill: chartConfig["3star"].color },
-    { rating: "2star", visitors: twoStar || 0, fill: chartConfig["2star"].color },
-    { rating: "1star", visitors: oneStar || 0, fill: chartConfig["1star"].color },
+    { rating: "5star", visitors: ratingsObject["5star"] , fill: chartConfig["5star"].color },
+    { rating: "4star", visitors: ratingsObject["4star"] , fill: chartConfig["4star"].color },
+    { rating: "3star", visitors: ratingsObject["3star"] , fill: chartConfig["3star"].color },
+    { rating: "2star", visitors: ratingsObject["2star"] , fill: chartConfig["2star"].color },
+    { rating: "1star", visitors: ratingsObject["1star"] , fill: chartConfig["1star"].color },
   ];
 
   return (

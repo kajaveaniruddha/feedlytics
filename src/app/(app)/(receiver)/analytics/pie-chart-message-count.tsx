@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { useMessageContext } from "@/context/MessageProvider";
 
 export const description = "A radial chart with text";
 
@@ -33,14 +34,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type props = {
-  maxMessages: number;
-  messageCount: number;
-};
-export default function PieChartMessageCount({
-  maxMessages,
-  messageCount,
-}: props) {
+export default function PieChartMessageCount() {
+  const { messageCount, maxMessages } = useMessageContext();
   chartData[0].collected = messageCount;
   return (
     <Card className="flex flex-col">
