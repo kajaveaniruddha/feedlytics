@@ -26,7 +26,9 @@ const MessageSchema: Schema<Message> = new Schema({
   },
   sentiment: {
     type: String,
+    enum: ["positive", "negative", "neutral"],
     default: "",
+    required: true,
   },
 });
 

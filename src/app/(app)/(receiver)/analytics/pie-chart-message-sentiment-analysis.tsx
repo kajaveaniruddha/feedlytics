@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TrendingUp } from "lucide-react"
+import axios from "axios"
 import { Label, Pie, PieChart } from "recharts"
 
 import {
@@ -19,52 +19,76 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-export const description = "A donut chart with text"
-
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 190, fill: "var(--color-other)" },
-]
-
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
-  },
-  safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
-  },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig
+export const description = "A donut chart representing sentiment analysis"
 
 export default function PieChartMessageSentimentAnalysis() {
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
+  const [chartData, setChartData] = React.useState([])
+  const [totalMessages, setTotalMessages] = React.useState(0)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    // Fetch data from the API
+    axios
+      .get("/api/get-sentiments")
+      .then((response) => {
+        if (response.data.success) {
+          const counts = response.data.counts
+          const data = [
+            {
+              sentiment: "Positive",
+              count: counts.positive || 0,
+              fill: "hsl(var(--chart-1))",
+            },
+            {
+              sentiment: "Negative",
+              count: counts.negative || 0,
+              fill: "hsl(var(--chart-2))",
+            },
+            {
+              sentiment: "Neutral",
+              count: counts.neutral || 0,
+              fill: "hsl(var(--chart-3))",
+            },
+          ]
+
+          setChartData(data as any)
+
+          const total =
+            (counts.positive || 0) +
+            (counts.negative || 0) +
+            (counts.neutral || 0)
+          setTotalMessages(total)
+        } else {
+          console.error(response.data.message)
+        }
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Error fetching sentiment counts:", error)
+        setLoading(false)
+      })
   }, [])
+
+  const chartConfig = {
+    Positive: {
+      label: "Positive",
+      color: "hsl(var(--chart-1))",
+    },
+    Negative: {
+      label: "Negative",
+      color: "hsl(var(--chart-2))",
+    },
+    Neutral: {
+      label: "Neutral",
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Sentiment Analysis</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardDescription>Overall Sentiment Distribution</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -78,10 +102,11 @@ export default function PieChartMessageSentimentAnalysis() {
             />
             <Pie
               data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
+              dataKey="count"
+              nameKey="sentiment"
               innerRadius={60}
               strokeWidth={5}
+              labelLine={false}
             >
               <Label
                 content={({ viewBox }) => {
@@ -98,18 +123,19 @@ export default function PieChartMessageSentimentAnalysis() {
                           y={viewBox.cy}
                           className="fill-foreground text-3xl font-bold"
                         >
-                          {totalVisitors.toLocaleString()}
+                          {totalMessages}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground"
                         >
-                          Visitors
+                          Messages
                         </tspan>
                       </text>
                     )
                   }
+                  return null
                 }}
               />
             </Pie>
@@ -118,10 +144,10 @@ export default function PieChartMessageSentimentAnalysis() {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          Total Messages: {totalMessages}
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Sentiment analysis of Feedbacks
         </div>
       </CardFooter>
     </Card>
