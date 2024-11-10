@@ -18,6 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { useMessageContext } from "@/context/MessageProvider"
 
 export const description = "A donut chart representing sentiment analysis"
 
@@ -25,11 +26,10 @@ export default function PieChartMessageSentimentAnalysis() {
   const [chartData, setChartData] = React.useState([])
   const [totalMessages, setTotalMessages] = React.useState(0)
   const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    // Fetch data from the API
+  const { session } = useMessageContext()
+  const fetchSentiments = React.useCallback(() => {
     axios
-      .get("/api/get-sentiments")
+      .get("/api/get-sentiments-count")
       .then((response) => {
         if (response.data.success) {
           const counts = response.data.counts
@@ -69,6 +69,10 @@ export default function PieChartMessageSentimentAnalysis() {
       })
   }, [])
 
+  React.useEffect(() => {
+    if (!session || !session.user) return;
+    fetchSentiments();
+  }, [session]);
   const chartConfig = {
     Positive: {
       label: "Positive",

@@ -22,7 +22,7 @@ import { Loader2 } from "lucide-react";
 import { SendMessageSchema } from "@/schemas/sendMessageSchema";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import StarRating from "@/components/star-rating";
+import StarRating from "@/components/custom/star-rating";
 import { AnimatePresence, motion } from "framer-motion";
 import Confetti from "react-confetti";
 import { Skeleton } from "@/components/ui/skeleton";

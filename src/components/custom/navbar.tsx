@@ -3,7 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { User } from "next-auth";
 import React, { useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Popover,
@@ -33,7 +33,7 @@ const navbar = () => {
   const navItems = [
     { icon: Home, label: "Dashboard", key: "dashboard" },
     { icon: BarChart2, label: "Analytics", key: "analytics" },
-    { icon: MessageSquare, label: "Messages", key: "messages" },
+    { icon: MessageSquare, label: "Notifications", key: "notifications" },
   ];
   const [activePage, setActivePage] = useState<string>(
     window.parent.location.pathname.slice(1)
@@ -140,7 +140,7 @@ const navbar = () => {
       </Sheet>
 
       {/* large screen navbar */}
-      <aside className=" max-sm:hidden w-64 bg-white shadow-md flex flex-col fixed h-screen">
+      <aside className=" max-sm:hidden w-52 bg-white shadow-md flex flex-col fixed h-screen">
         <div className="p-4 flex items-center justify-center border-b">
           <h2 className="text-xl tracking-tighter font-bold text-gray-800">
             {activeLabel[0]?.label || "Dashboard"}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/custom/navbar";
 import { MessageProvider } from "../../../context/MessageProvider";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,7 @@ export default function RootLayout({
         <div className={`${inter.className} flex bg-[#f5f5f5]`}>
           <Navbar />
           <MessageProvider>
-            <main className=" overflow-y-auto w-[90%] max-sm:w-[95%] max-sm:mx-auto sm:ml-64">
+            <main className=" overflow-y-auto w-full max-sm:w-[95%] max-sm:mx-auto sm:ml-52">
               {children}
             </main>
           </MessageProvider>

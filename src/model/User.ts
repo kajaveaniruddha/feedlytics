@@ -5,6 +5,7 @@ export interface Message extends Document {
   content: string;
   createdAt: Date;
   sentiment: string;
+  category: string[];
 }
 
 const MessageSchema: Schema<Message> = new Schema({
@@ -28,6 +29,11 @@ const MessageSchema: Schema<Message> = new Schema({
     type: String,
     enum: ["positive", "negative", "neutral"],
     default: "",
+    required: true,
+  },
+  category: {
+    type: [String],
+    default: [],
     required: true,
   },
 });

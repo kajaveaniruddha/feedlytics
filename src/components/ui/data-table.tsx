@@ -13,17 +13,6 @@ import {
     getFilteredRowModel,
 } from "@tanstack/react-table"
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
     Table,
     TableBody,
     TableCell,
@@ -35,8 +24,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, XCircle } from "lucide-react";
 import { useMessageContext } from "@/context/MessageProvider";
+import { Badge } from "./badge";
 
 interface DataTableProps<TData extends { _id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -51,38 +41,42 @@ export function DataTable<TData extends { _id: string }, TValue>({
     const { messageCount, setMessageCount } =
         useMessageContext();
     const [data, setData] = useState<TData[]>(initialData);
+    const [rowSelection, setRowSelection] = useState({})
     const [sorting, setSorting] = useState<SortingState>([])
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (ids: string[]) => {
         try {
-            await axios.delete(`/api/delete-message/${id}`);
-            // Remove the deleted message from the local state
-            setData((prevData) => prevData.filter((item) => item._id !== id));
-            setMessageCount(messageCount - 1)
+            // Join the IDs into a comma-separated string and make a DELETE request
+            const idsParam = ids.join(",");
+            await axios.delete(`/api/delete-message/${idsParam}`);
+
+            setData((prevData) => prevData.filter((item) => !ids.includes(item._id)));
+            setMessageCount(messageCount - ids.length);
+            setRowSelection({});
             toast({
                 title: "Success",
-                description: "Message deleted successfully",
+                description: "Messages deleted successfully",
             });
         } catch (error) {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Failed to delete message",
+                description: "Failed to delete messages",
             });
         }
     };
-
     const table = useReactTable({
         data,
         columns,
-        state: { sorting, pagination },
-        getFilteredRowModel: getFilteredRowModel(),
+        onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
         onPaginationChange: setPagination,
+        getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        state: { sorting, pagination, rowSelection },
         initialState: {
             pagination: {
                 pageSize: 10,
@@ -126,7 +120,45 @@ export function DataTable<TData extends { _id: string }, TValue>({
                     <ChevronsRight size={18} />
                 </Button>
             </div>
-            <div className="flex items-center justify-end mr-6 text-xs"> showing page ( {pagination.pageIndex + 1 + " of " + totalPages} )</div>
+            <span className="flex items-center justify-end mr-6 text-sm text-muted-foreground"> showing page ( {pagination.pageIndex + 1 + " of " + totalPages} )</span>
+            <div className="flex flex-col text-sm text-muted-foreground gap-1 items-baseline">
+                <p className=" min-w-fit inline-flex gap-1 items-center">
+                    <Button disabled={table.getFilteredSelectedRowModel().rows.length === 0} variant={table.getFilteredSelectedRowModel().rows.length === 0 ? "ghost" : "destructive"} className="">
+                        <Trash2
+                            size={14}
+                            onClick={() => {
+                                const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original._id);
+                                if (selectedIds.length > 0) {
+                                    handleDelete(selectedIds);
+                                }
+                            }}
+                        />&nbsp;DELETE
+                    </Button>
+                </p>
+
+                <span className="text-sm font-medium ml-2"> {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                    {table.getFilteredRowModel().rows.length} row(s) selected.
+                </span>
+
+                <div className="flex gap-2 flex-wrap font-normal">
+                    <span className="text-sm font-medium"> Active Filters:</span> {table.getState().columnFilters.length > 0 ? (
+                        table.getState().columnFilters.map((filter: any, index) => (
+                            <Badge variant="default" key={index} className="h-7 flex items-center">
+                                <span className=" text-muted-foreground capitalize text-white">
+                                    {filter.id + " : " + filter.value}
+                                </span>
+                            </Badge>
+                        ))
+                    ) : (
+                        <span className="text-sm text-muted-foreground">None</span>
+                    )}
+                    {table.getState().columnFilters.length > 0 && (
+                        <Button variant="ghost" size="sm" className="h-7" onClick={() => table.resetColumnFilters()}>
+                            <XCircle /> Clear all
+                        </Button>
+                    )}
+                </div>
+            </div>
             <div className="rounded-md shadow-lg border w-full mx-auto bg-white">
                 <Table>
                     <TableHeader>
@@ -159,7 +191,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
-                                    <TableCell>
+                                    {/* <TableCell>
                                         <AlertDialog>
                                             <AlertDialogTrigger>
                                                 <Trash2 size={20} className=" opacity-70 hover:opacity-100 transition-all" />
@@ -180,7 +212,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
-                                    </TableCell>
+                                    </TableCell> */}
                                 </TableRow>
                             ))
                         ) : (

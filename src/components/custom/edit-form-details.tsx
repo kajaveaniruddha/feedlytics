@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "./ui/use-toast";
+import { toast } from "../ui/use-toast";
 import { useFieldArray, useForm, SetFieldValue } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateFeedbackForm } from "@/schemas/updatefeedbackform";
@@ -25,7 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "../ui/textarea";
 import axios, { AxiosError } from "axios";
 import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types/ApiResponse";
 import { useSession } from "next-auth/react";

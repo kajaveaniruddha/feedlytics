@@ -13,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useMessageContext } from "@/context/MessageProvider";
 const chartData = [{ month: "january", total: 50, collected: 0 }];
 

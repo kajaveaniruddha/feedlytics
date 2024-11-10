@@ -17,11 +17,11 @@ import MessageTable from "./table-box";
 import { useMessageContext } from "../../../../context/MessageProvider";
 
 const TotalMessagesPieChart = dynamic(
-  () => import("@/components/total-messages-pie-chart"),
+  () => import("@/components/custom/total-messages-pie-chart"),
   { loading: () => <Skeleton className=" w-full h-full bg-white " /> }
 );
 const EditFormDetails = dynamic(
-  () => import("@/components/edit-form-details"),
+  () => import("@/components/custom/edit-form-details"),
   { loading: () => <Skeleton className=" w-full h-full bg-white " /> }
 );
 const Page = () => {
