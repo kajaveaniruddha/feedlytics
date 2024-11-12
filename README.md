@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+First, run the UI development server:
 
 ```bash
 npm run dev
@@ -12,6 +12,26 @@ yarn dev
 pnpm dev
 # or
 bun dev
+```
+
+Second, run the python FastApi server:
+
+```bash
+cd /API
+
+#then
+
+uvicorn main:app --reload
+```
+
+Third, run the redis server for email services:
+
+```bash
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+#or
+
+get verification code from mongodb database that you have connected
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
