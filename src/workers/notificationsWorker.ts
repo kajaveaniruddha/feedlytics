@@ -1,15 +1,15 @@
 import { Job, Queue, Worker } from "bullmq";
 import { defaultQueueOptions, redisConnection } from "@/lib/queue";
-import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+import { sendVerificationEmail } from "@/jobs/sendVerificationEmail";
 
-export const emailQueueName = "emailQueue";
-export const emailQueue = new Queue(emailQueueName, {
+export const notificationsQueueName = "notificationsQueue";
+export const notificationsQueue = new Queue(notificationsQueueName, {
   connection: redisConnection,
   defaultJobOptions: defaultQueueOptions,
 });
 
 export const queueWorker = new Worker(
-  emailQueueName,
+  notificationsQueueName,
   async (job: Job) => {
     try {
       const data = job.data;

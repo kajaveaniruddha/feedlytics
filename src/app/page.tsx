@@ -22,7 +22,7 @@ const page = () => {
             Echo Collect
           </div>
           <div className="font-extralight text-base md:text-4xl dark:text-neutral-200 py-4">
-            Visualize & Analyze your Feedbacks with AI.
+            Collect, Visualize & Analyze your Feedbacks with AI.
           </div>
           <Link
             href={"/sign-in"}

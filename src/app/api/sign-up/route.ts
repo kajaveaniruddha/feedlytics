@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import bcrypt from "bcryptjs";
-import { emailQueue } from "@/jobs/emailWorker";
+import { emailQueue } from "@/workers/emailWorker";
 
 export async function POST(request: Request) {
   await dbConnect();

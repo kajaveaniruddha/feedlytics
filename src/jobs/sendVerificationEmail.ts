@@ -4,7 +4,7 @@ import { ApiResponse } from "@/types/ApiResponse";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "aakajave@gmail.com",
+    user: process.env.GOOGLE_MAIL_FROM,
     pass: process.env.GOOGLE_APP_PASSWORD,
   },
 });
@@ -20,7 +20,9 @@ export async function sendVerificationEmail(
       from: process.env.GOOGLE_APP_PASSWORD,
       to: email,
       subject: "Echo-Collect | Verification Code",
-      text: `Welcome ${username}! ${verifyCode} is your otp valid till ${expiryDate}.`,
+      text: `Welcome ${username}!
+        ${verifyCode}
+        is your otp valid till ${expiryDate}.`,
     };
 
     const info = await transporter.sendMail(mailOptions);
