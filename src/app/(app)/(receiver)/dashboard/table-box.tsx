@@ -15,7 +15,7 @@ export interface ExtendedMessage extends Message {
 }
 
 const MessageTable: React.FC = () => {
-  const { session } = useMessageContext();
+  const { session,setMessageCount } = useMessageContext();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -26,6 +26,7 @@ const MessageTable: React.FC = () => {
       const res = await axios.get<ApiResponse>("/api/get-messages", {});
       const messagesData: Message[] = res.data?.messages || [];
       setMessages(messagesData);
+      setMessageCount(messagesData.length)
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
     if (!user.isAcceptingMessage) {
       return Response.json(
-        { success: false, message: `${username} not accepting messages.` },
+        { success: false, message: `${username} not accepting feedbacks.` },
         { status: 403 }
       );
     }
@@ -56,9 +56,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // increment the message count before it goes into a time taking function
+    user.messageCount += 1;
+    await user.save();
+
     // Get sentiment analysis result
     const sentimentData = await getSentiment(content);
     if (!sentimentData) {
+      user.messageCount -= 1;
+      await user.save();
       return Response.json(
         { success: false, message: "Failed to analyze sentiment." },
         { status: 500 }
@@ -76,7 +82,6 @@ export async function POST(request: Request) {
       createdAt: new Date(),
     };
     user.message.push(newMessage as Message);
-    user.messageCount += 1;
     await user.save();
 
     return Response.json(

@@ -22,13 +22,13 @@ const page = () => {
             Echo Collect
           </div>
           <div className="font-extralight text-base md:text-4xl dark:text-neutral-200 py-4">
-            And this, is chemical burn.
+            Visualize & Analyze your Feedbacks with AI.
           </div>
           <Link
             href={"/sign-in"}
             className="bg-black dark:bg-white hover:scale-105 transition-transform rounded-full w-fit text-white dark:text-black px-4 py-2"
           >
-            start collecting
+            Start Free
           </Link>
           
         </motion.div>

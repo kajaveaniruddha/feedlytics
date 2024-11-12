@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AcceptMessageSchema } from "@/schemas/acceptMessageSchema";
