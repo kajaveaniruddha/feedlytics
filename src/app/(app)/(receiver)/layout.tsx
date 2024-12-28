@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/custom/navbar";
 import { MessageProvider } from "../../../context/MessageProvider";
-const inter = Inter({ subsets: ["latin"] });
+import TanstackProvider from "@/app/tanstack-provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,17 +17,19 @@ export default function RootLayout({
 }>) {
   return (
     <main lang="en">
-      <AuthProvider>
-        <div className={`${inter.className} flex bg-[#f5f5f5]`}>
-          <Navbar />
-          <MessageProvider>
-            <main className=" overflow-y-auto w-full max-sm:w-[95%] max-sm:mx-auto sm:ml-52">
-              {children}
-            </main>
-          </MessageProvider>
-          <Toaster />
-        </div>
-      </AuthProvider>
+      <TanstackProvider>
+        <AuthProvider>
+          <div className={`flex bg-[#f5f5f5]`}>
+            <Navbar />
+            <MessageProvider>
+              <div className="w-full  mx-auto max-sm:w-[95%] sm:ml-52" style={{ scrollbarGutter: "stable" }}>
+                {children}
+              </div>
+            </MessageProvider>
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </TanstackProvider>
     </main>
   );
 }

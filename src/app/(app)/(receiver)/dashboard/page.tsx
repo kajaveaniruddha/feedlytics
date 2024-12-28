@@ -85,7 +85,7 @@ const Page = () => {
     );
   }
   return (
-    <section className=" my-8 mx-4 rounded lg:max-w-6xl md:max-w-5xl max-w-4xl">
+    <section className=" my-8 rounded max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold mb-4">Welcome {username}!</h1>
       <div className="flex gap-4 justify-around w-full mb-4 h-[250px] rounded-lg">
         <div className="w-full">

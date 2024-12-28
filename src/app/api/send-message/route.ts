@@ -1,25 +1,14 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { Message } from "@/model/User";
-import axios from "axios";
+import { analyzeReview } from "./llm";
 
-const getSentiment = async (content: string) => {
-  try {
-    const response = await axios.post("http://127.0.0.1:8000/analyze", {
-      review: content,
-    });
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Sentiment analysis failed:", error);
-    return null;
-  }
-};
-
+// POST handler
 export async function POST(request: Request) {
   await dbConnect();
 
   const { username, stars, content } = await request.json();
+
   try {
     const user = await UserModel.findOne({ username });
     if (!user) {
@@ -56,12 +45,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // increment the message count before it goes into a time taking function
+    // Increment message count before processing
     user.messageCount += 1;
     await user.save();
 
-    // Get sentiment analysis result
-    const sentimentData = await getSentiment(content);
+    // Analyze sentiment and feedback classification
+    const sentimentData = await analyzeReview(content);
+
     if (!sentimentData) {
       user.messageCount -= 1;
       await user.save();
@@ -71,8 +61,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const sentiment = sentimentData?.overall_sentiment?.label || "";
-    const category = sentimentData?.feedback_classification || [];
+    const { overall_sentiment: sentiment, feedback_classification: category } =
+      sentimentData;
 
     const newMessage = {
       stars,
