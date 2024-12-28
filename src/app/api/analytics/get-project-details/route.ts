@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       messageCount: 1,
       maxMessages: 1,
     });
-    console.log(user)
+    // console.log(user)
     return new Response(
       JSON.stringify({
         success: true,

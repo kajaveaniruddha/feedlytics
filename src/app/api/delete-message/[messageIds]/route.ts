@@ -8,7 +8,7 @@ export async function DELETE(request: Request, props: { params: Promise<{ messag
   const params = await props.params;
   // Expecting messageIds as a comma-separated string in the URL
   const { messageIds } = params;
-  console.log(messageIds)
+  // console.log(messageIds)
   await dbConnect();
   const session = await getServerSession(authOptions);
   const user: User = session?.user as User;
@@ -25,7 +25,7 @@ export async function DELETE(request: Request, props: { params: Promise<{ messag
   try {
     // Split messageIds by comma and convert each to ObjectId
     const objectIds = messageIds.split(',').map(id => new mongoose.Types.ObjectId(id));
-    console.log("objectIds")
+    // console.log("objectIds")
     const updateResult = await UserModel.updateOne(
       { _id: userId },
       { $pull: { message: { _id: { $in: objectIds } } }, $inc: { messageCount: -objectIds.length } }

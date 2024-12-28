@@ -20,6 +20,7 @@ import axios, { AxiosError } from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useMessageContext } from "@/context/MessageProvider";
+import { ChartBar } from "lucide-react";
 
 
 const chartConfig = {
@@ -96,12 +97,14 @@ export default function BarChartRatings() {
 
   // Update the chart data with dynamic values from props
   const chartData = [
-    { rating: "5star", visitors: ratingsObject["5star"] , fill: chartConfig["5star"].color },
-    { rating: "4star", visitors: ratingsObject["4star"] , fill: chartConfig["4star"].color },
-    { rating: "3star", visitors: ratingsObject["3star"] , fill: chartConfig["3star"].color },
-    { rating: "2star", visitors: ratingsObject["2star"] , fill: chartConfig["2star"].color },
-    { rating: "1star", visitors: ratingsObject["1star"] , fill: chartConfig["1star"].color },
+    { rating: "5star", visitors: ratingsObject["5star"], fill: chartConfig["5star"].color },
+    { rating: "4star", visitors: ratingsObject["4star"], fill: chartConfig["4star"].color },
+    { rating: "3star", visitors: ratingsObject["3star"], fill: chartConfig["3star"].color },
+    { rating: "2star", visitors: ratingsObject["2star"], fill: chartConfig["2star"].color },
+    { rating: "1star", visitors: ratingsObject["1star"], fill: chartConfig["1star"].color },
   ];
+
+  const averageRating = (ratingsObject["1star"] + 2*ratingsObject["2star"] + 3*ratingsObject["3star"] +4* ratingsObject["4star"] + 5*ratingsObject["5star"])/(ratingsObject["1star"] + ratingsObject["2star"] + ratingsObject["3star"] + ratingsObject["4star"] + ratingsObject["5star"]);
 
   return (
     <Card>
@@ -125,7 +128,7 @@ export default function BarChartRatings() {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) =>
+              tickFormatter={(value: any) =>
                 chartConfig[value as keyof typeof chartConfig]?.label
               }
             />
@@ -143,8 +146,7 @@ export default function BarChartRatings() {
             >
               <LabelList
                 dataKey="visitors"
-                position="right"
-                offset={10}
+                position="inside"
                 className=" fill-foreground font-extrabold"
                 fontSize={12}
               />
@@ -152,14 +154,14 @@ export default function BarChartRatings() {
           </BarChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+      <CardFooter className="flex flex-col gap-2">
+        <div className="flex gap-2 font-medium items-center">
+          Average rating <ChartBar size={14} />
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total ratings distribution.
+          Your current average rating is  {averageRating.toFixed(2)} !!!
         </div>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 }

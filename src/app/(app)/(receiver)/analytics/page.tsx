@@ -10,8 +10,8 @@ const Page = (props: Props) => {
     <section className="container py-8 min-h-screen">
       <div className="grid grid-cols-2 gap-4 pb-8">
         <PieChartMessageCount />
-        <BarChartRatings/>
         <PieChartMessageSentimentAnalysis />
+        <BarChartRatings/>
       </div>
     </section>
   );
