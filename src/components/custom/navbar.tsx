@@ -49,13 +49,8 @@ const navbar = () => {
     <>
       {/* mobile navbar */}
       <Sheet>
-        <SheetTrigger>
-          <Button
-            variant="outline"
-            className="sm:hidden py-2 absolute right-1 top-1"
-          >
-            <Menu />
-          </Button>
+        <SheetTrigger className="sm:hidden py-2 absolute right-1 top-1">
+          <Menu />
         </SheetTrigger>
         <SheetContent className="bg-white sm:hidden w-3/5 p-0">
           <aside className="w-full shadow-md flex flex-col fixed h-screen">
@@ -67,19 +62,17 @@ const navbar = () => {
                 <Link
                   key={index}
                   href="#"
-                  className={`flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all ${
-                    activePage === item.label
+                  className={`flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-all ${activePage === item.label
                       ? "bg-gray-100 text-gray-900 "
                       : ""
-                  }`}
+                    }`}
                   onClick={() => setActivePage(item.label)}
                 >
                   <item.icon
-                    className={`w-5 h-5 mr-3  ${
-                      activePage === item.label
+                    className={`w-5 h-5 mr-3  ${activePage === item.label
                         ? "transition-all scale-[1.2]"
                         : ""
-                    }`}
+                      }`}
                   />
                   {item.label}
                 </Link>
@@ -151,11 +144,10 @@ const navbar = () => {
             <Link
               key={index}
               href={item.key}
-              className={`flex items-center px-6 transition-all py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 mx-auto rounded-lg w-[95%] ${
-                activePage === item.key
+              className={`flex items-center px-6 transition-all py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 mx-auto rounded-lg w-[95%] ${activePage === item.key
                   ? " bg-gray-100 mx-auto rounded-lg p-1 w-[95%] text-gray-900 "
                   : ""
-              }`}
+                }`}
               onClick={() => setActivePage(item.key)}
             >
               <item.icon className="w-5 h-5 mr-3" />

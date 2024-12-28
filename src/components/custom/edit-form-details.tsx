@@ -54,7 +54,7 @@ const EditFormDetails = () => {
       setIsLoading(true);
       try {
         const res = await axios.get<ApiResponseUserDetails>(
-          `/api/get-user-details/${username}`
+          `/api/get-user-details`
         );
         const fetchedDetails = res.data.userDetails;
 
