@@ -3,7 +3,6 @@ import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/custom/navbar";
 import { MessageProvider } from "../../../context/MessageProvider";
-import TanstackProvider from "@/app/tanstack-provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,19 +16,17 @@ export default function RootLayout({
 }>) {
   return (
     <main lang="en">
-      <TanstackProvider>
-        <AuthProvider>
-          <div className={`flex bg-[#f5f5f5]`}>
-            <Navbar />
-            <MessageProvider>
-              <div className="w-full  mx-auto max-sm:w-[95%] sm:ml-52" style={{ scrollbarGutter: "stable" }}>
-                {children}
-              </div>
-            </MessageProvider>
-            <Toaster />
-          </div>
-        </AuthProvider>
-      </TanstackProvider>
+      <AuthProvider>
+        <div className={`flex bg-[#f5f5f5]`}>
+          <Navbar />
+          <MessageProvider>
+            <div className="w-full  mx-auto max-sm:w-[95%] sm:ml-52" style={{ scrollbarGutter: "stable" }}>
+              {children}
+            </div>
+          </MessageProvider>
+          <Toaster />
+        </div>
+      </AuthProvider>
     </main>
   );
 }

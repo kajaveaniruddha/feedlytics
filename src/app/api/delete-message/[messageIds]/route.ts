@@ -4,10 +4,8 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import mongoose from "mongoose";
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { messageIds: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ messageIds: string }> }) {
+  const params = await props.params;
   // Expecting messageIds as a comma-separated string in the URL
   const { messageIds } = params;
   console.log(messageIds)
