@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Filter, Loader2, RefreshCcw, Star } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
-import { useMessageContext } from "../../../../context/MessageProvider";
+import { useMessageContext } from "../../context/MessageProvider";
 export interface ExtendedMessage extends Message {
   _id: string;
 }

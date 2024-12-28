@@ -1,9 +1,8 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 import { Message } from "@/model/User";
-import { analyzeReview } from "./llm";
+import { analyzeReview } from "./llm-functions";
 
-// POST handler
 export async function POST(request: Request) {
   await dbConnect();
 
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: false,
-          message: `${username} has reached his feedback limit.`,
+          message: `${username} has reached their feedback limit.`,
         },
         { status: 400 }
       );
@@ -45,44 +44,53 @@ export async function POST(request: Request) {
       );
     }
 
-    // Increment message count before processing
+    // Increment message count to mark underprocessing
     user.messageCount += 1;
-    await user.save();
+    await user.save(); // Save immediately to reflect in DB for other requests
 
-    // Analyze sentiment and feedback classification
-    const sentimentData = await analyzeReview(content);
+    try {
+      // Analyze sentiment and feedback classification
+      const sentimentData = await analyzeReview(content);
+      if (!sentimentData) {
+        throw new Error("Failed to analyze sentiment.");
+      }
 
-    if (!sentimentData) {
-      user.messageCount -= 1;
+      const {
+        overall_sentiment: sentiment,
+        feedback_classification: category,
+      } = sentimentData;
+
+      const newMessage = {
+        stars,
+        content,
+        sentiment,
+        category,
+        createdAt: new Date(),
+      };
+
+      user.message.push(newMessage as Message);
       await user.save();
+
       return Response.json(
-        { success: false, message: "Failed to analyze sentiment." },
+        {
+          success: true,
+          messageCount: user.messageCount,
+          message: "Feedback sent successfully.",
+        },
+        { status: 200 }
+      );
+    } catch (error) {
+      // Rollback messageCount safely
+      user.messageCount -= 1;
+      await user.save(); // Ensure rollback is persisted
+
+      return Response.json(
+        { success: false, message: error || "Failed to analyze sentiment." },
         { status: 500 }
       );
     }
-
-    const { overall_sentiment: sentiment, feedback_classification: category } =
-      sentimentData;
-
-    const newMessage = {
-      stars,
-      content,
-      sentiment,
-      category,
-      createdAt: new Date(),
-    };
-    user.message.push(newMessage as Message);
-    await user.save();
-
-    return Response.json(
-      {
-        success: true,
-        messageCount: user.messageCount,
-        message: "Feedback sent successfully.",
-      },
-      { status: 200 }
-    );
   } catch (error) {
+    console.error("Error during request handling:", error);
     return Response.json(
       { success: false, message: "Internal server error.", error },
       { status: 500 }

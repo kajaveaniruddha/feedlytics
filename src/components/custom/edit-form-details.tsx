@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,10 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "../ui/use-toast";
-import { useFieldArray, useForm, SetFieldValue } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateFeedbackForm } from "@/schemas/updatefeedbackform";
 import {
@@ -30,14 +28,12 @@ import axios, { AxiosError } from "axios";
 import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types/ApiResponse";
 import { useSession } from "next-auth/react";
 
-type Props = {};
-
-const EditFormDetails = (props: Props) => {
+const EditFormDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userDetails, setUserDetails] = useState<userDetailsType>();
   const { data: session } = useSession();
   const username = session?.user.username;
-  
+
   const form = useForm({
     resolver: zodResolver(updateFeedbackForm),
     defaultValues: {
@@ -46,7 +42,7 @@ const EditFormDetails = (props: Props) => {
     },
     mode: 'onChange', // Update form state on change
   });
-  
+
   const { setValue, watch, formState: { isDirty } } = form;
 
   // Watch for form values
@@ -181,9 +177,9 @@ const EditFormDetails = (props: Props) => {
 
             {/* Submit Button */}
             <DialogFooter>
-              <Button 
-                type="submit" 
-                disabled={isLoading || !isDirty || isSameAsInitialValues()} 
+              <Button
+                type="submit"
+                disabled={isLoading || !isDirty || isSameAsInitialValues()}
                 className="w-full"
               >
                 {isLoading ? (
@@ -202,4 +198,4 @@ const EditFormDetails = (props: Props) => {
   );
 };
 
-export default EditFormDetails;
+export default memo(EditFormDetails);

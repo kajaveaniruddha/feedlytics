@@ -29,7 +29,7 @@ export default function PieChartMessageSentimentAnalysis() {
   const { session } = useMessageContext()
   const fetchSentiments = React.useCallback(() => {
     axios
-      .get("/api/get-sentiments-count")
+      .get("/api/analytics/get-sentiments-count")
       .then((response) => {
         if (response.data.success) {
           const counts = response.data.counts

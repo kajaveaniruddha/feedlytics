@@ -33,9 +33,10 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
     if (!username) return;
     try {
       const res = await axios.get<ApiResponse>(
-        `/api/analytics/get-project-details/${username}`
+        `/api/analytics/get-project-details`
       );
       setMessageCount(res.data?.messageCount as number);
+      console.log(res.data?.messageCount)
       setMaxMessages(res.data?.maxMessages as number);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
