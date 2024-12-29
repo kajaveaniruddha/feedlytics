@@ -1,22 +1,10 @@
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
-import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
-import mongoose from "mongoose";
-
-interface SentimentCount {
-  positive: number;
-  negative: number;
-  neutral: number;
-}
-
-interface AggregatedSentiment {
-  _id: keyof SentimentCount;
-  count: number;
-}
+import { db } from "@/db/db";
+import { feedbacksTable } from "@/db/models/feedback";
+import { eq, sql } from "drizzle-orm";
 
 export async function GET(request: Request) {
-  await dbConnect();
   const session = await getServerSession(authOptions);
   const user: User = session?.user as User;
 
@@ -27,37 +15,33 @@ export async function GET(request: Request) {
     );
   }
 
-  const userId = new mongoose.Types.ObjectId(user._id);
-
   try {
-    const sentimentCounts: AggregatedSentiment[] = await UserModel.aggregate([
-      { $match: { _id: userId } },
-      { $unwind: "$message" },
-      {
-        $group: {
-          _id: "$message.sentiment",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    const sentimentCounts = await db
+      .select({
+        sentiment: feedbacksTable.sentiment,
+        count: sql`COUNT(${feedbacksTable.sentiment})`,
+      })
+      .from(feedbacksTable)
+      .where(eq(feedbacksTable.userId, parseInt(user.id ?? "0")))
+      .groupBy(feedbacksTable.sentiment);
 
-    const counts: SentimentCount = {
+    const counts = {
       positive: 0,
       negative: 0,
       neutral: 0,
     };
 
     sentimentCounts.forEach((item) => {
-      counts[item._id] = item.count;
+      counts[item.sentiment as keyof typeof counts] = Number(item.count);
     });
 
     return new Response(JSON.stringify({ success: true, counts }), {
       status: 200,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error aggregating sentiments:", error);
     return new Response(
-      JSON.stringify({ success: false, message: "An error occurred." }),
+      JSON.stringify({ success: false, message: "An error occurred.", error }),
       { status: 500 }
     );
   }

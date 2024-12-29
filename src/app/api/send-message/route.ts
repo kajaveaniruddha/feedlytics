@@ -1,52 +1,61 @@
-import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
-import { Message } from "@/model/User";
+import { db } from "@/db/db";
+import { feedbacksTable } from "@/db/models/feedback";
 import { analyzeReview } from "./llm-functions";
+import { eq, sql } from "drizzle-orm";
+import { usersTable } from "@/db/models/user";
 
 export async function POST(request: Request) {
-  await dbConnect();
-
   const { username, stars, content } = await request.json();
 
   try {
-    const user = await UserModel.findOne({ username });
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, username))
+      .limit(1);
+
     if (!user) {
-      return Response.json(
-        { success: false, message: "User not found." },
+      return new Response(
+        JSON.stringify({ success: false, message: "User not found." }),
         { status: 404 }
       );
     }
     if (!user.isAcceptingMessage) {
-      return Response.json(
-        { success: false, message: `${username} not accepting feedbacks.` },
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: `${username} is not accepting feedbacks.`,
+        }),
         { status: 403 }
       );
     }
-    if (user.messageCount >= user.maxMessages) {
-      return Response.json(
-        {
+    if ((user?.messageCount as number) >= (user?.maxMessages as number)) {
+      return new Response(
+        JSON.stringify({
           success: false,
           message: `${username} has reached their feedback limit.`,
-        },
+        }),
         { status: 400 }
       );
     }
     if (!content || content.length <= 10) {
-      return Response.json(
-        { success: false, message: "Message too small." },
+      return new Response(
+        JSON.stringify({ success: false, message: "Message too small." }),
         { status: 400 }
       );
     }
     if (content.length > 400) {
-      return Response.json(
-        { success: false, message: "Message too large." },
+      return new Response(
+        JSON.stringify({ success: false, message: "Message too large." }),
         { status: 400 }
       );
     }
 
-    // Increment message count to mark underprocessing
-    user.messageCount += 1;
-    await user.save(); // Save immediately to reflect in DB for other requests
+    // Increment message count optimistically
+    await db
+      .update(usersTable)
+      .set({ messageCount: sql`${usersTable.messageCount} + 1` })
+      .where(eq(usersTable.id, user.id));
 
     try {
       // Analyze sentiment and feedback classification
@@ -60,39 +69,47 @@ export async function POST(request: Request) {
         feedback_classification: category,
       } = sentimentData;
 
-      const newMessage = {
+      // Insert feedback message
+      await db.insert(feedbacksTable).values({
+        userId: user.id,
         stars,
         content,
         sentiment,
         category,
         createdAt: new Date(),
-      };
+      });
 
-      user.message.push(newMessage as Message);
-      await user.save();
-
-      return Response.json(
-        {
+      return new Response(
+        JSON.stringify({
           success: true,
-          messageCount: user.messageCount,
+          messageCount: user?.messageCount as number + 1,
           message: "Feedback sent successfully.",
-        },
+        }),
         { status: 200 }
       );
     } catch (error) {
-      // Rollback messageCount safely
-      user.messageCount -= 1;
-      await user.save(); // Ensure rollback is persisted
+      // Rollback message count in case of failure
+      await db
+        .update(usersTable)
+        .set({ messageCount: sql`${usersTable.messageCount} - 1` })
+        .where(eq(usersTable.id, user.id));
 
-      return Response.json(
-        { success: false, message: error || "Failed to analyze sentiment." },
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: error || "Failed to analyze sentiment.",
+        }),
         { status: 500 }
       );
     }
   } catch (error) {
     console.error("Error during request handling:", error);
-    return Response.json(
-      { success: false, message: "Internal server error.", error },
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Internal server error.",
+        error,
+      }),
       { status: 500 }
     );
   }

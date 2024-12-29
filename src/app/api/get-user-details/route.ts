@@ -1,42 +1,58 @@
-import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
-import mongoose from "mongoose";
-import { getServerSession, User } from "next-auth";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { db } from "@/db/db";
+import { usersTable } from "@/db/models/user";
+import { eq } from "drizzle-orm";
 import { authOptions } from "../auth/[...nextauth]/options";
 
 export async function GET(request: Request) {
-  await dbConnect();
   const session = await getServerSession(authOptions);
-  const user: User = session?.user as User;
 
-  if (!session || !session?.user) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Not Authenticated." }),
+  if (!session || !session.user) {
+    return NextResponse.json(
+      { success: false, message: "Not Authenticated." },
       { status: 401 }
     );
   }
 
-  const userId = new mongoose.Types.ObjectId(user?._id);
-  try {
-    const user = await UserModel.findById(userId, {
-      name: 1,
-      _id: 0,
-      introduction: 1,
-      questions: 1,
-    });
+  const userEmail = session.user.email;
+  if (!userEmail) {
+    return NextResponse.json(
+      { success: false, message: "Email not found in session." },
+      { status: 400 }
+    );
+  }
 
-    return new Response(
-      JSON.stringify({
+  try {
+    const user = await db
+      .select({
+        name: usersTable.name,
+        introduction: usersTable.introduction,
+        questions: usersTable.questions,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.email, userEmail))
+      .limit(1);
+
+    if (user.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "User not found." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
         success: true,
         message: "User Found.",
-        userDetails: user,
-      }),
+        userDetails: user[0],
+      },
       { status: 200 }
     );
   } catch (error) {
     console.error(error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Couldn't find user.", error }),
+    return NextResponse.json(
+      { success: false, message: "Couldn't find user.", error },
       { status: 500 }
     );
   }

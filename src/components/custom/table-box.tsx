@@ -1,6 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { Message } from "@/model/User";
+import { Message } from "@/db/models/User";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import axios, { AxiosError } from "axios";

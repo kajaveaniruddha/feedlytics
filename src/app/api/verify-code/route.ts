@@ -1,59 +1,64 @@
-import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
+import { db } from "@/db/db";
+import { usersTable } from "@/db/models/user";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
-  await dbConnect();
   try {
     const { username, code } = await request.json();
     const decodedUsername = decodeURIComponent(username);
-    const user = await UserModel.findOne({ username: decodedUsername });
+
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, decodedUsername))
+      .limit(1);
+
     if (!user) {
-      return Response.json(
-        {
+      return new Response(
+        JSON.stringify({
           success: false,
           message: "User not found.",
-        },
+        }),
         { status: 400 }
       );
     }
+
     const isCodeValid = user.verifyCode === code;
     const isCodeNotExpired = new Date(user.verifyCodeExpiry) > new Date();
+
     if (isCodeValid && isCodeNotExpired) {
-      user.isVerified = true;
-      await user.save();
-      return Response.json(
-        {
+      await db
+        .update(usersTable)
+        .set({ isVerified: true })
+        .where(eq(usersTable.username, decodedUsername));
+
+      return new Response(
+        JSON.stringify({
           success: true,
           message: "Account verified.",
-        },
+        }),
         { status: 200 }
       );
     } else {
-      if (!isCodeNotExpired) {
-        return Response.json(
-          {
-            success: false,
-            message: "Code has expired, please signup again.",
-          },
-          { status: 500 }
-        );
-      } else {
-        return Response.json(
-          {
-            success: false,
-            message: "Incorrect verification code.",
-          },
-          { status: 500 }
-        );
-      }
+      const errorMessage = !isCodeNotExpired
+        ? "Code has expired, please sign up again."
+        : "Incorrect verification code.";
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: errorMessage,
+        }),
+        { status: 400 }
+      );
     }
   } catch (error) {
     console.error("Error verifying user.", error);
-    return Response.json(
-      {
+    return new Response(
+      JSON.stringify({
         success: false,
         message: "Error verifying the username.",
-      },
+      }),
       { status: 500 }
     );
   }

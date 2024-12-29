@@ -1,18 +1,20 @@
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
+import { usersTable } from "@/db/models/user";
 import mongoose from "mongoose";
+import { db } from "@/db/db";
+import { eq, sql } from "drizzle-orm";
 
-export async function DELETE(request: Request, props: { params: Promise<{ messageIds: string }> }) {
+export async function DELETE(
+  request: Request,
+  props: { params: Promise<{ messageIds: string }> }
+) {
   const params = await props.params;
-  // Expecting messageIds as a comma-separated string in the URL
   const { messageIds } = params;
-  // console.log(messageIds)
-  await dbConnect();
-  const session = await getServerSession(authOptions);
-  const user: User = session?.user as User;
 
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
   if (!session || !session.user) {
     return new Response(
       JSON.stringify({ success: false, message: "Not Authenticated." }),
@@ -20,18 +22,16 @@ export async function DELETE(request: Request, props: { params: Promise<{ messag
     );
   }
 
-  const userId = new mongoose.Types.ObjectId(user._id);
-
   try {
-    // Split messageIds by comma and convert each to ObjectId
-    const objectIds = messageIds.split(',').map(id => new mongoose.Types.ObjectId(id));
-    // console.log("objectIds")
-    const updateResult = await UserModel.updateOne(
-      { _id: userId },
-      { $pull: { message: { _id: { $in: objectIds } } }, $inc: { messageCount: -objectIds.length } }
-    );
+    const objectIds = messageIds.split(",").map((id) => parseInt(id, 10));
+    const updateResult = await db
+      .update(usersTable)
+      .set({
+        messageCount: sql`${usersTable.messageCount} - ${objectIds.length}`,
+      })
+      .where(eq(usersTable.id, parseInt(user?.id ?? "0", 10)));
 
-    if (updateResult.modifiedCount === 0) {
+    if (!updateResult.rowCount) {
       return new Response(
         JSON.stringify({ success: false, message: "Messages not found." }),
         { status: 404 }
@@ -44,7 +44,11 @@ export async function DELETE(request: Request, props: { params: Promise<{ messag
     );
   } catch (error) {
     return new Response(
-      JSON.stringify({ success: false, message: "Error deleting messages.", error }),
+      JSON.stringify({
+        success: false,
+        message: "Error deleting messages.",
+        error,
+      }),
       { status: 500 }
     );
   }

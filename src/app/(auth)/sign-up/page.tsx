@@ -81,7 +81,7 @@ const page = () => {
         }
       }
     };
-    checkUsernameUnique();
+    // checkUsernameUnique();
   }, [username]);
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
@@ -90,7 +90,7 @@ const page = () => {
       // console.log(data);
       const response = await axios.post<ApiResponse>("/api/sign-up", data);
       toast({ title: "Success", description: response.data.message });
-      if (response.status === 200) {
+      if (response.status === 201) {
         router.replace(`/verify/${username}`);
       } else if (response.status === 403) {
         router.replace(`/login`);

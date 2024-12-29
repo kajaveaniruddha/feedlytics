@@ -1,4 +1,11 @@
-import { Message, User } from "@/model/User";
+export interface Message {
+  stars: number;
+  content: string;
+  createdAt: Date;
+  sentiment: string;
+  category: string[];
+}
+
 export interface ApiResponse {
   success: boolean;
   message: string;
@@ -7,7 +14,7 @@ export interface ApiResponse {
   maxMessages?: number;
   messages?: Array<Message>;
   totalPages?: number;
-  messagesFound?:number
+  messagesFound?: number;
 }
 
 export interface userDetailsType {
@@ -19,3 +26,4 @@ export interface userDetailsType {
 export interface ApiResponseUserDetails {
   userDetails: userDetailsType;
 }
+

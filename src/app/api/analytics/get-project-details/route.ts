@@ -1,11 +1,10 @@
-import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
-import mongoose from "mongoose";
+import { db } from "@/db/db";
+import { usersTable } from "@/db/models/user";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: Request) {
-  await dbConnect();
   const session = await getServerSession(authOptions);
   const user: User = session?.user as User;
 
@@ -16,26 +15,37 @@ export async function GET(request: Request) {
     );
   }
 
-  const userId = new mongoose.Types.ObjectId(user?._id);
   try {
-    const user = await UserModel.findById(userId, {
-      name: 1,
-      _id: 0,
-      messageCount: 1,
-      maxMessages: 1,
-    });
-    // console.log(user)
+    const userDetails = await db
+      .select({
+        name: usersTable.name,
+        messageCount: usersTable.messageCount,
+        maxMessages: usersTable.maxMessages,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, parseInt(user.id ?? "0")))
+      .limit(1);
+
+    if (!userDetails.length) {
+      return new Response(
+        JSON.stringify({ success: false, message: "User not found." }),
+        { status: 404 }
+      );
+    }
+
+    const { name, messageCount, maxMessages } = userDetails[0];
+
     return new Response(
       JSON.stringify({
         success: true,
-        messageCount: user?.messageCount,
-        maxMessages: user?.maxMessages,
-        userDetails: user,
+        messageCount,
+        maxMessages,
+        userDetails: { name, messageCount, maxMessages },
       }),
       { status: 200 }
     );
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching user details:", error);
     return new Response(
       JSON.stringify({ success: false, message: "Couldn't find user.", error }),
       { status: 500 }

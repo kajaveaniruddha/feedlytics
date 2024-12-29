@@ -1,85 +1,56 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
-import UserModel from "@/model/User";
+import { usersTable } from "@/db/models/user";
+import { db } from "@/db/db";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
-  await dbConnect();
   const session = await getServerSession(authOptions);
   const user = session?.user;
   if (!session || !session.user) {
-    return Response.json(
-      { success: false, message: "Not Authenticated." },
+    return new Response(
+      JSON.stringify({ success: false, message: "Not Authenticated." }),
       { status: 401 }
     );
   }
-  const userId = user?._id;
+  if (!session.user.id) {
+    return new Response(
+      JSON.stringify({ success: false, message: "Not Authenticated." }),
+      { status: 401 }
+    );
+  }
   const { acceptMessages } = await request.json();
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      { isAcceptingMessage: acceptMessages },
-      { new: true }
-    );
-    if (!updatedUser) {
-      return Response.json(
-        {
+    const updateResult = await db
+      .update(usersTable)
+      .set({ isAcceptingMessage: acceptMessages })
+      .where(eq(usersTable.id, parseInt(user?.id ?? "0")));
+
+    if (!updateResult.rowCount) {
+      return new Response(
+        JSON.stringify({
           success: false,
-          message: "Failed to update user to status to accept messages.",
-        },
+          message: "Failed to update user message acceptance status.",
+        }),
         { status: 500 }
       );
     }
-    return Response.json(
-      {
+
+    return new Response(
+      JSON.stringify({
         success: true,
         message: "Message acceptance status updated successfully.",
-        updatedUser,
-      },
+      }),
       { status: 200 }
     );
   } catch (error) {
-    console.log("Failed to update user to status accept messages.");
-    return Response.json(
-      {
+    console.error("Failed to update user message acceptance status.", error);
+    return new Response(
+      JSON.stringify({
         success: false,
-        message: "Failed to update user to status to accept messages.",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: Request) {
-  await dbConnect();
-  const session = await getServerSession(authOptions);
-  const user = session?.user;
-  try {
-    if (!session || !session.user) {
-      return Response.json(
-        { success: false, message: "Not Authenticated." },
-        { status: 401 }
-      );
-    }
-    const userId = user?._id;
-    const foundUser = await UserModel.findById(userId);
-    if (!foundUser) {
-      return Response.json(
-        { success: false, message: "User not found." },
-        { status: 404 }
-      );
-    }
-    return Response.json(
-      { success: true, isAcceptingMessages: foundUser.isAcceptingMessage },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.log("Error in getting acceptance status.");
-    return Response.json(
-      {
-        success: false,
-        message: "Error in getting acceptance status.",
-      },
+        message: "Failed to update user message acceptance status.",
+      }),
       { status: 500 }
     );
   }
