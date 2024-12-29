@@ -37,7 +37,7 @@ const MessageTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [session, toast]);
+  }, [setMessageCount, toast]);
 
   useEffect(() => {
     fetchMessages();

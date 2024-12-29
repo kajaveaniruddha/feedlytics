@@ -74,7 +74,7 @@ const EditFormDetails = () => {
         setIsLoading(false);
       }
     },
-    [username, setValue]
+    [setValue]
   );
 
   useEffect(() => {
@@ -124,7 +124,7 @@ const EditFormDetails = () => {
         <DialogHeader>
           <DialogTitle>Update Feedback Page Details</DialogTitle>
           <DialogDescription>
-            Make changes to your feedback collection form here. Click save when you're done.
+            Make changes to your feedback collection form here. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
 

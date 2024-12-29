@@ -88,12 +88,12 @@ export default function BarChartRatings() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (!session || !session.user) return;
     fetchRatings();
-  }, [session]);
+  }, [fetchRatings,session]);
 
   // Update the chart data with dynamic values from props
   const chartData = [

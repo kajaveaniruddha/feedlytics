@@ -46,7 +46,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
           axiosError.response?.data.message || "Failed to load message data",
       });
     }
-  }, [username]);
+  }, [username,toast]);
 
   useEffect(() => {
     fetchMessageData();

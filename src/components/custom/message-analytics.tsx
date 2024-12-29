@@ -14,3 +14,5 @@ export const MessageAnalytics = React.memo(({ username }: { username: string }) 
     <TotalMessagesPieChart username={username} />
   </div>
 ));
+
+MessageAnalytics.displayName = 'MessageAnalytics';

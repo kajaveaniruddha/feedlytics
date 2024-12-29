@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { signInSchema } from "@/schemas/signInSchema";
 import { signIn } from "next-auth/react";
-const page = () => {
+const Page:React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -129,7 +129,7 @@ const page = () => {
         </form>
       </Form>
       <div className="text-center mt-6 text-xs  ">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href={"/sign-up"} className="text-indigo-600 hover:underline">
           Sign-up
         </Link>
@@ -137,4 +137,4 @@ const page = () => {
     </div>
   );
 };
-export default page;
+export default Page;

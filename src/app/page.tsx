@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import Link from "next/link";
 
-const page = () => {
+const Page = () => {
   return (
     <>
       <AuroraBackground>
@@ -37,4 +37,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

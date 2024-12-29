@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const page = () => {
+const Page = () => {
   const [username, setUsername] = useState("");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
@@ -263,4 +263,4 @@ const page = () => {
     </div>
   );
 };
-export default page;
+export default Page;

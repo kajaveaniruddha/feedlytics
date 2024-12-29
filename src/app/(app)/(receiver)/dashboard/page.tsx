@@ -5,7 +5,7 @@ import { WelcomeSection } from "@/components/custom/welcome-section";
 import { FeedbackSettings } from "@/components/custom/feedback-settings";
 import { MessageAnalytics } from "@/components/custom/message-analytics";
 import { useMessageContext } from "@/context/MessageProvider";
-import MessageTable from "../../../../components/custom/table-box";
+import MessageTable from "@/components/custom/table-box";
 
 const Page = () => {
   const { session } = useMessageContext();

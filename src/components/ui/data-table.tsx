@@ -130,7 +130,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                     <span className="text-sm font-medium  text-muted-foreground"> {table.getFilteredSelectedRowModel().rows.length} of{" "}
                         {table.getFilteredRowModel().rows.length} row(s) selected.
                     </span>
-                    <div className="flex gap-2 flex-wrap font-normal">
+                    <div className="flex gap-2 flex-wrap font-normal items-center">
                         <span className="text-sm font-medium"> Active Filters:</span> {table.getState().columnFilters.length > 0 ? (
                             table.getState().columnFilters.map((filter: any, index) => (
                                 <Badge variant="default" key={index} className="h-7 flex items-center">
@@ -140,11 +140,11 @@ export function DataTable<TData extends { _id: string }, TValue>({
                                 </Badge>
                             ))
                         ) : (
-                            <span className="text-sm text-muted-foreground">None</span>
+                            <span className="text-sm text-muted-foreground py-1">None</span>
                         )}
                         {table.getState().columnFilters.length > 0 && (
-                            <Button variant="ghost" size="sm" className="h-7" onClick={() => table.resetColumnFilters()}>
-                                <XCircle /> Clear all
+                            <Button variant="outline" size="sm" className="h-7" onClick={() => table.resetColumnFilters()}>
+                                <XCircle size={16} />&nbsp;Clear all
                             </Button>
                         )}
                     </div>

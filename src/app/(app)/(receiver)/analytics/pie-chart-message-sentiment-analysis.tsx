@@ -72,7 +72,7 @@ export default function PieChartMessageSentimentAnalysis() {
   React.useEffect(() => {
     if (!session || !session.user) return;
     fetchSentiments();
-  }, [session]);
+  }, [session,fetchSentiments]);
   const chartConfig = {
     Positive: {
       label: "Positive",

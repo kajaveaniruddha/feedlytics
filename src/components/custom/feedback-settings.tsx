@@ -17,14 +17,18 @@ const EditFormDetails = dynamic(() => import("@/components/custom/edit-form-deta
 export const FeedbackSettings = React.memo(({ username }: { username: string }) => {
   const { toast } = useToast();
   const { acceptMessages, isLoading, handleSwitchChange } = useAcceptMessages();
-  const profileUrl = `${window.location.host}/u/${username}`;
+
+  const profileUrl =
+    typeof window !== "undefined" ? `${window.location.host}/u/${username}` : "";
 
   const copyToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(profileUrl);
-    toast({
-      title: "URL Copied",
-      description: "Profile URL has been copied to clipboard.",
-    });
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(profileUrl);
+      toast({
+        title: "URL Copied",
+        description: "Profile URL has been copied to clipboard.",
+      });
+    }
   }, [profileUrl, toast]);
 
   return (
@@ -53,3 +57,5 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
     </div>
   );
 });
+
+FeedbackSettings.displayName = "FeedbackSettings";
