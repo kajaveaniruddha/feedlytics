@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const Page = () => {
+const page = () => {
   const [username, setUsername] = useState("");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
@@ -39,6 +39,7 @@ const Page = () => {
 
   const form = useForm({
     resolver: zodResolver(signUpSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       username: "",
@@ -46,6 +47,18 @@ const Page = () => {
       password: "",
     },
   });
+
+  const name = form.watch("name");
+  const email = form.watch("email");
+
+  const { errors } = form.formState;
+  const isNextDisabled =
+    false ||
+    !name ||
+    !email ||
+    errors.name ||
+    errors.email ||
+    isSubmitting;
 
   useEffect(() => {
     const checkUsernameUnique = async () => {
@@ -77,8 +90,11 @@ const Page = () => {
       // console.log(data);
       const response = await axios.post<ApiResponse>("/api/sign-up", data);
       toast({ title: "Success", description: response.data.message });
-      router.replace(`/verify/${username}`);
-      setIsSubmitting(false);
+      if (response.status === 200) {
+        router.replace(`/verify/${username}`);
+      } else if (response.status === 403) {
+        router.replace(`/login`);
+      }
     } catch (error) {
       console.error("Error signing up user", error);
       toast({
@@ -86,9 +102,11 @@ const Page = () => {
         description: "Error signing in user.",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="w-96 mx-auto mt-16 p-8">
       <div className="text-center mb-6">
@@ -97,7 +115,7 @@ const Page = () => {
         </h1>
         <p className="text-gray-600">Sign-up</p>
       </div>
-      <div className="h-60 ">
+      <div className="">
         <AnimatePresence initial={false}>
           <Form {...form}>
             <form
@@ -150,7 +168,7 @@ const Page = () => {
                   />
                   <Button
                     type="button"
-                    disabled={isSubmitting}
+                    disabled={isNextDisabled as boolean}
                     onClick={onNext}
                     className="w-full mt-2 py-2 px-4"
                   >
@@ -190,11 +208,10 @@ const Page = () => {
                           <Loader2 className="animate-spin mt-2" />
                         )}
                         <p
-                          className={`text-sm mt-2 ${
-                            usernameMessage === "Username is unique"
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
+                          className={`text-sm mt-2 ${usernameMessage === "Username is unique"
+                            ? "text-green-500"
+                            : "text-red-500"
+                            }`}
                         >
                           {usernameMessage}
                         </p>
@@ -263,4 +280,4 @@ const Page = () => {
     </div>
   );
 };
-export default Page;
+export default page;

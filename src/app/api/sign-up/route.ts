@@ -23,10 +23,11 @@ export async function POST(request: Request) {
 
     if (existingUserByEmail) {
       if (existingUserByEmail.isVerified) {
-        return Response.json(
-          { success: false, message: "User already exists with this email." },
-          { status: 500 }
-        );
+        return Response.json({
+          success: false,
+          message: "User already exists with this email.",
+          status: 403,
+        });
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
         existingUserByEmail.password = hashedPassword;
