@@ -1,0 +1,32 @@
+services:
+  nextjs:
+    build:
+      context: ./Next
+      dockerfile: Dockerfile
+    image: anii1802/feedlytics-nextjs:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+
+  services:
+    build:
+      context: ./Services
+      dockerfile: Dockerfile
+    image: anii1802/feedlytics-services:latest
+    ports:
+      - "3001:3001"
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - MODEL=llama3.2:3b
