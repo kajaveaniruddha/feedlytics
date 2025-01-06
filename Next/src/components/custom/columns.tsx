@@ -16,7 +16,9 @@ const CategoryColors: { [key: string]: string } = {
   complaint: "bg-yellow-600",
   suggestion: "bg-purple-600",
   question: "bg-teal-600",
+  other:"bg-gray-600"
 };
+
 export const columns: ColumnDef<ExtendedMessage, any>[] = [
   {
     id: "select",
@@ -195,18 +197,16 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
     },
     cell: ({ getValue }) => (
       <ul className="flex flex-wrap gap-1">
-        {getValue()?.length ? (
+        {getValue()?.length && (
           getValue().map((cat: string, index: number) => (
             <li
-              className={`text-xs text-white font-semibold border p-1 text-center rounded-sm shadow-inner ${CategoryColors[cat] || ""
+              className={`text-xs text-white font-semibold border p-1 text-center rounded-sm shadow-inner ${CategoryColors[cat]
                 }`}
               key={index}
             >
               {cat}
             </li>
           ))
-        ) : (
-          <li className="text-xs border p-1 text-center rounded-sm shadow-inner">other</li>
         )}
       </ul>
     ),
