@@ -7,17 +7,16 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   if (
     token &&
-    (url.pathname.startsWith("/sign-in") ||
-      url.pathname.startsWith("/sign-up") ||
-      url.pathname.startsWith("/verify"))
+    (url.pathname.startsWith("/sign-in") || url.pathname.startsWith("/sign-up"))
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
   if (
     !token &&
     (url.pathname.startsWith("/dashboard") ||
-      url.pathname.startsWith("/analytics")||
-      url.pathname.startsWith("/notifications"))
+      url.pathname.startsWith("/analytics") ||
+      url.pathname.startsWith("/notifications") ||
+      url.pathname.startsWith("/verify"))
   ) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }

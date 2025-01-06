@@ -79,7 +79,7 @@ const ClientPage = ({ username }: { username: string }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [toast]);
+    }, [toast, username]);
 
     useEffect(() => {
         fetchUserDetails();

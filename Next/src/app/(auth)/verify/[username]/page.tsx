@@ -51,7 +51,7 @@ const Page = () => {
     }
   };
   return (
-    <div className="w-96 mx-auto mt-16 p-8 text-center ">
+    <div className="w-96 h-screen flex flex-col justify-center items-center mx-auto mt-16 p-8 text-center ">
       <h1 className="text-3xl font-extrabold mb-6 tracking-tight ">
         Verify your account
       </h1>
