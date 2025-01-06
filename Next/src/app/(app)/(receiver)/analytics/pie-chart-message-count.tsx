@@ -40,8 +40,8 @@ export default function PieChartMessageCount() {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Echo Collection Stats</CardTitle>
-        {/* <CardDescription>January - June 2024</CardDescription> */}
+        <CardTitle>Feedback Collection Stats</CardTitle>
+        <CardDescription>Keep collecting, keep improving!!</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer

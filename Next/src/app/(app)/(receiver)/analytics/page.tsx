@@ -5,7 +5,6 @@ import PieChartMessageSentimentAnalysis from "./pie-chart-message-sentiment-anal
 type Props = {};
 
 const Page = (props: Props) => {
-
   return (
     <section className="container py-8 min-h-screen">
       <div className="grid grid-cols-2 gap-4 pb-8">

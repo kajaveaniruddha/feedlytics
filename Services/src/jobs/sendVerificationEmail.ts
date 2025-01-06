@@ -22,7 +22,7 @@ export async function sendVerificationEmail(
     const mailOptions = {
       from: process.env.GOOGLE_MAIL_FROM,
       to: email,
-      subject: "Echo-Collect | Verification Code",
+      subject: "Feedback-Collect | Verification Code",
       text: `Welcome ${username}!
         ${verifyCode}
         is your otp valid till ${expiryDate}.`,

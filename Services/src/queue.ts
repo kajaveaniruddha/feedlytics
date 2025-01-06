@@ -2,8 +2,8 @@ import { Queue } from "bullmq";
 import "dotenv/config";
 
 export const redisConnection = {
-  // url: process.env.UPSTASH_REDIS_URL,
-  url: process.env.CLOUD_REDIS_URL,
+  url: process.env.UPSTASH_REDIS_URL,
+  // url: process.env.CLOUD_REDIS_URL,
 };
 
 export const defaultQueueOptions = {

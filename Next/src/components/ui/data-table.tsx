@@ -28,13 +28,14 @@ import { Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, XCircle
 import { useMessageContext } from "@/context/MessageProvider";
 import { Badge } from "./badge";
 import { AlertDialogFooter, AlertDialogHeader, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "./alert-dialog";
+import { Card } from "./card";
 
-interface DataTableProps<TData extends { _id: string }, TValue> {
+interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
 }
 
-export function DataTable<TData extends { _id: string }, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
     columns,
     data: initialData,
 }: DataTableProps<TData, TValue>) {
@@ -46,6 +47,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
     const [sorting, setSorting] = useState<SortingState>([])
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
     const [loading, setLoading] = useState<boolean>(false)
+    
     const handleDelete = async (ids: string[]) => {
         try {
             setLoading(true);
@@ -53,7 +55,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                 data: { messageIds: ids },
             });
 
-            setData((prevData) => prevData.filter((item) => !ids.includes(item._id)));
+            setData((prevData) => prevData.filter((item) => !ids.includes(item.id)));
             setMessageCount(messageCount - ids.length);
             setRowSelection({});
             toast({
@@ -91,7 +93,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
     const totalPages = Math.ceil(data.length / pagination.pageSize);
     return (
         <>
-            <div className="flex text-sm w-full justify-evenly items-baseline px-2">
+            <Card className="flex text-sm w-full justify-evenly items-baseline p-4">
                 <div className="w-full flex flex-col gap-2">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -119,7 +121,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction className=" bg-red-500"
                                     onClick={() => {
-                                        const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original._id);
+                                        const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original.id);
                                         if (selectedIds.length > 0) {
                                             handleDelete(selectedIds);
                                         }
@@ -189,7 +191,7 @@ export function DataTable<TData extends { _id: string }, TValue>({
                     </div>
                     <span className="flex items-center justify-end  text-sm text-muted-foreground"> showing page ( {pagination.pageIndex + 1 + " of " + totalPages} )</span>
                 </div>
-            </div>
+            </Card>
             <div className="rounded-md shadow-lg border w-full mx-auto bg-white">
                 <Table>
                     <TableHeader>

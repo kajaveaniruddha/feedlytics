@@ -69,7 +69,7 @@ const Page:React.FC = () => {
   return (
     <div className="w-96 mx-auto mt-16 p-8 bg-white shadow-md rounded-lg">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-extrabold mb-2 tracking-tight">Enter Echo Collect</h1>
+        <h1 className="text-3xl font-extrabold mb-2 tracking-tight">Enter FEEDLYTICS</h1>
         <p className="text-gray-600">Sign in to your account</p>
       </div>
       <Form {...form}>

@@ -62,7 +62,7 @@ const ClientPage = ({ username }: { username: string }) => {
     const fetchUserDetails = useCallback(async (refresh: boolean = false) => {
         setIsLoading(true);
         try {
-            const res = await axios.get<ApiResponseUserDetails>(`/api/get-user-details`);
+            const res = await axios.get<ApiResponseUserDetails>(`/api/get-user-form-details/${username}`);
             setUserDetails(res.data.userDetails);
             if (refresh) {
                 toast({
@@ -174,7 +174,7 @@ const ClientPage = ({ username }: { username: string }) => {
                                             </FormItem>
                                         )}
                                     />
-                                    <Button type="submit" disabled={isSubmitting} className=" w-full">
+                                    <Button type="submit" disabled={isSubmitting || isLoading} className=" w-full">
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait

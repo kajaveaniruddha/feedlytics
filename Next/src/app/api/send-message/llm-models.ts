@@ -1,23 +1,8 @@
-import { Ollama } from "@langchain/ollama";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
+import Groq from "groq-sdk";
 
-let ollamaInstance: Ollama | null = null;
-
-export const getOllamaInstance = () => {
-  if (!ollamaInstance) {
-    ollamaInstance = new Ollama({
-      // model: "smollm2:1.7b",
-      // model: "tinyllama",
-      // model: "llama2",
-      // model: "llama3.2:1b",
-      model: "llama3.2:3b",
-      temperature: 0,
-      maxRetries: 2,
-    });
-  }
-  return ollamaInstance;
-};
+export const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const parser = StructuredOutputParser.fromZodSchema(
   z.object({
@@ -37,6 +22,23 @@ export const parser = StructuredOutputParser.fromZodSchema(
         ])
       )
       .describe("Categories applicable to the review."),
-    review: z.string().describe("The original review provided by the user."),
   })
 );
+
+// import { Ollama } from "@langchain/ollama";
+// let ollamaInstance: Ollama | null = null;
+
+// export const getOllamaInstance = () => {
+//   if (!ollamaInstance) {
+//     ollamaInstance = new Ollama({
+//       // model: "smollm2:1.7b",
+//       // model: "tinyllama",
+//       // model: "llama2",
+//       // model: "llama3.2:1b",
+//       model: "llama3.2:3b",
+//       temperature: 0,
+//       maxRetries: 2,
+//     });
+//   }
+//   return ollamaInstance;
+// };

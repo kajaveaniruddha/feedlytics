@@ -1,5 +1,12 @@
 "use client";
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import {
   Card,
@@ -21,7 +28,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useMessageContext } from "@/context/MessageProvider";
 import { ChartBar } from "lucide-react";
-
+import { Skeleton } from "@/components/ui/skeleton"; // Example skeleton component for loading
 
 const chartConfig = {
   visitors: {
@@ -49,11 +56,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-
-
 export default function BarChartRatings() {
-
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Initial loading state
   const { toast } = useToast();
   const { session } = useMessageContext();
   const [ratingsObject, setRatingsObject] = useState({
@@ -63,6 +67,7 @@ export default function BarChartRatings() {
     "4star": 0,
     "5star": 0,
   });
+
   const fetchRatings = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -93,9 +98,8 @@ export default function BarChartRatings() {
   useEffect(() => {
     if (!session || !session.user) return;
     fetchRatings();
-  }, [fetchRatings,session]);
+  }, [fetchRatings, session]);
 
-  // Update the chart data with dynamic values from props
   const chartData = [
     { rating: "5star", visitors: ratingsObject["5star"], fill: chartConfig["5star"].color },
     { rating: "4star", visitors: ratingsObject["4star"], fill: chartConfig["4star"].color },
@@ -104,23 +108,50 @@ export default function BarChartRatings() {
     { rating: "1star", visitors: ratingsObject["1star"], fill: chartConfig["1star"].color },
   ];
 
-  const averageRating = (ratingsObject["1star"] + 2*ratingsObject["2star"] + 3*ratingsObject["3star"] +4* ratingsObject["4star"] + 5*ratingsObject["5star"])/(ratingsObject["1star"] + ratingsObject["2star"] + ratingsObject["3star"] + ratingsObject["4star"] + ratingsObject["5star"]);
+  const totalRatings =
+    ratingsObject["1star"] +
+    ratingsObject["2star"] +
+    ratingsObject["3star"] +
+    ratingsObject["4star"] +
+    ratingsObject["5star"];
+  const averageRating =
+    totalRatings > 0
+      ? (
+        (1 * ratingsObject["1star"] +
+          2 * ratingsObject["2star"] +
+          3 * ratingsObject["3star"] +
+          4 * ratingsObject["4star"] +
+          5 * ratingsObject["5star"]) /
+        totalRatings
+      ).toFixed(2)
+      : "N/A";
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="items-center pb-0">
+          <CardTitle>Loading Ratings...</CardTitle>
+          <CardDescription>Please wait while we load your data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[500px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="items-center pb-0">
         <CardTitle>Ratings Distribution</CardTitle>
         <CardDescription>Distribution of ratings</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart
-            accessibilityLayer
             data={chartData}
             layout="vertical"
-            margin={{
-              left: 0,
-            }}
+            margin={{ top: 20, bottom: 20, left: 30, right: 30 }} // Adjust margin
           >
             <YAxis
               dataKey="rating"
@@ -128,21 +159,15 @@ export default function BarChartRatings() {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value: any) =>
-                chartConfig[value as keyof typeof chartConfig]?.label
-              }
             />
             <XAxis dataKey="visitors" type="number" hide />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
             <CartesianGrid horizontal={false} />
             <Bar
               dataKey="visitors"
               layout="vertical"
               fill="#000"
               radius={5}
+              barSize={50}
             >
               <LabelList
                 dataKey="visitors"
@@ -152,6 +177,7 @@ export default function BarChartRatings() {
               />
             </Bar>
           </BarChart>
+
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex flex-col gap-2">
@@ -159,7 +185,7 @@ export default function BarChartRatings() {
           Average rating <ChartBar size={14} />
         </div>
         <div className="leading-none text-muted-foreground">
-          Your current average rating is  {averageRating.toFixed(2)} !!!
+          Your current average rating is {averageRating}!
         </div>
       </CardFooter>
     </Card>

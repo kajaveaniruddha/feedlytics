@@ -10,11 +10,11 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { useMessageContext } from "../../context/MessageProvider";
 export interface ExtendedMessage extends Message {
-  _id: string;
+  id: string;
 }
 
 const MessageTable: React.FC = () => {
-  const { session,setMessageCount } = useMessageContext();
+  const { setMessageCount } = useMessageContext();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);

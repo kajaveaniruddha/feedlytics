@@ -113,7 +113,7 @@ const Page:NextPage = () => {
     <div className="w-96 mx-auto mt-16 p-8">
       <div className="text-center mb-6">
         <h1 className="text-3xl font-extrabold mb-2 tracking-tight">
-          Join Echo Collect
+          Join FEEDLYTICS
         </h1>
         <p className="text-gray-600">Sign-up</p>
       </div>

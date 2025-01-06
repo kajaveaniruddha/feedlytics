@@ -19,13 +19,14 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { useMessageContext } from "@/context/MessageProvider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export const description = "A donut chart representing sentiment analysis"
 
 export default function PieChartMessageSentimentAnalysis() {
   const [chartData, setChartData] = React.useState([])
   const [totalMessages, setTotalMessages] = React.useState(0)
-  const [loading, setLoading] = React.useState(true)
+  const [isLoading, setLoading] = React.useState(true)
   const { session } = useMessageContext()
   const fetchSentiments = React.useCallback(() => {
     axios
@@ -72,7 +73,7 @@ export default function PieChartMessageSentimentAnalysis() {
   React.useEffect(() => {
     if (!session || !session.user) return;
     fetchSentiments();
-  }, [session,fetchSentiments]);
+  }, [session, fetchSentiments]);
   const chartConfig = {
     Positive: {
       label: "Positive",
@@ -87,7 +88,19 @@ export default function PieChartMessageSentimentAnalysis() {
       color: "hsl(var(--chart-3))",
     },
   } satisfies ChartConfig
-
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="items-center pb-0">
+          <CardTitle>Loading Ratings...</CardTitle>
+          <CardDescription>Please wait while we load your data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

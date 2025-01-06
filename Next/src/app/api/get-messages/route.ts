@@ -27,8 +27,8 @@ export async function GET(request: Request) {
       .from(feedbacksTable)
       .where(eq(feedbacksTable.userId, parseInt(user?.id ?? "0")))
       .orderBy(desc(feedbacksTable.createdAt)) // Use "desc" for descending order
-      .limit(limit)
-      .offset(offset);
+      // .limit(limit)
+      // .offset(offset);
 
     const totalCountQuery = db
       .select({ count: sql`COUNT(*)` })

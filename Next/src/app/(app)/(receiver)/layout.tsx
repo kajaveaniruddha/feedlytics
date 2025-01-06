@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <main lang="en">
       <AuthProvider>
-        <div className={`flex bg-[#f5f5f5]`}>
+        <section className={`flex bg-[#fffcfc]`}>
           <Navbar />
           <MessageProvider>
             <div className="w-full  mx-auto max-sm:w-[95%] sm:ml-52" style={{ scrollbarGutter: "stable" }}>
@@ -25,7 +25,7 @@ export default function RootLayout({
             </div>
           </MessageProvider>
           <Toaster />
-        </div>
+        </section>
       </AuthProvider>
     </main>
   );
