@@ -6,10 +6,10 @@ import SSOSignup from "./sso-signup";
 const Page: NextPage = () => {
 
   return (
-    <section className="min-h-screen flex justify-around">
+    <section className="min-h-screen flex justify-center">
       <DetailsSignup />
       <SquareBackdrop />
-      <div className="w-full flex flex-col justify-center max-w-xl ">
+      <div className="w-full flex flex-col justify-center max-w-xl -mt-10 ">
         <div className="flex flex-col custom-shadow bg-[#1C1C1C] z-10 rounded-lg p-8 border border-white/20">
           <SSOSignup />
           <FormSignup />

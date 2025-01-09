@@ -62,18 +62,18 @@ const features = [
 
 const DetailsSignup = () => {
     return (
-        <div className="hidden lg:flex flex-col gap-8 w-1/2 p-12 z-10">
-            <div className="flex items-center gap-2">
+        <div className="hidden lg:flex flex-col mt-10 gap-8 w-1/2 p-12 z-10">
+            <div className="flex items-center gap-2 ">
                 <div className="w-6 h-6 bg-[#C1F536] rounded-full " />
                 <h1 className="text-white text-xl font-thin">FEEDLYTICS</h1>
             </div>
-            <div>
+            <div className='mb-8'>
                 <h2 className="text-4xl font-semibold text-white mb-2">
                     Start your free trial
                 </h2>
                 <p className="text-gray-400">No credit card required</p>
             </div>
-            <div className="space-y-8 mt-8">
+            <div className="space-y-8">
                 {features.map((feature, index) => (
                     <div key={index} className="flex flex-col gap-4 items-start">
                         <div className="p-2 rounded-full bg-white/10 ">
