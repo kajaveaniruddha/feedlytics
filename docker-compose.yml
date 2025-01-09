@@ -1,16 +1,35 @@
-services:
+version: "3.9"
+
+services: 
   nextjs:
     build:
       context: ./Next
       dockerfile: Dockerfile
-    image: anii1802/feedlytics-nextjs:latest
+    image: aniii1802/feedlytics-nextjs
     ports:
       - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - services
+    environment:
+      SERVICES_URL: http://services:3001
 
   services:
     build:
       context: ./Services
       dockerfile: Dockerfile
-    image: anii1802/feedlytics-services:latest
+    image: aniii1802/feedlytics-services
     ports:
       - "3001:3001"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  app-network:
+    driver: bridge

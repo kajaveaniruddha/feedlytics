@@ -27,6 +27,10 @@ app.post("/add-job", async (req: any, res: any) => {
     });
 });
 
+app.get("/health", (req: any, res: any) => {
+  res.send("Healthy!");
+});
+
 app.listen(port, () => {
   console.log(`BullMQ server running at http://localhost:${port}`);
 });
