@@ -1,7 +1,6 @@
 import { SquareBackdrop } from "../sign-up/page";
 import SSOAuth from "../sign-up/sso-auth";
 import FormSignIn from "./form-signin";
-import { IAuthType } from "@/types/ApiResponse"
 
 const Page: React.FC = () => {
   return (
