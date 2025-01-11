@@ -42,7 +42,7 @@ export default function Component({
   const totalVisitors = maxMessages - messageCount;
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col w-full">
       {/* <CardHeader className="items-center pb-0">
         <CardTitle>total Echos</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
