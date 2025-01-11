@@ -1,6 +1,7 @@
 import BarChartRatings from "./bar-ratings-chart";
 import PieChartMessageCount from "./pie-chart-message-count";
 import PieChartMessageSentimentAnalysis from "./pie-chart-message-sentiment-analysis";
+import RadarChartCategoriesCount from "./radar-chart-categories-count";
 
 type Props = {};
 
@@ -10,7 +11,8 @@ const Page = (props: Props) => {
       <div className="grid grid-cols-2 gap-4 pb-8">
         <PieChartMessageCount />
         <PieChartMessageSentimentAnalysis />
-        <BarChartRatings/>
+        <BarChartRatings />
+        <RadarChartCategoriesCount />
       </div>
     </section>
   );

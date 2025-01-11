@@ -27,3 +27,5 @@ export interface ApiResponseUserDetails {
   userDetails: userDetailsType;
 }
 
+export type IAuthType = "signup" | "login";
+

@@ -59,7 +59,6 @@ const chartConfig = {
 export default function BarChartRatings() {
   const [isLoading, setIsLoading] = useState(true); // Initial loading state
   const { toast } = useToast();
-  const { session } = useMessageContext();
   const [ratingsObject, setRatingsObject] = useState({
     "1star": 0,
     "2star": 0,
@@ -96,9 +95,8 @@ export default function BarChartRatings() {
   }, [toast]);
 
   useEffect(() => {
-    if (!session || !session.user) return;
     fetchRatings();
-  }, [fetchRatings, session]);
+  }, [fetchRatings]);
 
   const chartData = [
     { rating: "5star", visitors: ratingsObject["5star"], fill: chartConfig["5star"].color },
@@ -134,7 +132,7 @@ export default function BarChartRatings() {
           <CardDescription>Please wait while we load your data.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[500px] w-full" />
+          <Skeleton className="h-[400px] w-full" />
         </CardContent>
       </Card>
     );
@@ -146,7 +144,7 @@ export default function BarChartRatings() {
         <CardTitle>Ratings Distribution</CardTitle>
         <CardDescription>Distribution of ratings</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className=" pb-0">
         <ChartContainer config={chartConfig}>
           <BarChart
             data={chartData}

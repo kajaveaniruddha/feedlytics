@@ -86,28 +86,28 @@ const ClientPage = ({ username }: { username: string }) => {
     }, [fetchUserDetails]);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <>
             <AnimatePresence>
-                <div className="w-full max-w-md mx-auto p-8 bg-white shadow-lg rounded-lg text-center">
-                    <Avatar className="w-16 h-16 max-sm:h-14 max-sm:w-14 mx-auto">
+                <div className=" text-center">
+                    <Avatar className="w-16 h-16 max-sm:h-14 max-sm:w-14 mx-auto mb-4">
                         <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
                         <AvatarFallback>{username?.slice(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <h1 className="font-bold my-2">
+                    <h1 className="text-white font-bold my-2 text-xl">
                         {!userDetails?.name ? (
-                            <Skeleton className=" w-1/2 mx-auto h-4 bg-slate-200" />
+                            <Skeleton className="w-1/2 mx-auto h-4 bg-gray-500" />
                         ) : (
                             userDetails?.name
                         )}
                     </h1>
                     {submitted ? (
-                        <div className=" w-full h-full">
+                        <div className="w-full h-full">
                             <Confetti width={window.innerWidth} height={window.innerHeight} />
                             <motion.h1
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.5 }}
-                                className="rounded-lg p-4 font-bold text-2xl"
+                                className="rounded-lg p-4 font-bold text-2xl text-[#C1F536]"
                             >
                                 Thank you for your feedback! 🎉
                             </motion.h1>
@@ -115,28 +115,28 @@ const ClientPage = ({ username }: { username: string }) => {
                     ) : (
                         <>
                             {!userDetails?.introduction ? (
-                                <Skeleton className=" w-full h-16 bg-slate-200" />
+                                <Skeleton className="w-full h-16 bg-gray-500" />
                             ) : (
-                                <p className=" text-xs font-medium text-slate-600 tracking-tight">
+                                <p className="text-gray-300 text-sm font-medium tracking-tight">
                                     {userDetails?.introduction}
                                 </p>
                             )}
                             {!userDetails?.questions ? (
-                                <Skeleton className=" w-full mt-4 mx-auto h-20 bg-slate-200" />
+                                <Skeleton className="w-full mt-4 mx-auto h-20 bg-gray-500" />
                             ) : (
-                                <>
-                                    {userDetails.questions.length > 0 && (
-                                        <>
-                                            <h2 className=" font-bold tracking-tighter mt-4 text-left">QUESTIONS:</h2>
-                                            <div className=" w-8 h-1 bg-[#fca311] rounded mb-1" />
-                                            <ul className=" text-xs list-disc w-[90%] ml-8 text-left">
-                                                {userDetails?.questions.map((question, index) => (
-                                                    <li key={index} className="text-sm">{question}</li>
-                                                ))}
-                                            </ul>
-                                        </>
-                                    )}
-                                </>
+                                userDetails.questions.length > 0 && (
+                                    <>
+                                        <h2 className="text-white font-bold tracking-tighter mt-4 text-left">
+                                            QUESTIONS:
+                                        </h2>
+                                        <div className="w-8 h-1 bg-[#C1F536] rounded mb-1" />
+                                        <ul className="text-sm text-gray-400 list-disc w-[90%] ml-8 text-left">
+                                            {userDetails.questions.map((question, index) => (
+                                                <li key={index} className="text-sm">{question}</li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )
                             )}
                             <Form {...form}>
                                 <form
@@ -168,13 +168,19 @@ const ClientPage = ({ username }: { username: string }) => {
                                                                 : "What did you like about us?"
                                                         }
                                                         {...field}
+                                                        autoFocus
+                                                        className="bg-[#2D2D2D] border-0  text-white placeholder:text-gray-500 rounded-lg"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                    <Button type="submit" disabled={isSubmitting || isLoading} className=" w-full">
+                                    <Button
+                                        type="submit"
+                                        disabled={isSubmitting || isLoading}
+                                        className="w-full bg-gradient-to-b from-[#C1F536] to-[#C1F536]/80 text-black hover:bg-[#D1FF46] transition-colors"
+                                    >
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
@@ -189,7 +195,7 @@ const ClientPage = ({ username }: { username: string }) => {
                     )}
                 </div>
             </AnimatePresence>
-        </div>
+        </>
     );
 };
 
