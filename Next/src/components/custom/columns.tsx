@@ -204,7 +204,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
                 }`}
               key={index}
             >
-              {cat}
+              {cat.toUpperCase()}
             </li>
           ))
         )}
