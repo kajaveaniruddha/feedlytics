@@ -1,12 +1,15 @@
 import { Button } from '@/components/ui/button'
 import React from 'react'
+import { IAuthType } from "@/types/ApiResponse"
 
-type Props = {}
+interface SSOAuthProps {
+    authType: IAuthType;
+}
 
-const SSOSignup = (props: Props) => {
+const SSOAuth = ({authType}: SSOAuthProps) => {
     return (
         <div className="mb-4 w-full">
-            <h2 className="text-white text-lg mb-4 text-center">Register with:</h2>
+            <h2 className="text-white text-lg mb-4 text-center">{authType === "signup" ? "Register" : "Login"}</h2>
             <div className="grid grid-cols-3 gap-3">
                 <Button variant="outline" className="w-full bg-[#2D2D2D] border-0 text-white">
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -39,4 +42,4 @@ const SSOSignup = (props: Props) => {
     )
 }
 
-export default SSOSignup
+export default SSOAuth
