@@ -32,6 +32,7 @@
     "@radix-ui/react-toast": "^1.2.1",
     "@tanstack/react-table": "^8.20.5",
     "@trpc/client": "^10.45.2",
+    "@vercel/analytics": "^1.4.1",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
@@ -76,8 +77,8 @@
   "overrides": {
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
-    "usehooks-ts":{
-      "react":"^19"
+    "usehooks-ts": {
+      "react": "^19"
     }
   }
 }
