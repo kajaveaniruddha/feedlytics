@@ -46,16 +46,35 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
   {
     accessorKey: "stars",
     header: "Ratings",
-    cell: ({ getValue }) => (
-      <div className="flex text-center w-[5rem]">
-        {[...Array(getValue())].map((_, i) => (
-          <Star key={i} className="h-4 w-4 text-yellow-500" />
-        ))}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const stars = Number(row.getValue("stars"));
+
+      if (!stars || stars < 1 || stars > 5) {
+        return null; // Ensure valid star ratings
+      }
+
+      return (
+        <div className="flex text-center w-[5rem]">
+          {[...Array(stars)].map((_, i) => (
+            <Star key={i} className="h-4 w-4 text-yellow-500" />
+          ))}
+        </div>
+      );
+    },
+    filterFn: (row, columnId, filterValues) => {
+      if (!filterValues || filterValues.length === 0) {
+        return true; // No filter applied
+      }
+
+      const rowStars = String(row.getValue(columnId));
+
+      // Check if the row's star rating matches any of the selected filter values
+      return filterValues.includes(rowStars);
+    },
     enableSorting: true,
     enableColumnFilter: true,
   },
+
   {
     accessorKey: "sentiment",
     header: "Sentiment",
@@ -71,9 +90,9 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       return (
         <div className={`text-green-600`}>
           <span className=" flex justify-center">
-          {sentiment.icon && (
-            <sentiment.icon className="text-muted-foreground " />
-          )}
+            {sentiment.icon && (
+              <sentiment.icon className="text-muted-foreground " />
+            )}
           </span>
           {/* <span>{sentiment.label}</span> */}
         </div>
@@ -88,25 +107,24 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
     header: "Category",
     cell: ({ row }) => {
       const categoriesArray = row.getValue("category") as string[];
-  
+
       if (!Array.isArray(categoriesArray) || categoriesArray.length === 0) {
         return null;
       }
-  
+
       const matchedCategories = categoriesArray
         .map((categoryValue) =>
           categories.find((category) => category.value === categoryValue)
         )
         .filter((category) => category !== undefined);
-  
+
       return (
         <div className="flex items-center flex-wrap gap-2">
           {matchedCategories.map((category, index) => (
             <span
               key={index}
-              className={`p-1 rounded text-xs uppercase shadow-md text-white ${
-                CategoryColors[category!.label as CategoryType]
-              }`}
+              className={`p-1 rounded text-xs uppercase shadow-md text-white ${CategoryColors[category!.label as CategoryType]
+                }`}
             >
               {category!.label}
             </span>
@@ -118,14 +136,14 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       if (!filterValues || filterValues.length === 0) {
         return true; // No filter applied
       }
-  
+
       const rowCategories = row.getValue(columnId) as string[];
-  
+
       // Check if any filter value matches the row's categories
       return rowCategories.some((category) => filterValues.includes(category));
     },
   },
-  
+
   {
     accessorKey: "createdAt",
     header: "Date",

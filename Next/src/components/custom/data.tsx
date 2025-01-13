@@ -22,6 +22,29 @@ export const sentiments = [
   },
 ]
 
+export const ratings = [
+  {
+    value: "1",
+    label: "1 star",
+  },
+  {
+    value: "2",
+    label: "2 star",
+  },
+  {
+    value: "3",
+    label: "3 star",
+  },
+  {
+    value: "4",
+    label: "4 star",
+  },
+  {
+    value: "5",
+    label: "5 star",
+  },
+]
+
 export const categories = [
   {
     value: "praise",

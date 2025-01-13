@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 
 import { DataTableViewOptions } from "@/components/custom/data-table-view-options"
 
-import { sentiments, categories } from "./data"
+import { sentiments, categories, ratings } from "./data"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -30,6 +30,13 @@ export function DataTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
+        {table.getColumn("stars") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("stars")}
+            title="Ratings"
+            options={ratings}
+          />
+        )}
         {table.getColumn("sentiment") && (
           <DataTableFacetedFilter
             column={table.getColumn("sentiment")}
