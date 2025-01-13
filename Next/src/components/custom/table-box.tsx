@@ -7,8 +7,8 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { useMessageContext } from "../../context/MessageProvider";
+import { columns } from "../ui/columns";
+import { useMessageContext } from "@/context/MessageProvider";
 export interface ExtendedMessage extends Message {
   id: string;
 }

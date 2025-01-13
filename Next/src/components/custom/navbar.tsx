@@ -22,7 +22,7 @@ const Navbar = () => {
   const navItems = [
     { icon: Home, label: "Dashboard", key: "dashboard" },
     { icon: BarChart2, label: "Analytics", key: "analytics" },
-    { icon: MessageSquare, label: "Notifications", key: "notifications" },
+    // { icon: MessageSquare, label: "Notifications", key: "notifications" },
   ];
 
   const [activePage, setActivePage] = useState<string>("");

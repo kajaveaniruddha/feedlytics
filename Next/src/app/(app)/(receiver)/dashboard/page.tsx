@@ -28,7 +28,7 @@ const Page = () => {
       <WelcomeSection username={username} />
       <div className="flex gap-4 justify-around w-full mb-4 h-[250px] rounded-lg">
         <FeedbackSettings username={username} />
-       <TotalMessagesPieChart username={username} />
+        <TotalMessagesPieChart username={username} />
       </div>
       <MessageTable />
     </section>
