@@ -96,7 +96,7 @@ export default function PieChartMessageSentimentAnalysis() {
           <CardDescription>Please wait while we load your data.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Skeleton className="w-full" />
+          <Skeleton className="h-[18rem] w-full" />
         </CardContent>
       </Card>
     );

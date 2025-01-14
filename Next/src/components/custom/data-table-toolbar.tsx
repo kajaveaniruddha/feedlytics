@@ -28,7 +28,7 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("content")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-[150px] lg:w-[250px] border border-border"
         />
         {table.getColumn("stars") && (
           <DataTableFacetedFilter
@@ -40,14 +40,14 @@ export function DataTableToolbar<TData>({
         {table.getColumn("sentiment") && (
           <DataTableFacetedFilter
             column={table.getColumn("sentiment")}
-            title="sentiments"
+            title="Sentiments"
             options={sentiments}
           />
         )}
         {table.getColumn("category") && (
           <DataTableFacetedFilter
             column={table.getColumn("category")}
-            title="categories"
+            title="Categories"
             options={categories}
           />
         )}

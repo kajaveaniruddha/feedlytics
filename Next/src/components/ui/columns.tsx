@@ -88,14 +88,11 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       }
 
       return (
-        <div className={`text-green-600`}>
           <span className=" flex justify-center">
             {sentiment.icon && (
-              <sentiment.icon className="text-muted-foreground " />
+              <sentiment.icon className="text-secondary " />
             )}
           </span>
-          {/* <span>{sentiment.label}</span> */}
-        </div>
       )
     },
     filterFn: (row, id, value) => {
@@ -123,7 +120,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
           {matchedCategories.map((category, index) => (
             <span
               key={index}
-              className={`p-1 rounded text-xs uppercase shadow-md text-white ${CategoryColors[category!.label as CategoryType]
+              className={`p-1 rounded text-xs uppercase custom-shadow ${CategoryColors[category!.label as CategoryType]
                 }`}
             >
               {category!.label}

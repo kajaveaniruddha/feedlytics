@@ -10,11 +10,10 @@ const TablePagination = <TData extends { id: string }>({ table }: PaginationProp
 
     return (
         <div className="flex items-center justify-end space-x-4">
-            <span className="flex items-center justify-end text-sm text-muted-foreground ml-2">
+            <span className="flex items-center justify-end text-sm ml-2">
                 Page {table.getState().pagination.pageIndex + 1} of {totalPages}
             </span>
             <div className="flex items-center justify-end space-x-1">
-
                 <Button
                     variant="outline"
                     size="sm"

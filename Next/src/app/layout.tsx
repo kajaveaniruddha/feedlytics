@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter,Questrial } from "next/font/google";
 import "./globals.css";
 // import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from '@vercel/analytics/next';
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Feedlytics",
+  title: "Feedlytics - %s",
   description: "Collect, Visualize & Analyze your Feedbacks with AI.",
 };
 
@@ -18,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#1C1C1C] bg-gradient-to-br from-[#C1F536]/5 to-transparent`}>
+      <body className={`${inter.className} bg-[#2c2c2c]`}>
         {/* <ThemeProvider
           attribute="class"
           defaultTheme="Dark"
