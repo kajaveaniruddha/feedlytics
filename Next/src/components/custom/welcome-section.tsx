@@ -26,7 +26,7 @@ export const WelcomeSection = React.memo(({ username }: { username: string }) =>
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5 }}
-      className="text-lg text-secondary max-w-lg text-center"
+      className="text-lg text-secondary max-w-lg text-center max-lg:px-2 "
     >
       Ready to check your latest feedback and insights with AI?
     </motion.p>

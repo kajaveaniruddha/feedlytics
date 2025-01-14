@@ -9,11 +9,11 @@ const TablePagination = <TData extends { id: string }>({ table }: PaginationProp
     const totalPages = Math.ceil(table.getFilteredRowModel().rows.length / table.getState().pagination.pageSize);
 
     return (
-        <div className="flex items-center justify-end space-x-4">
+        <div className="flex  items-center justify-end space-x-4">
             <span className="flex items-center justify-end text-sm ml-2">
                 Page {table.getState().pagination.pageIndex + 1} of {totalPages}
             </span>
-            <div className="flex items-center justify-end space-x-1">
+            <div className="flex flex-wrap gap-2 items-center justify-end space-x-1">
                 <Button
                     variant="outline"
                     size="sm"

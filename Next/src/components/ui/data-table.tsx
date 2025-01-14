@@ -93,8 +93,8 @@ export function DataTable<TData extends { id: string }, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex text-sm w-full justify-between items-baseline">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-2 text-sm max-sm:text-xs w-full justify-between items-baseline">
+                <div className="flex flex-wrap items-center gap-2">
                     <DeleteTasksButton
                         table={table}
                         setData={setData}

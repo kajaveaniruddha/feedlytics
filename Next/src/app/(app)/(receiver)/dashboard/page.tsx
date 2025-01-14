@@ -32,10 +32,10 @@ const Page = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full min-h-screen mx-auto space-y-8 p-8 relative"
+      className="w-full min-h-screen mx-auto space-y-8 p-4 lg:p-8"
     >
       <WelcomeSection username={username} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

@@ -6,15 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAcceptMessages } from "@/hooks/use-accept-messages";
-import { Copy, Link } from 'lucide-react';
-import dynamic from "next/dynamic";
-
-const EditFormDetails = dynamic(() => import("@/components/custom/edit-form-details"), {
-  loading: () => <Skeleton className="w-full h-full bg-background" />,
-});
-
+import { Copy, Link as LinkIcon } from 'lucide-react';
+import Link from "next/link";
 export const FeedbackSettings = React.memo(({ username }: { username: string }) => {
   const { toast } = useToast();
   const { acceptMessages, isLoading, handleSwitchChange } = useAcceptMessages();
@@ -37,7 +31,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link className="w-4 h-4" />
+            <LinkIcon className="w-4 h-4" />
             Your unique link
           </CardTitle>
           <CardDescription>Share this link to receive feedback from others</CardDescription>
@@ -87,7 +81,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
               <h3 className="text-lg font-semibold text-white">Feedback Page Details</h3>
               <p className="text-sm text-secondary">Customize how your feedback page looks</p>
             </div>
-            <EditFormDetails />
+            <Link href="/metadata" className=" bg-primary  text-primary-foreground p-2 rounded-md">Metadata</Link>
           </div>
         </CardContent>
       </Card>

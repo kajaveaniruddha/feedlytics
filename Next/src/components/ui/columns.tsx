@@ -16,6 +16,7 @@ const CategoryColors: Record<CategoryType, string> = {
 };
 
 export const columns: ColumnDef<ExtendedMessage, any>[] = [
+
   {
     id: "select",
     header: ({ table }) => (
@@ -38,10 +39,13 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+  
   {
-    accessorKey: "content",
-    header: "Feedback Content",
-    cell: ({ getValue }) => <p className="w-[29rem]">{getValue()}</p>,
+    accessorKey: "createdAt",
+    header: "Date",
+    cell: ({ getValue }) => (
+      <p className="">{new Date(getValue()).toLocaleDateString()}</p>
+    ),
   },
   {
     accessorKey: "stars",
@@ -54,7 +58,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       }
 
       return (
-        <div className="flex text-center w-[5rem]">
+        <div className="flex text-center">
           {[...Array(stars)].map((_, i) => (
             <Star key={i} className="h-4 w-4 text-yellow-500" />
           ))}
@@ -74,7 +78,6 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
     enableSorting: true,
     enableColumnFilter: true,
   },
-
   {
     accessorKey: "sentiment",
     header: "Sentiment",
@@ -142,10 +145,8 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
   },
 
   {
-    accessorKey: "createdAt",
-    header: "Date",
-    cell: ({ getValue }) => (
-      <p className="w-[5rem]">{new Date(getValue()).toLocaleDateString()}</p>
-    ),
+    accessorKey: "content",
+    header: "Feedback Content",
+    cell: ({ getValue }) => <p className="">{getValue()}</p>,
   },
 ];

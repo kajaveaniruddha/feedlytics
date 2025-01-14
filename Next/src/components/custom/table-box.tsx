@@ -45,7 +45,7 @@ const MessageTable: React.FC = () => {
 
   return (
     <Card className="w-full min-h-screen flex flex-col gap-y-4 p-6">
-        <Button onClick={fetchMessages} variant="outline" size="sm" className=" z-20  border-border w-fit">
+        <Button onClick={fetchMessages} variant="outline" size="sm" className=" z-20 border-border w-fit">
           {loading ?
             <Loader2 className="h-4 w-4 animate-spin mx-auto " /> : <RefreshCcw className="h-4 w-4 " />
           }

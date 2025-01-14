@@ -77,7 +77,7 @@ const Navbar = () => {
 
       {/* Desktop Navbar */}
       <motion.aside
-        className="max-sm:hidden w-64 bg-primary-foreground custom-shadow flex flex-col fixed h-screen"
+        className="max-sm:hidden w-64 bg-primary-foreground custom-shadow flex flex-col fixed h-full"
         initial={{ x: "-100%" }}
         animate={{ x: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}

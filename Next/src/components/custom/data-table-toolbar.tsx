@@ -21,7 +21,7 @@ export function DataTableToolbar<TData>({
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex flex-1 items-center space-x-2">
+      <div className="flex flex-wrap flex-1 items-center space-x-2 gap-y-2">
         <Input
           placeholder="Filter tasks..."
           value={(table.getColumn("content")?.getFilterValue() as string) ?? ""}
