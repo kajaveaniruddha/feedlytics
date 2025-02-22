@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     }
 
     // Add job to the Node.js queue
-    const queueResponse = await fetch(`${process.env.SERVICES_URL}/add-job`, {
+    const queueResponse = await fetch(`${process.env.SERVICES_URL}/get-verification-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

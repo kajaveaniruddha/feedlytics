@@ -7,17 +7,19 @@ export const redisConnection = {
 };
 
 export const defaultQueueOptions = {
-  attempts: 3, // Retry the job 5 times before failing
+  attempts: 3, // Retry the job 3 times before failing
   backoff: {
     type: "exponential",
     delay: 1000, // Initial delay of 1 second for retries
   },
 };
 
-// Unified queue definition
-const emailQueue = new Queue("emailQueue", {
+export const emailQueue = new Queue("emailQueue", {
   connection: redisConnection,
   defaultJobOptions: defaultQueueOptions,
 });
 
-export default emailQueue;
+export const feedbackQueue = new Queue("feedbackQueue", {
+  connection: redisConnection,
+  defaultJobOptions: defaultQueueOptions,
+});

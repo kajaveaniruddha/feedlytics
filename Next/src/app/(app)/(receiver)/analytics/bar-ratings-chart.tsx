@@ -140,12 +140,12 @@ export default function BarChartRatings() {
 
   return (
     <Card>
-      <CardHeader className="items-center pb-0">
+      <CardHeader className="items-center pb-0 ">
         <CardTitle>Ratings Distribution</CardTitle>
         <CardDescription>Distribution of ratings</CardDescription>
       </CardHeader>
       <CardContent className=" pb-0">
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className=" p-6 pt-0 ">
           <BarChart
             data={chartData}
             layout="vertical"
@@ -178,8 +178,8 @@ export default function BarChartRatings() {
 
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2">
-        <div className="flex gap-2 font-medium items-center">
+      <CardFooter className="flex flex-col gap-2 text-sm">
+        <div className="flex gap-2 items-center">
           Average rating <ChartBar size={14} />
         </div>
         <div className="leading-none text-muted-foreground">

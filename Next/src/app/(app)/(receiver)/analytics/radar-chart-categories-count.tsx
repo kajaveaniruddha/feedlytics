@@ -98,7 +98,7 @@ export default function RadarChartCategoriesCount() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="pb-0">
+                <ChartContainer config={chartConfig} className="pb-0 max-w-xl">
                     <RadarChart data={chartData}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarGrid

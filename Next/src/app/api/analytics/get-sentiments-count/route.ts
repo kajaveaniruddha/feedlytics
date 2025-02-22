@@ -1,19 +1,11 @@
-import { getServerSession, User } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/options";
+import { User } from "next-auth";
+import { getServerSideSession } from "@/config/getServerSideSession";
 import { db } from "@/db/db";
 import { feedbacksTable } from "@/db/models/feedback";
 import { eq, sql } from "drizzle-orm";
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
-  const user: User = session?.user as User;
-
-  if (!session || !session?.user) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Not Authenticated." }),
-      { status: 401 }
-    );
-  }
+   const user = await getServerSideSession() as User
 
   try {
     const sentimentCounts = await db

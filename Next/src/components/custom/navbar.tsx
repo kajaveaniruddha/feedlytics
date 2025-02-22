@@ -8,7 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { icon: Home, label: "Dashboard", key: "dashboard" },
@@ -25,9 +26,12 @@ const Navbar = () => {
   const user = session?.user || {};
   const username = user.username || user.email || "Guest";
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    setActivePage(window.location.pathname.slice(1) || "dashboard");
-  }, []);
+    // Update active page whenever the pathname changes
+    setActivePage(pathname.slice(1) || "dashboard");
+  }, [pathname]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -156,6 +160,5 @@ const UserMenu = ({ username }: { username: string }) => (
     </PopoverContent>
   </Popover>
 );
-
 
 export default Navbar;
