@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GithubProvider from "next-auth/providers/github"; // New import
 import bcrypt from "bcryptjs";
 import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
@@ -52,6 +53,10 @@ export const authOptions: NextAuthOptions = {
         return userWithoutPassword;
       },
     }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!
+    }) 
   ],
   pages: { signIn: "/sign-in" },
   session: {
