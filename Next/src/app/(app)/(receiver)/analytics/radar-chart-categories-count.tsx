@@ -18,7 +18,6 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 
 type ChartDataItem = {
@@ -33,33 +32,13 @@ const chartConfig = {
     },
 } satisfies ChartConfig;
 
-export default function RadarChartCategoriesCount() {
-    const [chartData, setChartData] = useState<ChartDataItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const { toast } = useToast();
+type Props = {
+    categoryCounts: Array<{ category: string; count: number }>;
+    isLoading: boolean;
+};
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get("/api/analytics/get-categories-count");
-                const formattedData: ChartDataItem[] =
-                    response.data?.categoryCounts?.map((item: any) => ({
-                        category: item.category,
-                        count: Number(item.count), // Convert count to number
-                    })) || [];
-                setChartData(formattedData);
-            } catch (error) {
-                toast({
-                    title: "Error",
-                    description: "Failed to fetch category data. Please try again.",
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [toast]);
+export default function RadarChartCategoriesCount({ categoryCounts, isLoading }: Props) {
+    const chartData = categoryCounts;
 
     if (isLoading) {
         return (

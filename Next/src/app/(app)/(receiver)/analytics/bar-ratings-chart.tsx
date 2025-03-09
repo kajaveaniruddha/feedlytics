@@ -19,14 +19,7 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useCallback, useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
-import { useToast } from "@/components/ui/use-toast";
-import { ApiResponse } from "@/types/ApiResponse";
-import { useMessageContext } from "@/context/MessageProvider";
 import { ChartBar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton"; // Example skeleton component for loading
 
@@ -56,47 +49,27 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function BarChartRatings() {
-  const [isLoading, setIsLoading] = useState(true); // Initial loading state
-  const { toast } = useToast();
-  const [ratingsObject, setRatingsObject] = useState({
+type Props = {
+  isLoading: boolean;
+  ratingsCount?: Array<{ rating: number; count: number }>;
+};
+
+export default function BarChartRatings({ isLoading, ratingsCount = [] }: Props) {
+  const ratingsObject = {
     "1star": 0,
     "2star": 0,
     "3star": 0,
     "4star": 0,
     "5star": 0,
-  });
+  };
 
-  const fetchRatings = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await axios.get("/api/get-ratings");
-      const ratingsData = res.data.ratings.reduce((acc: any, item: any) => {
-        acc[item.stars] = (acc[item.stars] || 0) + 1;
-        return acc;
-      }, {});
-
-      setRatingsObject({
-        "1star": ratingsData["1star"] || 0,
-        "2star": ratingsData["2star"] || 0,
-        "3star": ratingsData["3star"] || 0,
-        "4star": ratingsData["4star"] || 0,
-        "5star": ratingsData["5star"] || 0,
-      });
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description: axiosError.response?.data.message,
-      });
-    } finally {
-      setIsLoading(false);
+  // Convert ratings data to our format and ensure numbers are properly parsed
+  ratingsCount?.forEach((item) => {
+    const key = `${item.rating}star` as keyof typeof ratingsObject;
+    if (key in ratingsObject) {
+      ratingsObject[key] = parseInt(String(item.count), 10) || 0;
     }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchRatings();
-  }, [fetchRatings]);
+  });
 
   const chartData = [
     { rating: "5star", visitors: ratingsObject["5star"], fill: chartConfig["5star"].color },
