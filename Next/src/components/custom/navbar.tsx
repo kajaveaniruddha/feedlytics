@@ -124,8 +124,10 @@ const UserMenu = ({ username }: { username: string }) => (
           <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
           <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <span className="font-medium">{username}</span>
-        <ChevronRight className="w-4 h-4 ml-auto" />
+        <div className="flex-1 truncate text-left">
+          <span className="font-medium truncate block">{username}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 flex-shrink-0" />
       </Button>
     </PopoverTrigger>
     <PopoverContent className="w-56 bg-background border text-white">

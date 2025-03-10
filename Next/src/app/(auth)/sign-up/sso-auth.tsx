@@ -8,20 +8,27 @@ interface SSOAuthProps {
     authType: IAuthType;
 }
 
+const githubSignIn = () => {
+    signIn("github",{
+        callbackUrl:"/dashboard",
+        redirect:true
+    })
+}
+
 const SSOAuth = ({ authType }: SSOAuthProps) => {
     return (
         <div className="mb-4 w-full">
             <h2 className="text-white text-lg mb-4 text-center">{authType === "signup" ? "Register" : "Login"}</h2>
-            <div className="grid grid-cols-3 gap-3">
-                <Button variant="outline" className="w-full bg-[#2D2D2D] border-0 text-white">
+            <div className="flex gap-3">
+                {/* <Button variant="outline" className="w-full bg-[#2D2D2D] border-0 text-white">
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
                     </svg>
                     Google
-                </Button>
+                </Button> */}
                 <Button
                     variant="outline"
-                    onClick={() => signIn("github")} // Added onClick handler
+                    onClick={githubSignIn}
                     className="w-full bg-[#2D2D2D] border-0 text-white"
                 >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -29,12 +36,12 @@ const SSOAuth = ({ authType }: SSOAuthProps) => {
                     </svg>
                     GitHub
                 </Button>
-                <Button variant="outline" className="w-full bg-[#2D2D2D] border-0 text-white">
+                {/* <Button variant="outline" className="w-full bg-[#2D2D2D] border-0 text-white">
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z" />
                     </svg>
                     GitLab
-                </Button>
+                </Button> */}
             </div>
             <div className="relative mt-6">
                 <div className="absolute inset-0 flex items-center">

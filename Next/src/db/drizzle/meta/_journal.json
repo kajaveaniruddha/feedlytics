@@ -15,6 +15,13 @@
       "when": 1735497478937,
       "tag": "0001_brave_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741541533164,
+      "tag": "0002_tricky_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

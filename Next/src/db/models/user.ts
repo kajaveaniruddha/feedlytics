@@ -17,9 +17,9 @@ export const usersTable = pgTable(
     name: varchar("name", { length: 50 }).default("user"),
     username: varchar("username", { length: 50 }).notNull().unique(),
     email: varchar("email", { length: 100 }).notNull().unique(),
-    password: varchar("password", { length: 255 }).notNull(),
-    verifyCode: varchar("verify_code", { length: 100 }).notNull(),
-    verifyCodeExpiry: timestamp("verify_code_expiry").notNull(),
+    password: varchar("password", { length: 255 }),
+    verifyCode: varchar("verify_code", { length: 100 }),
+    verifyCodeExpiry: timestamp("verify_code_expiry"),
     isVerified: boolean("is_verified").notNull().default(false),
     isAcceptingMessage: boolean("is_accepting_message")
       .notNull()
