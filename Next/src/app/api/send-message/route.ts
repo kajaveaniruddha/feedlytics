@@ -1,8 +1,38 @@
 import { db } from "@/db/db";
 import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
+import { getCorsHeaders } from "@/config/cors";
+
+export async function OPTIONS(request: Request) {
+  const origin = request.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
+  if (!corsHeaders) {
+    return new Response(null, { status: 403 });
+  }
+
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
 
 export async function POST(request: Request) {
+  const origin = request.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
+  if (!corsHeaders) {
+    return new Response(
+      JSON.stringify({ success: false, message: "Origin not allowed" }),
+      { status: 403 }
+    );
+  }
+
+  const baseHeaders = {
+    "Content-Type": "application/json",
+    ...corsHeaders,
+  };
+
   const { username, stars, content } = await request.json();
 
   try {
@@ -15,7 +45,7 @@ export async function POST(request: Request) {
     if (!user) {
       return new Response(
         JSON.stringify({ success: false, message: "User not found." }),
-        { status: 404 }
+        { status: 404, headers: baseHeaders }
       );
     }
     if (!user.isAcceptingMessage) {
@@ -24,7 +54,7 @@ export async function POST(request: Request) {
           success: false,
           message: `${username} is not accepting feedbacks.`,
         }),
-        { status: 403 }
+        { status: 403, headers: baseHeaders }
       );
     }
     if ((user?.messageCount as number) >= (user?.maxMessages as number)) {
@@ -33,19 +63,19 @@ export async function POST(request: Request) {
           success: false,
           message: `${username} has reached their feedback limit.`,
         }),
-        { status: 400 }
+        { status: 400, headers: baseHeaders }
       );
     }
     if (!content || content.length <= 10) {
       return new Response(
         JSON.stringify({ success: false, message: "Message too small." }),
-        { status: 400 }
+        { status: 400, headers: baseHeaders }
       );
     }
     if (content.length > 400) {
       return new Response(
         JSON.stringify({ success: false, message: "Message too large." }),
-        { status: 400 }
+        { status: 400, headers: baseHeaders }
       );
     }
 
@@ -78,7 +108,7 @@ export async function POST(request: Request) {
             success: false,
             message: "Failed to add job to the queue.",
           }),
-          { status: 500 }
+          { status: 500, headers: baseHeaders }
         );
       }
       
@@ -88,7 +118,7 @@ export async function POST(request: Request) {
           messageCount: (user?.messageCount as number) + 1,
           message: "Feedback sent successfully.",
         }),
-        { status: 200 }
+        { status: 200, headers: baseHeaders }
       );
     } catch (error) {
       // Rollback message count in case of failure
@@ -102,7 +132,7 @@ export async function POST(request: Request) {
           success: false,
           message: error || "Failed to analyze sentiment.",
         }),
-        { status: 500 }
+        { status: 500, headers: baseHeaders }
       );
     }
   } catch (error) {
@@ -113,7 +143,7 @@ export async function POST(request: Request) {
         message: "Internal server error.",
         error,
       }),
-      { status: 500 }
+      { status: 500, headers: baseHeaders }
     );
   }
 }

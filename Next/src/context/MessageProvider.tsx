@@ -28,7 +28,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const { data: session } = useSession();
   const { toast } = useToast();
   const username = session?.user?.username;
-  console.log("username",session)
+  
   const fetchMessageData = useCallback(async () => {
     if (!username) return;
     try {
