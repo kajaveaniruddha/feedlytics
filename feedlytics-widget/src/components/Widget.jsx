@@ -56,6 +56,15 @@ export const Widget = ({ username }) => {
   return (
     <>
       <style>{tailwindStyles}</style>
+      <style>{`
+        @keyframes slideFadeIn {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-fade-in {
+          animation: slideFadeIn 0.5s ease-out;
+        }
+      `}</style>
       <div className="widget fixed bottom-4 right-4 z-50">
         <Popover>
           <PopoverTrigger asChild>
@@ -64,28 +73,28 @@ export const Widget = ({ username }) => {
               Feedback
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="widget rounded-lg bg-card p-4 shadpw-lg w-full max-w-md">
+          <PopoverContent className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md">
             <style>{tailwindStyles}</style>
             {submitted ? (
-              <div>
+              <div className="animate-slide-fade-in flex flex-col items-center">
                 <h3 className="text-lg font-bold">
                   Thank you for your feedback 🎉
                 </h3>
-                <p className="mt-4">
+                {/* <p className="mt-4">
                   We appreciate your feedback. It helps us improve our product
                   and provide better service to our customers.
-                </p>
+                </p> */}
               </div>
             ) : (
               <div>
                 <h3 className="text-lg font-bold">Send us your feedback</h3>
                 {errorMessage && (
-                  <div className="mt-2 text-sm text-red-600">
+                  <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
                     {errorMessage}
                   </div>
                 )}
                 {successMessage && (
-                  <div className="mt-2 text-sm text-green-600">
+                  <div className="mt-2 text-sm text-green-600 animate-slide-fade-in">
                     {successMessage}
                   </div>
                 )}
