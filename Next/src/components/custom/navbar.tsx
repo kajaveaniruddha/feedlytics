@@ -8,7 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { icon: Home, label: "Dashboard", key: "dashboard" },
@@ -25,9 +26,12 @@ const Navbar = () => {
   const user = session?.user || {};
   const username = user.username || user.email || "Guest";
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    setActivePage(window.location.pathname.slice(1) || "dashboard");
-  }, []);
+    // Update active page whenever the pathname changes
+    setActivePage(pathname.slice(1) || "dashboard");
+  }, [pathname]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -120,8 +124,10 @@ const UserMenu = ({ username }: { username: string }) => (
           <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
           <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <span className="font-medium">{username}</span>
-        <ChevronRight className="w-4 h-4 ml-auto" />
+        <div className="flex-1 truncate text-left">
+          <span className="font-medium truncate block">{username}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 flex-shrink-0" />
       </Button>
     </PopoverTrigger>
     <PopoverContent className="w-56 bg-background border text-white">
@@ -156,6 +162,5 @@ const UserMenu = ({ username }: { username: string }) => (
     </PopoverContent>
   </Popover>
 );
-
 
 export default Navbar;

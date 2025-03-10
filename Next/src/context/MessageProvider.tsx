@@ -28,12 +28,12 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const { data: session } = useSession();
   const { toast } = useToast();
   const username = session?.user?.username;
-
+  console.log("username",session)
   const fetchMessageData = useCallback(async () => {
     if (!username) return;
     try {
       const res = await axios.get<ApiResponse>(
-        `/api/analytics/get-project-details`
+        `/api/get-project-details`
       );
       setMessageCount(res.data?.messageCount as number);
       // console.log(res.data?.messageCount)

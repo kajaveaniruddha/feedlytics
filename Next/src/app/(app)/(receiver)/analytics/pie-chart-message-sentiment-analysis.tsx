@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import axios from "axios"
 import { Label, Pie, PieChart } from "recharts"
 
 import {
@@ -18,62 +17,41 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { useMessageContext } from "@/context/MessageProvider"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export const description = "A donut chart representing sentiment analysis"
 
-export default function PieChartMessageSentimentAnalysis() {
-  const [chartData, setChartData] = React.useState([])
-  const [totalMessages, setTotalMessages] = React.useState(0)
-  const [isLoading, setLoading] = React.useState(true)
-  const { session } = useMessageContext()
-  const fetchSentiments = React.useCallback(() => {
-    axios
-      .get("/api/analytics/get-sentiments-count")
-      .then((response) => {
-        if (response.data.success) {
-          const counts = response.data.counts
-          const data = [
-            {
-              sentiment: "Positive",
-              count: counts.positive || 0,
-              fill: "hsl(var(--chart-1))",
-            },
-            {
-              sentiment: "Negative",
-              count: counts.negative || 0,
-              fill: "hsl(var(--chart-2))",
-            },
-            {
-              sentiment: "Neutral",
-              count: counts.neutral || 0,
-              fill: "hsl(var(--chart-3))",
-            },
-          ]
+type Props = {
+  sentimentCounts?: {
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
+  isLoading: boolean;
+};
 
-          setChartData(data as any)
+export default function PieChartMessageSentimentAnalysis({ sentimentCounts, isLoading }: Props) {
+  const chartData = sentimentCounts ? [
+    {
+      sentiment: "Positive",
+      count: sentimentCounts.positive,
+      fill: "hsl(var(--chart-1))",
+    },
+    {
+      sentiment: "Negative",
+      count: sentimentCounts.negative,
+      fill: "hsl(var(--chart-2))",
+    },
+    {
+      sentiment: "Neutral",
+      count: sentimentCounts.neutral,
+      fill: "hsl(var(--chart-3))",
+    },
+  ] : [];
 
-          const total =
-            (counts.positive || 0) +
-            (counts.negative || 0) +
-            (counts.neutral || 0)
-          setTotalMessages(total)
-        } else {
-          console.error(response.data.message)
-        }
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error("Error fetching sentiment counts:", error)
-        setLoading(false)
-      })
-  }, [])
+  const totalMessages = sentimentCounts ? 
+    sentimentCounts.positive + sentimentCounts.negative + sentimentCounts.neutral : 0;
 
-  React.useEffect(() => {
-    if (!session || !session.user) return;
-    fetchSentiments();
-  }, [session, fetchSentiments]);
   const chartConfig = {
     Positive: {
       label: "Positive",
@@ -88,6 +66,7 @@ export default function PieChartMessageSentimentAnalysis() {
       color: "hsl(var(--chart-3))",
     },
   } satisfies ChartConfig
+
   if (isLoading) {
     return (
       <Card>
@@ -101,6 +80,7 @@ export default function PieChartMessageSentimentAnalysis() {
       </Card>
     );
   }
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

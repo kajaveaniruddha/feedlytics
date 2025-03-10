@@ -1,6 +1,4 @@
 import { db } from "@/db/db";
-import { feedbacksTable } from "@/db/models/feedback";
-import { analyzeReview } from "./llm-functions";
 import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
 
@@ -58,32 +56,32 @@ export async function POST(request: Request) {
       .where(eq(usersTable.id, user.id));
 
     try {
-      // Analyze sentiment and feedback classification
-      let sentimentData = await analyzeReview(content);
-      if (!sentimentData) {
-        sentimentData = {
-          overall_sentiment: "neutral",
-          feedback_classification: ["other"],
-          review: content,
-        };
-        // throw new Error("Failed to analyze sentiment.");
+      const queueResponse = await fetch(
+        `${process.env.SERVICES_URL}/add-feedback`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data: {
+              userId: user.id,
+              stars,
+              content,
+              createdAt: new Date(),
+            },
+          }),
+        }
+      );
+
+      if (!queueResponse.ok) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "Failed to add job to the queue.",
+          }),
+          { status: 500 }
+        );
       }
-
-      const {
-        overall_sentiment: sentiment,
-        feedback_classification: category,
-      } = sentimentData;
-
-      // Insert feedback message
-      await db.insert(feedbacksTable).values({
-        userId: user.id,
-        stars,
-        content,
-        sentiment,
-        category,
-        createdAt: new Date(),
-      });
-
+      
       return new Response(
         JSON.stringify({
           success: true,

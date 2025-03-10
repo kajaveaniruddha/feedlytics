@@ -18,11 +18,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import { useMessageContext } from "@/context/MessageProvider";
 
 export const description = "A radial chart with text";
-
-const chartData = [{ collected: 0, fill: "var(--color-safari)" }];
 
 const chartConfig = {
   collected: {
@@ -34,9 +31,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function PieChartMessageCount() {
-  const { messageCount, maxMessages } = useMessageContext();
-  chartData[0].collected = messageCount;
+type Props = {
+  messageCount: number;
+  maxMessages: number;
+  isLoading: boolean;
+};
+
+export default function PieChartMessageCount({ messageCount, maxMessages, isLoading }: Props) {
+  const chartData = [{ collected: messageCount, fill: "var(--color-safari)" }];
+  
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

@@ -1,5 +1,5 @@
 import { Job, Worker } from "bullmq";
-import emailQueue from "../queue";
+import { emailQueue } from "../queue";
 import { sendVerificationEmail } from "../jobs/sendVerificationEmail";
 
 export const queueWorker = new Worker(
@@ -9,6 +9,7 @@ export const queueWorker = new Worker(
       // if (job.name === "sendVerificationEmail") {
       //   Process the email sending job
       // }
+      console.log("Running email worker")
       const data = job.data;
       console.log("Processing job with data:", data);
 
