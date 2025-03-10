@@ -9,12 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAcceptMessages } from "@/hooks/use-accept-messages";
 import { Copy, Link as LinkIcon } from 'lucide-react';
 import Link from "next/link";
+import { Textarea } from "../ui/textarea";
 export const FeedbackSettings = React.memo(({ username }: { username: string }) => {
   const { toast } = useToast();
   const { acceptMessages, isLoading, handleSwitchChange } = useAcceptMessages();
 
   const profileUrl =
     typeof window !== "undefined" ? `${window.location.host}/u/${username}` : "";
+
+  const widget_script = `<my-widget username=${username}></my-widget>
+<script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.umd.js"></script>`
 
   const copyToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -25,6 +29,16 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
       });
     }
   }, [profileUrl, toast]);
+
+  const copyWidgetToClipboard = useCallback(() => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(widget_script);
+      toast({
+        title: "Widget Script Copied",
+        description: "Widget script has been copied to clipboard.",
+      });
+    }
+  }, [widget_script, toast]);
 
   return (
     <div className="w-full space-y-4">
@@ -37,15 +51,28 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
           <CardDescription>Share this link to receive feedback from others</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3">
-            <Input 
-              type="text" 
-              value={profileUrl} 
-              readOnly 
+          <div className="flex gap-3 mb-4">
+            <Input
+              type="text"
+              value={profileUrl}
+              readOnly
               className=" text-primary"
             />
-            <Button 
+            <Button
               onClick={copyToClipboard}
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Copy
+            </Button>
+          </div>
+          <div className="flex gap-3 items-center">
+            <Textarea
+              value={widget_script}
+              readOnly
+              className=" text-primary"
+            />
+            <Button
+              onClick={copyWidgetToClipboard}
             >
               <Copy className="w-4 h-4 mr-2" />
               Copy
@@ -60,8 +87,8 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
             <div className="space-y-1">
               <h3 className="text-lg font-semibold text-white">Accept Echos</h3>
               <p className="text-sm text-secondary">
-                {acceptMessages 
-                  ? "You are currently accepting feedback" 
+                {acceptMessages
+                  ? "You are currently accepting feedback"
                   : "You are not accepting feedback right now"}
               </p>
             </div>

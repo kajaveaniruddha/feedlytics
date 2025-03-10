@@ -12,7 +12,7 @@ import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
 
-export const Widget = ({ projectId }) => {
+export const Widget = ({ username }) => {
   const [rating, setRating] = useState(3);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +31,7 @@ export const Widget = ({ projectId }) => {
 
     const form = e.target;
     const data = {
-      username: "aniii", // Hardcoded username
+      username: username, 
       content: form.feedback.value,
       stars: rating,
     };
