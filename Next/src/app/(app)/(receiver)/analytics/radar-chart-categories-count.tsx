@@ -1,6 +1,4 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts";
 
 import {
@@ -18,7 +16,6 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
 
 type ChartDataItem = {
     category: string;
@@ -54,19 +51,8 @@ export default function RadarChartCategoriesCount({ categoryCounts, isLoading }:
         );
     }
 
-    let maxCount = 0;
-    chartData.forEach((item) => {
-        if (item.count > maxCount) {
-            maxCount = item.count;
-        }
-    });
-
-    const highestCategories: ChartDataItem[] = [];
-    chartData.forEach((item) => {
-        if (item.count === maxCount) {
-            highestCategories.push(item);
-        }
-    });
+    const computedMaxCount = chartData.length ? Math.max(...chartData.map(item => Number(item.count))) : 0;
+    const highestCategories = chartData.filter(item => Number(item.count) === computedMaxCount);
 
     return (
         <Card>
