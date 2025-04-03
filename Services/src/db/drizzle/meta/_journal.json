@@ -8,6 +8,34 @@
       "when": 1740244896120,
       "tag": "0000_nosy_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1743674432666,
+      "tag": "0001_blushing_terror",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743674489069,
+      "tag": "0002_gifted_the_captain",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1743677343876,
+      "tag": "0003_regular_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1743677523193,
+      "tag": "0004_military_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

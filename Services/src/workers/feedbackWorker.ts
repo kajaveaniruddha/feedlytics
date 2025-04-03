@@ -1,8 +1,10 @@
 import { Worker, Job } from "bullmq";
 import { db } from "../db/db";
 import { feedbacksTable } from "../db/models/feedback";
-import { feedbackQueue } from "../queue";
+import { userSlackChannelsTable } from "../db/models/user-slack-channels";
+import { feedbackQueue, slackNotificationQueue } from "../queue";
 import { analyzeReview } from "../jobs/llm-functions";
+import { sql, arrayOverlaps, and } from "drizzle-orm";
 
 export const feedbackWorker = new Worker(
   "feedbackQueue",
@@ -36,6 +38,31 @@ export const feedbackWorker = new Worker(
         createdAt: new Date(createdAt || Date.now()),
       });
       console.log(`Feedback job ${job.id} inserted successfully.`);
+
+      const channels = await db
+        .select()
+        .from(userSlackChannelsTable)
+        .where(
+          and(
+            arrayOverlaps(userSlackChannelsTable.notifyCategories, category),
+            userSlackChannelsTable.isActive
+          )
+        );
+
+      // For each channel, add a job to send Slack notification
+      for (const channel of channels) {
+        await slackNotificationQueue.add("sendSlackNotification", {
+          webhookUrl: channel.webhookUrl,
+          message: {
+            userId,
+            stars,
+            content,
+            sentiment,
+            category,
+            createdAt: new Date(createdAt || Date.now()),
+          },
+        });
+      }
     } catch (error) {
       console.error(`Error processing feedback job ${job.id}:`, error);
       throw error;

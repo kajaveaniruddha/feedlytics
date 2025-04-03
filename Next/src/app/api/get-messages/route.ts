@@ -5,7 +5,7 @@ import { eq, sql, desc } from "drizzle-orm";
 import { getServerSideSession } from "@/config/getServerSideSession";
 
 export async function GET(request: Request) {
-   const user = await getServerSideSession() as User
+  const user = (await getServerSideSession()) as User;
 
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
@@ -18,9 +18,9 @@ export async function GET(request: Request) {
       .select()
       .from(feedbacksTable)
       .where(eq(feedbacksTable.userId, parseInt(user?.id ?? "0")))
-      .orderBy(desc(feedbacksTable.createdAt)) // Use "desc" for descending order
-      // .limit(limit)
-      // .offset(offset);
+      .orderBy(desc(feedbacksTable.createdAt)); // Use "desc" for descending order
+    // .limit(limit)
+    // .offset(offset);
 
     const totalCountQuery = db
       .select({ count: sql`COUNT(*)` })
