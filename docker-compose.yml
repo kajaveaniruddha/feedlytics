@@ -1,6 +1,6 @@
 version: "3.9"
 
-services: 
+services:
   nextjs:
     build:
       context: ./Next
@@ -12,8 +12,8 @@ services:
       - app-network
     depends_on:
       - services
-    environment:
-      SERVICES_URL: http://services:3001
+    env_file:
+      - .env
 
   services:
     build:
@@ -29,6 +29,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    env_file:
+      - .env
 
 networks:
   app-network:

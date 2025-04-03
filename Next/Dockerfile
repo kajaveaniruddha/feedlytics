@@ -1,23 +1,12 @@
-# Use the official Node.js image
-FROM node:18-alpine
-
-# Set the working directory
-WORKDIR /src
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# Copy the rest of the application code
+FROM node:18-alpine as builder
+RUN npm install -g pnpm
+WORKDIR /app
 COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build
 
-# Build the Next.js app
-RUN npm run build
-
-# Expose the Next.js default port
+FROM node:18-alpine as runner
+WORKDIR /app
+COPY --from=builder /app ./
 EXPOSE 3000
-
-# Start the app
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]

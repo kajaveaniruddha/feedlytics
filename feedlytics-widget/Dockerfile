@@ -1,24 +1,24 @@
 # Use the official Node.js image
 FROM node:18-alpine
-
-# Install pnpm globally
 RUN npm install -g pnpm
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /src
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
-COPY pnpm-lock.yaml* ./ 
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy the rest of the application code
 COPY . .
 
-# Expose the service port (e.g., 3001)
-EXPOSE 3001
+# Build the Next.js app
+RUN pnpm run build
 
-# Start the service
+# Expose the Next.js default port
+EXPOSE 5173
+
+# Start the app
 CMD ["pnpm", "run", "start"]
