@@ -3,7 +3,7 @@
 import React from "react";
 import { WelcomeSection } from "@/components/custom/welcome-section";
 import { FeedbackSettings } from "@/components/custom/feedback-settings";
-import { useMessageContext } from "@/context/MessageProvider";
+import { useMessageContext } from "@/hooks/use-message-context";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";

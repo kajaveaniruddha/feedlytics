@@ -4,7 +4,7 @@ import { feedbacksTable } from "../db/models/feedback";
 import { userSlackChannelsTable } from "../db/models/user-slack-channels";
 import { feedbackQueue, slackNotificationQueue } from "../queue";
 import { analyzeReview } from "../jobs/llm-functions";
-import { sql, arrayOverlaps, and } from "drizzle-orm";
+import { arrayOverlaps, and } from "drizzle-orm";
 
 export const feedbackWorker = new Worker(
   "feedbackQueue",

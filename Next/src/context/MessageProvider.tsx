@@ -21,7 +21,7 @@ interface MessageContextType {
   session: any
 }
 
-const MessageContext = createContext<MessageContextType | undefined>(undefined);
+export const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messageCount, setMessageCount] = useState<number>(0);
@@ -38,7 +38,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
         `/api/get-project-details`
       );
       setMessageCount(res.data?.messageCount as number);
-      setMessageCount(res.data?.maxWorkflows as number);
+      setMaxWorkflows(res.data?.maxWorkflows as number);
       // console.log(res.data?.messageCount)
       setMaxMessages(res.data?.maxMessages as number);
     } catch (error) {
@@ -64,10 +64,3 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useMessageContext = () => {
-  const context = useContext(MessageContext);
-  if (!context) {
-    throw new Error("useMessageContext must be used within a MessageProvider");
-  }
-  return context;
-};

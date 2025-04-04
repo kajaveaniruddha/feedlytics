@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useMessageContext } from "@/context/MessageProvider"
 import { IconDeviconPlainSlack } from "@/components/icons/slack"
 import { toast } from "@/components/ui/use-toast"
+import { useMessageContext } from "@/hooks/use-message-context"
 
 const Page = () => {
     const [channels, setChannels] = useState<SlackChannel[]>([])

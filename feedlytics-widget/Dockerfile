@@ -1,24 +1,29 @@
-# Use the official Node.js image
+# Base image
 FROM node:18-alpine
+
+# Install pnpm
 RUN npm install -g pnpm
 
-# Set the working directory
-WORKDIR /src
+# Set working directory
+WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy dependencies manifest
+COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
+# Install deps
 RUN pnpm install
 
-# Copy the rest of the application code
+# Copy source
 COPY . .
 
-# Build the Next.js app
+# Build Vite app
 RUN pnpm run build
 
-# Expose the Next.js default port
-EXPOSE 5173
+# Install a lightweight HTTP server
+RUN pnpm add serve
 
-# Start the app
-CMD ["pnpm", "run", "start"]
+# Expose the Vite preview port (or use 4173 if using `vite preview`)
+EXPOSE 4173
+
+# Start the production server
+CMD ["pnpm", "serve", "dist", "--single", "--listen", "4173"]
