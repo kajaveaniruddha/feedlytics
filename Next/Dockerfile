@@ -1,23 +1,27 @@
-# Use the official Node.js image
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
-# Set the working directory
-WORKDIR /src
+# Install pnpm
+RUN npm install -g pnpm
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Accept and set the build-time ARG
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# Copy the rest of the application code
+# Set working dir and copy files
+WORKDIR /app
 COPY . .
 
-# Build the Next.js app
-RUN npm run build
+# Install deps
+RUN pnpm install --frozen-lockfile
 
-# Expose the Next.js default port
+# Build with DATABASE_URL in env
+RUN pnpm run build
+
+# --------------------------------
+
+FROM node:18-alpine as runner
+RUN npm install -g pnpm
+WORKDIR /app
+COPY --from=builder /app ./
 EXPOSE 3000
-
-# Start the app
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]

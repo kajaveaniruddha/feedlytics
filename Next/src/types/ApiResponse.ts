@@ -12,6 +12,7 @@ export interface ApiResponse {
   isAcceptingMessage?: boolean;
   messageCount?: number;
   maxMessages?: number;
+  maxWorkflows?: number;
   messages?: Array<Message>;
   totalPages?: number;
   messagesFound?: number;
@@ -27,5 +28,11 @@ export interface ApiResponseUserDetails {
   userDetails: userDetailsType;
 }
 
+export interface SlackChannel {
+  id: number;
+  channelName: string;
+  webhookUrl: string;
+  isActive: boolean;
+  notifyCategories: string[];
+}
 export type IAuthType = "signup" | "login";
-

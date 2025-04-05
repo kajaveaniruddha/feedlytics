@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText } from 'lucide-react';
+import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText, Workflow,Bell } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -16,6 +16,7 @@ const navItems = [
   { icon: MessageCircle , label: "Feedbacks", key: "feedbacks" },
   { icon: BarChart2, label: "Analytics", key: "analytics" },
   { icon: FileText, label: "Metadata", key: "metadata" },
+  { icon: Workflow, label: "Workflows", key: "workflows" },
 ];
 
 const Navbar = () => {

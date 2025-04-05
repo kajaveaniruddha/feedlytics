@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const description = "A radial chart with text";
 
@@ -39,7 +40,21 @@ type Props = {
 
 export default function PieChartMessageCount({ messageCount, maxMessages, isLoading }: Props) {
   const chartData = [{ collected: messageCount, fill: "var(--color-safari)" }];
-  
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="items-center pb-0">
+          <CardTitle>Loading Ratings...</CardTitle>
+          <CardDescription>Please wait while we load your data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[18rem] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

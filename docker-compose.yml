@@ -1,10 +1,13 @@
 version: "3.9"
 
-services: 
+services:
   nextjs:
     build:
       context: ./Next
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        NEXT_PUBLIC_WIDGET_URL: ${NEXT_PUBLIC_WIDGET_URL}
     image: aniii1802/feedlytics-nextjs
     ports:
       - "3000:3000"
@@ -12,8 +15,12 @@ services:
       - app-network
     depends_on:
       - services
+      - redis
+    env_file:
+      - .env
     environment:
-      SERVICES_URL: http://services:3001
+      - NEXT_PUBLIC_WIDGET_URL=${NEXT_PUBLIC_WIDGET_URL}
+
 
   services:
     build:
@@ -24,11 +31,37 @@ services:
       - "3001:3001"
     networks:
       - app-network
+    depends_on:
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 3
+    env_file:
+      - .env
+      
+  widget:
+    build:
+      context: ./feedlytics-widget
+      dockerfile: Dockerfile
+    image: aniii1802/feedlytics-widget
+    ports:
+      - "5173:4173"
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7-alpine
+    container_name: feedlytics-redis
+    restart: always
+    command: redis-server --requirepass redispass
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 
 networks:
   app-network:

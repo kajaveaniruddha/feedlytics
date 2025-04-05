@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { getServerSideSession } from "@/config/getServerSideSession";
 
 export async function GET(request: Request) {
-   const user = await getServerSideSession() as User
+  const user = (await getServerSideSession()) as User;
 
   try {
     const userDetails = await db
@@ -13,6 +13,7 @@ export async function GET(request: Request) {
         name: usersTable.name,
         messageCount: usersTable.messageCount,
         maxMessages: usersTable.maxMessages,
+        maxWorkflows: usersTable.maxWorkflows,
       })
       .from(usersTable)
       .where(eq(usersTable.id, parseInt(user.id ?? "0")))
@@ -25,13 +26,14 @@ export async function GET(request: Request) {
       );
     }
 
-    const { name, messageCount, maxMessages } = userDetails[0];
+    const { name, messageCount, maxMessages, maxWorkflows } = userDetails[0];
 
     return new Response(
       JSON.stringify({
         success: true,
         messageCount,
         maxMessages,
+        maxWorkflows,
         userDetails: { name, messageCount, maxMessages },
       }),
       { status: 200 }

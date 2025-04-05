@@ -1,0 +1,1 @@
+ALTER TABLE "user_slack_channels" ALTER COLUMN "is_active" SET DEFAULT true;

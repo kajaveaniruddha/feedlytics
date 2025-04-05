@@ -117,6 +117,8 @@ app.listen(port, () => {
   console.log(`BullMQ server running at http://localhost:${port}`);
 });
 
-// Start the worker
+// Start the workers
 import("./src/workers/emailWorker");
 import("./src/workers/feedbackWorker");
+import("./src/workers/slackNotificationWorker");
+import("./src/jobs/cron-job");

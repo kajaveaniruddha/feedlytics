@@ -34,6 +34,7 @@ export const usersTable = pgTable(
       ),
     messageCount: integer("message_count").default(0),
     maxMessages: integer("max_messages").default(50),
+    maxWorkflows: integer("max_workflows").default(5)
   },
   (table) => [
     {

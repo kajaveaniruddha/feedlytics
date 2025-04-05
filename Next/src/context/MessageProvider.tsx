@@ -15,20 +15,22 @@ import { useToast } from "@/components/ui/use-toast";
 interface MessageContextType {
   messageCount: number;
   maxMessages: number;
+  maxWorkflows: number;
   setMessageCount: (count: number) => void;
   setMaxMessages: (max: number) => void;
   session: any
 }
 
-const MessageContext = createContext<MessageContextType | undefined>(undefined);
+export const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messageCount, setMessageCount] = useState<number>(0);
+  const [maxWorkflows, setMaxWorkflows] = useState<number>(5);
   const [maxMessages, setMaxMessages] = useState<number>(50);
   const { data: session } = useSession();
   const { toast } = useToast();
   const username = session?.user?.username;
-  console.log("username",session)
+
   const fetchMessageData = useCallback(async () => {
     if (!username) return;
     try {
@@ -36,6 +38,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
         `/api/get-project-details`
       );
       setMessageCount(res.data?.messageCount as number);
+      setMaxWorkflows(res.data?.maxWorkflows as number);
       // console.log(res.data?.messageCount)
       setMaxMessages(res.data?.maxMessages as number);
     } catch (error) {
@@ -46,7 +49,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
           axiosError.response?.data.message || "Failed to load message data",
       });
     }
-  }, [username,toast]);
+  }, [username, toast]);
 
   useEffect(() => {
     fetchMessageData();
@@ -54,17 +57,10 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MessageContext.Provider
-      value={{ session, messageCount, maxMessages, setMessageCount, setMaxMessages }}
+      value={{ session, messageCount, maxMessages, maxWorkflows, setMessageCount, setMaxMessages }}
     >
       {children}
     </MessageContext.Provider>
   );
 };
 
-export const useMessageContext = () => {
-  const context = useContext(MessageContext);
-  if (!context) {
-    throw new Error("useMessageContext must be used within a MessageProvider");
-  }
-  return context;
-};

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "../ui/columns";
-import { useMessageContext } from "@/context/MessageProvider";
+import { useMessageContext } from "@/hooks/use-message-context";
 import { Card, CardContent } from "../ui/card";
 export interface ExtendedMessage extends Message {
   id: string;
