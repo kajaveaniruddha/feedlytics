@@ -15,7 +15,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Build with DATABASE_URL in env
-RUN pnpm run build
+RUN pnpm build
 
 # --------------------------------
 

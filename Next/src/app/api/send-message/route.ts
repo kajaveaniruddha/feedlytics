@@ -3,17 +3,6 @@ import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
 
 export async function POST(request: Request) {
-  // Handle preflight OPTIONS request
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-  }
-
   const { username, stars, content } = await request.json();
 
   try {
@@ -172,4 +161,15 @@ export async function POST(request: Request) {
       }
     );
   }
+}
+
+// New OPTIONS handler for CORS preflight
+export function OPTIONS(request: Request) {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
 }

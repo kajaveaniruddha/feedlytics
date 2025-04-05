@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
-        NEXT_PUBLIC_WIDGET_URL: ${NEXT_PUBLIC_WIDGET_URL}
     image: aniii1802/feedlytics-nextjs
     ports:
       - "3000:3000"
@@ -18,9 +17,6 @@ services:
       - redis
     env_file:
       - .env
-    environment:
-      - NEXT_PUBLIC_WIDGET_URL=${NEXT_PUBLIC_WIDGET_URL}
-
 
   services:
     build:
