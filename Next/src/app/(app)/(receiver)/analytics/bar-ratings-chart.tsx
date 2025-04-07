@@ -29,23 +29,23 @@ const chartConfig = {
   },
   "5star": {
     label: "5-star",
-    color: "#619b8a",
+    color: "hsl(var(--chart-1))", // changed from "#619b8a"
   },
   "4star": {
     label: "4-star",
-    color: "#a1c181",
+    color: "hsl(var(--chart-2))", // changed from "#a1c181"
   },
   "3star": {
     label: "3-star",
-    color: "#fcca46",
+    color: "hsl(var(--chart-3))", // changed from "#fcca46"
   },
   "2star": {
     label: "2-star",
-    color: "#fe7f2d",
+    color: "hsl(var(--chart-4))", // changed from "#fe7f2d"
   },
   "1star": {
     label: "1-star",
-    color: "#3b5463",
+    color: "hsl(var(--chart-5))", // changed from "#3b5463"
   },
 } satisfies ChartConfig;
 
@@ -136,7 +136,7 @@ export default function BarChartRatings({ isLoading, ratingsCount = [] }: Props)
             <Bar
               dataKey="visitors"
               layout="vertical"
-              fill="#000"
+              fill="hsl(var(--foreground))" // changed from "#000"
               radius={5}
               barSize={50}
             >

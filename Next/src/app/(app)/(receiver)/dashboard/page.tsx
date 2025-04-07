@@ -11,7 +11,7 @@ import { FeedbackLink } from "@/components/custom/feedback-link";
 
 const TotalMessagesPieChart = dynamic(
   () => import("@/components/custom/total-messages-pie-chart"),
-  { loading: () => <Skeleton className="w-full h-[300px] bg-[#333333]" /> }
+  { loading: () => <Skeleton className="w-full h-[300px] bg-[hsl(var(--foreground))]" /> }
 );
 
 const Page = () => {
@@ -28,7 +28,7 @@ const Page = () => {
   const username = session.user.username;
 
   return (
-    <motion.section 
+    <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -47,11 +47,12 @@ const Page = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
+          className=" space-y-6"
         >
           <TotalMessagesPieChart username={username} />
+          <FeedbackLink/>
         </motion.div>
       </div>
-      <FeedbackLink />
     </motion.section>
   );
 };

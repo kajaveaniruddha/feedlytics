@@ -39,7 +39,7 @@ type Props = {
 };
 
 export default function PieChartMessageCount({ messageCount, maxMessages, isLoading }: Props) {
-  const chartData = [{ collected: messageCount, fill: "var(--color-safari)" }];
+  const chartData = [{ collected: messageCount, fill: "hsl(var(--chart-2))" }];
 
   if (isLoading) {
     return (

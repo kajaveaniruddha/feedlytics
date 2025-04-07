@@ -13,10 +13,10 @@ export const WelcomeSection = React.memo(({ username }: { username: string }) =>
       transition={{ duration: 0.5 }}
       className="text-center"
     >
-      <h1 className="text-4xl md:text-5xl font-bold pb-4 bg-gradient-to-r from-primary to-lime-200 bg-clip-text text-transparent">
+      <h1 className="text-4xl md:text-5xl font-bold pb-4 bg-gradient-to-r from-primary to-lime-400 bg-clip-text text-transparent">
         FeedLytics
       </h1>
-      <h2 className="text-3xl md:text-4xl font-semibold mb-4 flex items-center justify-center">
+      <h2 className="text-3xl md:text-4xl font-semibold mb-4 flex items-center justify-center ">
         <Sparkles className="w-6 h-6 mr-2 text-primary" />
         {username}
         <Sparkles className="w-6 h-6 ml-2 text-primary" />
@@ -26,7 +26,7 @@ export const WelcomeSection = React.memo(({ username }: { username: string }) =>
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5 }}
-      className="text-lg text-secondary max-w-lg text-center max-lg:px-2 "
+      className="text-lg text-secondary-foreground max-w-lg text-center max-lg:px-2 "
     >
       Ready to check your latest feedback and insights with AI?
     </motion.p>

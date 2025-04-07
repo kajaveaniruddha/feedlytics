@@ -77,14 +77,14 @@ export default function Component({
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) - 20}
-                          className="fill-[#C1F536] text-3xl font-bold"
+                          className=" text-3xl font-bold fill-secondary-foreground"
                         >
                           {totalVisitors.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 8}
-                          className="fill-secondary text-sm"
+                          className="fill-secondary-foreground text-sm"
                         >
                           Remaining Feedbacks
                         </tspan>
@@ -98,14 +98,14 @@ export default function Component({
               dataKey="total"
               stackId="a"
               cornerRadius={4}
-              fill="#C1F536"
+              fill="hsl(var(--brand-green))"
               className="stroke-transparent "
             />
             <RadialBar
               dataKey="collected"
               stackId="a"
               cornerRadius={4}
-              fill="#c2f5364b"
+              fill="hsl(var(--secondary))"
               className="stroke-transparent"
             />
           </RadialBarChart>
@@ -121,9 +121,9 @@ export default function Component({
           <Crown className="w-5 h-5 mr-2" />
           Upgrade to Pro
         </Button>
-        <div className="text-sm text-zinc-400">
+        <div className="text-sm">
           Showing total feedbacks for{" "}
-          <span className="text-white font-medium">
+          <span className=" font-medium">
             {username || "user not found"}
           </span>
         </div>

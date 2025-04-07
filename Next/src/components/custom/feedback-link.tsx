@@ -13,7 +13,7 @@ export const FeedbackLink: React.FC = () => {
     >
       <Link href="/feedbacks" passHref>
         <motion.div
-          className="bg-primary-foreground rounded-full text-white px-6 py-4 flex items-center justify-center custom-shadow transition-all duration-300 cursor-pointer w-full max-w-md"
+          className="bg-secondary rounded-lg px-6 py-4 flex items-center justify-center custom-shadow transition-all duration-300 cursor-pointer w-full max-w-md"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

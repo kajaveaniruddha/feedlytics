@@ -93,7 +93,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       return (
           <span className=" flex justify-center">
             {sentiment.icon && (
-              <sentiment.icon className="text-secondary " />
+              <sentiment.icon className="text-secondary-foreground " />
             )}
           </span>
       )

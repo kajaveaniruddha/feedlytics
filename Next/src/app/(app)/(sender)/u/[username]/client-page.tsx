@@ -170,7 +170,7 @@ const ClientPage = ({ username }: { username: string }) => {
                                                         }
                                                         {...field}
                                                         autoFocus
-                                                        className="bg-[#2D2D2D] border-0  text-white placeholder:text-gray-500 rounded-lg"
+                                                        className=" border-0  text-white placeholder:text-gray-500 rounded-lg"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />

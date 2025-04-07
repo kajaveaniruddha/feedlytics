@@ -6,7 +6,7 @@ const features = [
     description: "Integrate with guaranteed developer-friendly APIs to collect feedbacks.",
     svg: (
       <svg
-        className="w-5 h-5 text-[#C1F536]"
+        className="w-5 h-5 text-[hsl(var(--brand-green))]"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -25,7 +25,7 @@ const features = [
     description: "Turn your collected feedback into insightful visual data with our beautiful charts.",
     svg: (
       <svg
-        className="w-5 h-5 text-[#C1F536]"
+        className="w-5 h-5 text-[hsl(var(--brand-green))]"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -44,7 +44,7 @@ const features = [
     description: "Leverage artificial intelligence to gain deeper insights from your feedback data.",
     svg: (
       <svg
-        className="w-5 h-5 text-[#C1F536]"
+        className="w-5 h-5 text-[hsl(var(--brand-green))]"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -61,37 +61,37 @@ const features = [
 ]
 
 const DetailsSignup = () => {
-    return (
-        <div className="hidden lg:flex flex-col mt-10 gap-8 w-1/2 p-12 z-10">
-            <div className="flex items-center gap-2 ">
-                <div className="w-6 h-6 bg-[#C1F536] rounded-full " />
-                <h1 className="text-white text-xl font-thin">FEEDLYTICS</h1>
+  return (
+    <div className="hidden lg:flex flex-col mt-10 gap-8 w-1/2 p-12 z-10">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 bg-[hsl(var(--brand-green))] rounded-full" />
+        <h1 className="text-2xl text-primary-foreground font-extralight">FEEDLYTICS</h1>
+      </div>
+      <div className="mb-8">
+        <h2 className="text-4xl font-semibold text-primary-foreground mb-2">
+          Start your free trial
+        </h2>
+        <p className="text-[hsl(var(--form-placeholder))]">No credit card required</p>
+      </div>
+      <div className="space-y-8">
+        {features.map((feature, index) => (
+          <div key={index} className="flex flex-col gap-4 items-start">
+            <div className="p-2 rounded-full bg-[hsla(var(--card),0.1)]">
+              {feature.svg}
             </div>
-            <div className='mb-8'>
-                <h2 className="text-4xl font-semibold text-white mb-2">
-                    Start your free trial
-                </h2>
-                <p className="text-gray-400">No credit card required</p>
+            <div>
+              <h3 className=" font-medium text-2xl">
+                {feature.title}
+              </h3>
+              <p className="text-[hsl(var(--form-placeholder))]">
+                {feature.description}
+              </p>
             </div>
-            <div className="space-y-8">
-                {features.map((feature, index) => (
-                    <div key={index} className="flex flex-col gap-4 items-start">
-                        <div className="p-2 rounded-full bg-white/10 ">
-                            {feature.svg}
-                        </div>
-                        <div>
-                            <h3 className="text-white font-medium mb-1">
-                                {feature.title}
-                            </h3>
-                            <p className="text-gray-400 text-sm">
-                                {feature.description}
-                            </p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default DetailsSignup

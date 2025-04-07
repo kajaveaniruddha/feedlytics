@@ -67,13 +67,13 @@ export default function RadarChartCategoriesCount({ categoryCounts, isLoading }:
                     <RadarChart data={chartData}>
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <PolarGrid
-                            className="fill-[--color-desktop] opacity-10"
+                            className="fill-[hsl(var(--chart-2))] opacity-10" // updated fill class
                             gridType="circle"
                         />
                         <PolarAngleAxis dataKey="category" />
                         <Radar
                             dataKey="count"
-                            fill="var(--color-desktop)"
+                            fill="hsl(var(--chart-2))" // changed from var(--color-desktop)
                             fillOpacity={0.5}
                         />
                     </RadarChart>
