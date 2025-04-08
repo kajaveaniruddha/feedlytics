@@ -1,6 +1,6 @@
 import { BackgroundBeams } from "@/components/ui/background-beams";
-import SSOAuth from "../register/sso-auth";
 import FormSignIn from "./form-signin";
+import SSOAuth from "../register/sso-auth";
 
 const Page: React.FC = () => {
   return (
