@@ -28,7 +28,7 @@ const DeleteWebhookButton: React.FC<DeleteWebhookButtonProps> = ({ channelId, on
     const handleDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete("/api/user-slack-channels", { data: { id: channelId } });
+            await axios.delete("/api/user-workflows", { data: { id: channelId } });
             toast({ title: "Deleted", description: "Webhook deleted successfully." });
             onDeleteSuccess();
         } catch (error: any) {
@@ -41,7 +41,7 @@ const DeleteWebhookButton: React.FC<DeleteWebhookButtonProps> = ({ channelId, on
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={loading || disableState}>
+                <Button variant="destructive" className=" w-full" disabled={loading || disableState}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={14} />}
                     &nbsp;Delete
                 </Button>

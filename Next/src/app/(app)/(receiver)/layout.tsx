@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main lang="en">
+    <main lang="en" suppressHydrationWarning>
       <AuthProvider>
         <section className={`flex`}>
           <Navbar />

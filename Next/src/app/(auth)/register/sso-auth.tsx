@@ -1,7 +1,7 @@
 "use client"
 import { Button } from '@/components/ui/button'
 import React from 'react'
-import { IAuthType } from "@/types/ApiResponse"
+import { IAuthType } from "@/types"
 import { signIn } from "next-auth/react"; // New import
 
 interface SSOAuthProps {

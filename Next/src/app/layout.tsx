@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Roboto, Lato,Space_Mono } from "next/font/google";
+import { Inter, Roboto, Lato, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,6 +29,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ModeToggle />
           <Toaster />
         </ThemeProvider>
         <Analytics />

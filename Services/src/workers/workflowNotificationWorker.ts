@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
-import { slackNotificationQueue } from "../queue";
+import { WorkFlowNotificationQueue } from "../queue";
 
-function formatSlackMessage({
+function formatWorkflowMessage({
   stars,
   content,
   sentiment,
@@ -23,40 +23,43 @@ function formatSlackMessage({
 }
 
 export const slackNotificationWorker = new Worker(
-  "slackNotificationQueue",
+  "WorkFlowNotificationQueue",
   async (job: Job<{ webhookUrl: string; message: any }>) => {
     const { webhookUrl, message } = job.data;
     try {
-      // Send POST request to the Slack webhook URL with feedback message
+      // Send POST request to the Workflow webhook URL with feedback message
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: formatSlackMessage(message),
+          text: formatWorkflowMessage(message),
         }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.statusText}`);
       }
-      console.log(`Slack notification sent successfully for job ${job.id}`);
+      console.log(`Workflow notification sent successfully for job ${job.id}`);
     } catch (error) {
       console.error(
-        `Error sending Slack notification for job ${job.id}:`,
+        `Error sending Workflow notification for job ${job.id}:`,
         error
       );
       throw error;
     }
   },
-  { connection: slackNotificationQueue.opts.connection }
+  {
+    connection: WorkFlowNotificationQueue.opts.connection,
+    limiter: { max: 1, duration: 2000 },
+  }
 );
 
 slackNotificationWorker.on("completed", (job: Job) => {
-  console.log(`Slack notification job ${job.id} completed.`);
+  console.log(`Workflow notification job ${job.id} completed.`);
 });
 
 slackNotificationWorker.on("failed", (job, err) => {
   console.error(
-    `Slack notification job ${job?.id} failed with error: ${err.message}`
+    `Workflow notification job ${job?.id} failed with error: ${err.message}`
   );
 });

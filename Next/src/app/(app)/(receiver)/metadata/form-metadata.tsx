@@ -17,7 +17,7 @@ import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { updateFeedbackForm } from "@/schemas/updatefeedbackform";
-import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types/ApiResponse";
+import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types";
 import { useSession } from "next-auth/react";
 
 const MetadataPage = () => {

@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 export interface Message {
   stars: number;
   content: string;
@@ -28,22 +29,6 @@ export interface ApiResponseUserDetails {
   userDetails: userDetailsType;
 }
 
-export interface SlackChannel {
-  id: number;
-  channelName: string;
-  webhookUrl: string;
-  isActive: boolean;
-  notifyCategories: string[];
-}
-
-export interface GoogleChatSpace {
-  id: number;
-  spaceName: string;
-  webhookUrl: string;
-  isActive: boolean;
-  notifyCategories: string[];
-}
-
 export interface IWorkFlows {
   id: number;
   provider: "googlechat" | "slack";
@@ -54,3 +39,23 @@ export interface IWorkFlows {
 }
 
 export type IAuthType = "signup" | "login";
+
+export interface WorkflowsListProps {
+  provider: "googlechat" | "slack";
+  title: string;
+  icon: ReactNode;
+  emptyListText: string;
+  emptyListSubtext: string;
+  workflows: IWorkFlows[];
+  onRefresh: () => void;
+  onEdit: (workflow: IWorkFlows) => void;
+}
+
+export interface ProviderConfig {
+  id: number;
+  provider: "googlechat" | "slack";
+  title: string;
+  icon: ReactNode;
+  emptyListText: string;
+  emptyListSubtext: string;
+}

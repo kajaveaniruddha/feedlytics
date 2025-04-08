@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useSession } from "next-auth/react";
 import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
+import { ApiResponse } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 interface MessageContextType {

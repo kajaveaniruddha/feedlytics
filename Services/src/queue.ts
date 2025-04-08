@@ -24,7 +24,10 @@ export const feedbackQueue = new Queue("feedbackQueue", {
   defaultJobOptions: defaultQueueOptions,
 });
 
-export const slackNotificationQueue = new Queue("slackNotificationQueue", {
-  connection: redisConnection,
-  defaultJobOptions: defaultQueueOptions,
-});
+export const WorkFlowNotificationQueue = new Queue(
+  "WorkFlowNotificationQueue",
+  {
+    connection: redisConnection,
+    defaultJobOptions: defaultQueueOptions,
+  }
+);

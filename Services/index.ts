@@ -120,5 +120,4 @@ app.listen(port, () => {
 // Start the workers
 import("./src/workers/emailWorker");
 import("./src/workers/feedbackWorker");
-import("./src/workers/slackNotificationWorker");
-import("./src/jobs/cron-job");
+import("./src/workers/workflowNotificationWorker");

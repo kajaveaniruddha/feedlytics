@@ -1,4 +1,4 @@
-"use-client"
+"use client"
 import { MessageContext } from "@/context/MessageProvider";
 import { useContext } from "react";
 

@@ -1,9 +1,9 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { Message } from "@/types/ApiResponse";
+import { Message } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
+import { ApiResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCcw } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";

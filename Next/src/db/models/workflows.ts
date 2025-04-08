@@ -24,7 +24,7 @@ export const userWorkFlowsTable = pgTable("workflows", {
     .array()
     .notNull()
     .default(sql`ARRAY['complaint']::text[]`),
-  isActive: boolean("is_active").default(true),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

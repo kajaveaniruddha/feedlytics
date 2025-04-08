@@ -6,7 +6,7 @@ import * as z from "zod";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import axios, { AxiosError } from "axios";
-import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types/ApiResponse";
+import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types";
 import {
     Form,
     FormControl,
