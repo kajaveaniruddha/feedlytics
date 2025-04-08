@@ -123,8 +123,8 @@ const UserMenu = ({ username }: { username: string }) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button
-        variant="secondary"
-        className="w-full justify-start transition-colors duration-300 rounded-xl custom-shadow"
+        variant="ghost"
+        className="w-full justify-start custom-shadow"
       >
         <Avatar className="w-8 h-8 mr-2">
           <AvatarImage src="https://github.com/shadcn.png" alt="@user" />

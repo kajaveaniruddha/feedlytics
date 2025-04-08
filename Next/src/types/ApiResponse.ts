@@ -35,4 +35,22 @@ export interface SlackChannel {
   isActive: boolean;
   notifyCategories: string[];
 }
+
+export interface GoogleChatSpace {
+  id: number;
+  spaceName: string;
+  webhookUrl: string;
+  isActive: boolean;
+  notifyCategories: string[];
+}
+
+export interface IWorkFlows {
+  id: number;
+  provider: "googlechat" | "slack";
+  groupName: string;
+  webhookUrl: string;
+  isActive: boolean;
+  notifyCategories: string[];
+}
+
 export type IAuthType = "signup" | "login";

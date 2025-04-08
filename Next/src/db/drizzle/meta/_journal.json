@@ -50,6 +50,20 @@
       "when": 1743677525434,
       "tag": "0006_living_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744104602499,
+      "tag": "0007_common_hellion",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1744126768961,
+      "tag": "0008_windy_ultragirl",
+      "breakpoints": true
     }
   ]
 }
