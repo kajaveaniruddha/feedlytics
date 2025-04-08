@@ -82,8 +82,8 @@ const FormSignIn = () => {
             render={({ field }) => (
               <FormItem>
                 <span className="flex gap-2">
-                  <User className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                  <FormLabel className="text-[hsl(var(--form-label))]">Email or Username</FormLabel>
+                  <User className="w-4 h-4" />
+                  <FormLabel >Email or Username</FormLabel>
                 </span>
                 <FormControl>
                   <Input
@@ -103,8 +103,8 @@ const FormSignIn = () => {
             render={({ field }) => (
               <FormItem>
                 <span className="flex gap-2">
-                  <Lock className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                  <FormLabel className="text-[hsl(var(--form-label))]">Password</FormLabel>
+                  <Lock className="w-4 h-4 " />
+                  <FormLabel >Password</FormLabel>
                 </span>
                 <FormControl>
                   <Input
@@ -135,11 +135,11 @@ const FormSignIn = () => {
           </Button>
         </form>
 
-        {/* Sign-Up Link */}
-        <div className="text-center mt-6 text-sm text-[hsl(var(--form-icon))]">
+        {/* register Link */}
+        <div className="text-center mt-6 text-sm ">
           Don&apos;t have an account?{" "}
           <Link
-            href="/sign-up"
+            href="/register"
             className="text-[hsl(var(--brand-green))] hover:underline"
           >
             Sign Up

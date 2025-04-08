@@ -23,7 +23,7 @@ const chartData = [{ month: "january", total: 50, collected: 0 }];
 const chartConfig = {
   total: {
     label: "remaining",
-    color: "#fff346",
+    color: "hsl(var(--chart-2))",
   },
   collected: {
     label: "collected",
@@ -48,7 +48,7 @@ export default function Component({
     <Card className="flex flex-col w-full ">
       <CardHeader className="text-center space-y-1.5">
         <CardTitle className="text-2xl font-bold">Total Feedbacks</CardTitle>
-        <CardDescription className="text-secondary font-medium">
+        <CardDescription className="text-secondary-foreground font-medium">
           Current Plan: FREE
         </CardDescription>
       </CardHeader>
@@ -84,7 +84,7 @@ export default function Component({
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 8}
-                          className="fill-secondary-foreground text-sm"
+                          className="fill-secondary-foreground"
                         >
                           Remaining Feedbacks
                         </tspan>
@@ -98,14 +98,14 @@ export default function Component({
               dataKey="total"
               stackId="a"
               cornerRadius={4}
-              fill="hsl(var(--brand-green))"
+              fill="hsl(var(--primary))"
               className="stroke-transparent "
             />
             <RadialBar
               dataKey="collected"
               stackId="a"
               cornerRadius={4}
-              fill="hsl(var(--secondary))"
+              fill="hsl(var(--secondary-foreground))"
               className="stroke-transparent"
             />
           </RadialBarChart>

@@ -25,7 +25,7 @@ const Page = () => {
             Collect, Visualize & Analyze your Feedbacks with AI.
           </h2>
           <Link
-            href={"/sign-in"}
+            href={"/login"}
             className="bg-black dark:bg-white hover:scale-105 transition-transform rounded-full w-fit text-white dark:text-black px-4 py-2"
           >
             Start Free

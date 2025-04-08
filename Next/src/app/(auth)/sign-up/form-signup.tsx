@@ -69,7 +69,7 @@ const FormSignup = () => {
         setIsSubmitting(true);
         try {
             // console.log(data);
-            const response = await axios.post<ApiResponse>("/api/sign-up", data);
+            const response = await axios.post<ApiResponse>("/api/register", data);
             toast({ title: "Success", description: response.data.message });
             if (response.status === 201) {
                 router.replace(`/verify/${username}`);
@@ -101,8 +101,8 @@ const FormSignup = () => {
                     render={({ field }) => (
                         <FormItem>
                             <span className='flex gap-2'>
-                                <User className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                                <FormLabel className="text-[hsl(var(--form-label))]">Name</FormLabel>
+                                <User className="w-4 h-4 " />
+                                <FormLabel >Name</FormLabel>
                             </span>
                             <FormControl>
                                 <Input
@@ -121,8 +121,8 @@ const FormSignup = () => {
                     render={({ field }) => (
                         <FormItem>
                             <span className='flex gap-2'>
-                                <Mail className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                                <FormLabel className="text-[hsl(var(--form-label))]">Email</FormLabel>
+                                <Mail className="w-4 h-4 " />
+                                <FormLabel >Email</FormLabel>
                             </span>
                             <FormControl>
                                 <Input
@@ -141,8 +141,8 @@ const FormSignup = () => {
                     render={({ field }) => (
                         <FormItem>
                             <span className='flex gap-2'>
-                                <AtSign className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                                <FormLabel className="text-[hsl(var(--form-label))]">Username</FormLabel>
+                                <AtSign className="w-4 h-4 " />
+                                <FormLabel >Username</FormLabel>
                             </span>
                             <FormControl>
                                 <Input
@@ -174,15 +174,14 @@ const FormSignup = () => {
                     render={({ field }) => (
                         <FormItem>
                             <span className='flex gap-2'>
-                                <Lock className="w-4 h-4 text-[hsl(var(--form-icon))]" />
-                                <FormLabel className="text-[hsl(var(--form-label))]">Password</FormLabel>
+                                <Lock className="w-4 h-4 " />
+                                <FormLabel >Password</FormLabel>
                             </span>
                             <FormControl>
                                 <Input
                                     type="password"
                                     placeholder="Enter your password"
                                     {...field}
-                                    className=" border-0  placeholder:text-[hsl(var(--form-placeholder))]"
                                 />
                             </FormControl>
                             <FormMessage />
@@ -192,7 +191,7 @@ const FormSignup = () => {
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className=' w-full'
+                    className='w-full'
                 >
                     {isSubmitting ? (
                         <>
@@ -204,10 +203,10 @@ const FormSignup = () => {
                     )}
                 </Button>
             </form>
-            <div className="text-center mt-6 text-sm text-[hsl(var(--form-icon))]">
+            <div className="text-center mt-6 text-sm ">
                 Already have an account?{" "}
                 <Link
-                    href="/sign-in"
+                    href="/login"
                     className="text-[hsl(var(--brand-green))] hover:underline"
                 >
                     Login

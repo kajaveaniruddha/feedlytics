@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   if (
     token &&
-    (url.pathname.startsWith("/sign-in") || url.pathname.startsWith("/sign-up"))
+    (url.pathname.startsWith("/login") || url.pathname.startsWith("/register"))
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
       url.pathname.startsWith("/workflows")||
       url.pathname.startsWith("/metadata"))
   ) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
   return NextResponse.next();
 }
@@ -27,8 +27,8 @@ export async function middleware(request: NextRequest) {
 // where all we want to run this middleware
 export const config = {
   matcher: [
-    "/sign-in",
-    "/sign-up",
+    "/login",
+    "/register",
     "/dashboard/:path*",
     "/analytics/:path*",
     "/feedbacks/:path*",

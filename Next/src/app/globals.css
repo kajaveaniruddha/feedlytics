@@ -4,106 +4,58 @@
 
 @layer base {
   :root {
-    --background: 252, 11%, 91%;
-    --foreground: 222 47% 11%;
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 84% 55%;
-    --primary-foreground: 210 90% 20%;
-    --primary-button: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 224 100% 68%;
-    --accent-foreground: 210 40% 98%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 47.9 95.8% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222 84% 55%;
-    --radius: 0.5rem;
-
-    /* Chart colors - modern palette */
-    --chart-1: 222 84% 55%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 316 73% 52%;
-    --chart-5: 150 60% 45%;
-
-    /* Sidebar colors - light mode */
-    --sidebar-background: 210 40% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 222 84% 55%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 224 100% 68% / 0.1;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 222 84% 55%;
-
-    --auth-card-bg: 0 0% 100%;
-    --auth-card-border: 0 0% 80%;
-    --danger-text: 0 65% 50%;
-    --danger-text-hover: 0 70% 40%;
-
-    --brand-green: 164, 75%, 46%;
-
-    --form-label: 210 15% 30%;
-    --form-icon: 210 15% 50%;
-    --form-placeholder: 210 15% 65%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 20 14.3% 4.1%;
+    --radius: 0.75rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 224 76% 48%;
-    --primary-foreground: 210 40% 98%;
-    --primary-button: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 224 76% 48%;
-    --accent-foreground: 210 90% 20%;
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 47.9 95.8% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224 76% 48%;
-
-    /* Chart colors - dark mode */
-    --chart-1: 224 76% 48%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 316 73% 52%;
-    --chart-5: 150 60% 45%;
-
-    /* Sidebar colors - dark mode */
-    --sidebar-background: 222 47% 10%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 224 76% 48%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 224 76% 48%;
-
-    --auth-card-bg: 220 15% 12%; /* deep slate */
-    --auth-card-border: 220 10% 30%; /* muted dark border */
-
-    --danger-text: 0 90% 70%;
-    --danger-text-hover: 0 90% 60%;
-
-    --form-label: 210 16% 87%; /* approximately for text-gray-300 */
-    --form-icon: 210 10% 64%; /* approximately for text-gray-400 */
-    --form-placeholder: 210 9% 45%; /* approximately for text-gray-500 */
-    --brand-green: 164, 75%, 46%; /* for #C1F536 used multiple times */
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 35.5 91.7% 32.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 

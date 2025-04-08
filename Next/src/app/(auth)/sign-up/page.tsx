@@ -10,7 +10,7 @@ const Page: NextPage = () => {
       <DetailsSignup />
       <BackgroundBeams />
       <div className="w-full flex flex-col justify-center max-w-xl -mt-10 ">
-        <div className="flex flex-col custom-shadow bg-[hsl(var(--auth-card-bg))] z-10 rounded-lg p-8 ">
+        <div className="flex flex-col custom-shadow bg-card z-10 rounded-lg p-8 ">
           <SSOAuth authType="signup" />
           <FormSignup />
         </div>

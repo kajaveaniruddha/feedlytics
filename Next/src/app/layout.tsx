@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Questrial } from "next/font/google";
+import { Inter, Roboto, Lato,Space_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from '@vercel/analytics/next';
 import { ModeToggle } from "@/components/custom/mode-toggle";
 
-const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   title: "Feedlytics",
@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className}`}>
+      <body className={`${roboto.className}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -28,7 +28,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ModeToggle />
           {children}
           <Toaster />
         </ThemeProvider>

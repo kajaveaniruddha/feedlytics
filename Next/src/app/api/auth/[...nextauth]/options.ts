@@ -73,7 +73,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
-  pages: { signIn: "/sign-in" },
+  pages: { signIn: "/login" },
   session: {
     strategy: "jwt",
   },

@@ -123,7 +123,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
           {matchedCategories.map((category, index) => (
             <span
               key={index}
-              className={`p-1 rounded text-xs uppercase custom-shadow ${CategoryColors[category!.label as CategoryType]
+              className={`p-1 rounded text-xs uppercase custom-shadow text-white ${CategoryColors[category!.label as CategoryType]
                 }`}
             >
               {category!.label}

@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText, Workflow, Bell } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
@@ -45,7 +45,11 @@ const Navbar = () => {
             <Menu />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 text-white  w-60">
+        <SheetContent
+          side="left"
+          aria-labelledby="sheet-dialog-title"
+          className="w-60 custom-shadow flex flex-col h-full"
+        >
           <motion.aside
             className="w-full h-full flex flex-col"
             initial={{ x: "-100%" }}
@@ -54,14 +58,16 @@ const Navbar = () => {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="p-4 border-b border-gray-800">
-              <h2 className="text-2xl font-bold text-neon-green">{activePage || "Dashboard"}</h2>
+              <SheetTitle id="sheet-dialog-title" className="text-2xl font-bold text-primary">
+                {activePage || "Dashboard"}
+              </SheetTitle>
             </div>
             <nav className="flex-1 pt-6">
               {navItems.map((item) => (
                 <Link
                   key={item.key}
                   href={`/${item.key}`}
-                  className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-neon-green transition-all duration-300 ${activePage === item.key ? "bg-gray-800 text-neon-green" : ""
+                  className={`flex items-center px-6 py-3 rounded-2xl hover:text-primary transition-all duration-300 ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"
                     }`}
                   onClick={() => {
                     setActivePage(item.key);
@@ -97,10 +103,10 @@ const Navbar = () => {
             <Link
               key={item.key}
               href={`/${item.key}`}
-              className={`flex items-center px-6 py-2 transition-all duration-300 hover:scale-100 rounded-2xl hover:custom-shadow ${activePage === item.key ? "scale-100 custom-shadow bg-primary-button text-primary" : "scale-95"}`}
+              className={`flex items-center px-6 py-2 transition-all duration-300 hover:scale-100 rounded-2xl hover:custom-shadow ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"}`}
               onClick={() => setActivePage(item.key)}
             >
-              <item.icon className={`w-5 h-5 mr-3 transition-colors ${activePage === item.key ? "" : "text-[hsl(var(--form-icon))]"}`} />
+              <item.icon className={`w-5 h-5 mr-3 transition-colors`} />
               <span className="text-lg">{item.label}</span>
             </Link>
           ))}
@@ -138,21 +144,21 @@ const UserMenu = ({ username }: { username: string }) => (
       <div className="space-y-1 pt-2">
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
         >
           <Settings className="w-4 h-4 mr-2" />
           Settings
         </Button>
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
         >
           <HelpCircle className="w-4 h-4 mr-2" />
           Help
         </Button>
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
           onClick={() => signOut()}
         >
           <LogOut className="w-4 h-4 mr-2" />

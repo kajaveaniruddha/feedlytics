@@ -38,7 +38,7 @@ const Page = () => {
         code: data.code,
       });
       toast({ title: "Success", description: response.data.message });
-      router.replace("/sign-in");
+      router.replace("/login");
     } catch (error) {
       console.error("Error signing up user", error);
       const axiosError = error as AxiosError<ApiResponse>;
