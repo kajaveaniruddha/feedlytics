@@ -81,6 +81,7 @@ export async function POST(request: Request) {
       .where(eq(usersTable.id, user.id));
 
     try {
+      console.log(process.env.SERVICES_URL)
       const queueResponse = await fetch(
         `${process.env.SERVICES_URL}/add-feedback`,
         {

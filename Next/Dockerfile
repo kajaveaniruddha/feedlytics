@@ -5,7 +5,8 @@ RUN npm install -g pnpm
 
 # Accept and set the build-time ARG
 ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
+# Set default if not provided
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://feedlytics-db_owner:tDyRUmfc4l7N@ep-patient-boat-a13wvjzk-pooler.ap-southeast-1.aws.neon.tech/feedlytics-db?sslmode=require}
 
 # Set working dir and copy files
 WORKDIR /app
