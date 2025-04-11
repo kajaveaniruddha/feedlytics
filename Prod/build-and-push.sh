@@ -24,3 +24,6 @@ echo "📤 Pushing Widget..."
 docker push $USERNAME/feedlytics-widget:latest
 
 echo "✅ All images built and pushed successfully!"
+
+
+# docker rmi -f $(docker images -q)

@@ -36,7 +36,7 @@ export const Widget = ({ username }) => {
       stars: rating,
     };
 
-    const apiUrl = `${DASHBOARD_BASE_URL}/api/v1/send-feedback`;
+    const apiUrl = `${DASHBOARD_BASE_URL}/api/send-message`;
     console.log('Sending feedback:', data);
 
     try {
