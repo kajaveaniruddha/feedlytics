@@ -53,7 +53,7 @@ export default function LandingPage() {
         </section>
       </AuroraBackground>
       {/* Features Overview */}
-      <section className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900">
+      <section className="py-24 px-4 bg-gradient-to-b from-[#FAFAFA] dark:from-[#18181B] to-neutral-50 dark:to-neutral-900 ">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">

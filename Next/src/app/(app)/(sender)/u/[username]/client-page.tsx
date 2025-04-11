@@ -45,7 +45,7 @@ const ClientPage = ({ username }: { username: string }) => {
     const onSubmit = async (data: z.infer<typeof SendMessageSchema>) => {
         setIsSubmitting(true);
         try {
-            const response = await axios.post<ApiResponse>("/api/send-message", data);
+            const response = await axios.post<ApiResponse>("/api/v1/send-feedback", data);
             toast({ title: "Success", description: response.data.message });
             setSubmitted(true);
         } catch (error) {
