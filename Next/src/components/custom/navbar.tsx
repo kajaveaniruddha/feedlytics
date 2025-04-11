@@ -159,7 +159,7 @@ const UserMenu = ({ username }: { username: string }) => (
         <Button
           variant="ghost"
           className="w-full justify-start scale-95 hover:scale-100 transition-transform"
-          onClick={() => signOut()}
+          onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <LogOut className="w-4 h-4 mr-2" />
           Log out

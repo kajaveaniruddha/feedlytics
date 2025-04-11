@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAcceptMessages } from "@/hooks/use-accept-messages"
 import { Check, Copy, LinkIcon, Code } from "lucide-react"
-import Link from "next/link"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
@@ -18,14 +17,16 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
   const [urlCopied, setUrlCopied] = useState(false)
   const [widgetCopied, setWidgetCopied] = useState(false)
 
-  const profileUrl = typeof window !== "undefined" ? `${window.location.host}/u/${username}` : ""
-
+  const profileUrl = typeof window !== "undefined" ? `${window.location.host}/u/${username}` : `feedlytics.in/u/${username}`
   const widget_script = `<my-widget username="${username}"></my-widget>
-<script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.umd.js"></script>`
-
+  <script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.umd.js"></script>`
+  
+  console.log("profileUrl", profileUrl)
+  console.log("widget_script", widget_script)
+  
   const copyToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(profileUrl)
+      navigator.clipboard?.writeText(profileUrl)
       setUrlCopied(true)
       toast({
         title: "URL Copied",
@@ -38,7 +39,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
 
   const copyWidgetToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(widget_script)
+      navigator.clipboard?.writeText(widget_script)
       setWidgetCopied(true)
       toast({
         title: "Widget Script Copied",

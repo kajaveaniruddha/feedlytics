@@ -64,6 +64,20 @@
       "when": 1744126768961,
       "tag": "0008_windy_ultragirl",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1744365778694,
+      "tag": "0009_plain_the_watchers",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1744365822236,
+      "tag": "0010_loose_lester",
+      "breakpoints": true
     }
   ]
 }

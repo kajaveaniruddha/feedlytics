@@ -93,7 +93,7 @@ const ClientPage = ({ username }: { username: string }) => {
                 <Card className=" text-center">
                     <CardHeader>
                         <Avatar className="w-16 h-16 max-sm:h-14 max-sm:w-14 mx-auto mb-4">
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
+                            <AvatarImage src={userDetails?.avatar_url ?? "https://github.com/shadcn.png"} alt="@user" />
                             <AvatarFallback>{username?.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <h1 className=" font-bold my-2 text-xl">
@@ -132,7 +132,7 @@ const ClientPage = ({ username }: { username: string }) => {
                                     userDetails.questions.length > 0 && (
                                         <>
                                             <h2 className="light:text-secondary font-bold tracking-tighter mt-4 text-left">
-                                                QUESTIONS:
+                                                QUESTIONS
                                             </h2>
                                             <div className="w-8 h-1 bg-primary rounded mb-1" />
                                             <ul className="text-sm text-muted-foreground list-disc w-[90%] ml-8 text-left">

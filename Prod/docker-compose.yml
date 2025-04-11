@@ -1,60 +1,32 @@
 services:
-  traefik:
-    image: traefik:v3.0
-    container_name: traefik
-    restart: always
-    command:
-      - --api.insecure=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-    ports:
-      - "80:80"
-      - "8080:8080" # Optional: Traefik dashboard
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - app-network
-
   nextjs:
     image: aniii1802/feedlytics-nextjs:latest
     networks:
       - app-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nextjs.rule=Host(`app.localhost`)"
-      - "traefik.http.routers.nextjs.entrypoints=web"
-    depends_on:
-      - traefik
     env_file:
       - .env
+    ports:
+      - "3000:3000"
 
   services:
     image: aniii1802/feedlytics-services:latest
     networks:
       - app-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.services.rule=Host(`services.localhost`)"
-      - "traefik.http.routers.services.entrypoints=web"
     depends_on:
-      - traefik
       - redis
     env_file:
       - .env
+    ports:
+      - "3001:3001"
 
   widget:
     image: aniii1802/feedlytics-widget:latest
     networks:
       - app-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.widget.rule=Host(`widget.localhost`)"
-      - "traefik.http.routers.widget.entrypoints=web"
-    depends_on:
-      - traefik
     env_file:
       - .env
+    ports:
+      - "4173:4173"
 
   redis:
     image: redis:7-alpine
@@ -63,10 +35,10 @@ services:
     command: redis-server --requirepass redispass
     networks:
       - app-network
-    depends_on:
-      - traefik
     env_file:
       - .env
+    ports:
+      - "6379:6379"
 
 networks:
   app-network:

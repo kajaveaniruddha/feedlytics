@@ -15,7 +15,7 @@ const TotalMessagesPieChart = dynamic(
 );
 
 const Page = () => {
-  const { session } = useMessageContext();
+  const { session, name } = useMessageContext();
 
   if (!session || !session.user) {
     return (
@@ -34,7 +34,7 @@ const Page = () => {
       transition={{ duration: 0.5 }}
       className="w-full min-h-screen mx-auto space-y-8 p-4 lg:p-8"
     >
-      <WelcomeSection username={username} />
+      <WelcomeSection name={name} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -50,7 +50,7 @@ const Page = () => {
           className=" space-y-6"
         >
           <TotalMessagesPieChart username={username} />
-          <FeedbackLink/>
+          <FeedbackLink />
         </motion.div>
       </div>
     </motion.section>

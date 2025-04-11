@@ -23,9 +23,14 @@ export async function sendVerificationEmail(
       from: process.env.GOOGLE_MAIL_FROM,
       to: email,
       subject: "Feedback-Collect | Verification Code",
-      text: `Welcome ${username}!
-        ${verifyCode}
-        is your otp valid till ${expiryDate}.`,
+      html: `<html>
+      <body>
+        <p>Hello ${username},</p>
+        <p>Your verification code is: <strong>${verifyCode}</strong>.</p>
+        <p>This code is valid until: <strong>${expiryDate.toLocaleString()}</strong>.</p>
+        <p>Thank you,<br/>Feedback-Collect Team</p>
+      </body>
+    </html>`
     };
 
     const info = await transporter.sendMail(mailOptions);

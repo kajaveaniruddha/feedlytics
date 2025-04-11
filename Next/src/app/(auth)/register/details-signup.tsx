@@ -64,26 +64,26 @@ const DetailsSignup = () => {
   return (
     <div className="hidden lg:flex flex-col mt-10 gap-8 w-1/2 p-12 z-10">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 bg-[hsl(var(--brand-green))] rounded-full" />
-        <h1 className="text-2xl text-primary-foreground font-extralight">FEEDLYTICS</h1>
+        <div className="w-6 h-6 bg-primary rounded-full" />
+        <h1 className="text-2xl text-secondary-foreground font-extralight">FEEDLYTICS</h1>
       </div>
-      <div className="mb-8">
-        <h2 className="text-4xl font-semibold text-primary-foreground mb-2">
+      <div className="mb-8 text-secondary-foreground">
+        <h2 className="text-4xl font-semibold  mb-2">
           Start your free trial
         </h2>
-        <p className="text-[hsl(var(--form-placeholder))]">No credit card required</p>
+        <p>No credit card required</p>
       </div>
       <div className="space-y-8">
         {features.map((feature, index) => (
           <div key={index} className="flex flex-col gap-4 items-start">
-            <div className="p-2 rounded-full bg-[hsla(var(--card),0.1)]">
+            <div className="p-2 rounded-full text-primary">
               {feature.svg}
             </div>
             <div>
               <h3 className=" font-medium text-2xl">
                 {feature.title}
               </h3>
-              <p className="text-[hsl(var(--form-placeholder))]">
+              <p >
                 {feature.description}
               </p>
             </div>

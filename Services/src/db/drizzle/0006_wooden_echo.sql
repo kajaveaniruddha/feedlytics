@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "avatar_url" varchar DEFAULT 'https://github.com/shadcn.png';

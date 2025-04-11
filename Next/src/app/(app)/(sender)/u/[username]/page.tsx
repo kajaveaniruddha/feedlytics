@@ -3,7 +3,7 @@ import ClientPage from "./client-page";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Collect Feedback",
+  title: "Feedlytics | Collect Feedback",
   description: "Collecting feedback to be analysed with AI.",
 };
 

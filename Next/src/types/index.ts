@@ -17,10 +17,15 @@ export interface ApiResponse {
   messages?: Array<Message>;
   totalPages?: number;
   messagesFound?: number;
+  userDetails?: {
+    name: string;
+    profile_pic: string;
+  };
 }
 
 export interface userDetailsType {
   name: string;
+  avatar_url:string;
   introduction: string;
   questions: string[];
 }

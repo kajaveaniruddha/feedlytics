@@ -50,7 +50,6 @@ export const slackNotificationWorker = new Worker(
   },
   {
     connection: WorkFlowNotificationQueue.opts.connection,
-    limiter: { max: 1, duration: 2000 },
   }
 );
 

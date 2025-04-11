@@ -15,6 +15,7 @@ export const usersTable = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 50 }).default("user"),
+    avatarUrl:varchar("avatar_url").default("https://github.com/shadcn.png"),
     username: varchar("username", { length: 50 }).notNull().unique(),
     email: varchar("email", { length: 100 }).notNull().unique(),
     password: varchar("password", { length: 255 }),

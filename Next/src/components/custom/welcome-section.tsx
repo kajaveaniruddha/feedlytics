@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from 'lucide-react';
 import { Card } from "../ui/card";
 
-export const WelcomeSection = React.memo(({ username }: { username: string }) => (
+export const WelcomeSection = React.memo(({ name }: { name: string }) => (
   <Card className="flex flex-col items-center justify-center py-12 ">
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -18,7 +18,7 @@ export const WelcomeSection = React.memo(({ username }: { username: string }) =>
       </h1>
       <h2 className="text-3xl md:text-4xl font-semibold mb-4 flex items-center justify-center ">
         <Sparkles className="w-6 h-6 mr-2 text-primary" />
-        {username}
+        {name}
         <Sparkles className="w-6 h-6 ml-2 text-primary" />
       </h2>
     </motion.div>

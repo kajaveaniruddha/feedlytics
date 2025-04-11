@@ -3,7 +3,7 @@ import { db } from "../db/db";
 import { feedbacksTable } from "../db/models/feedback";
 import { feedbackQueue, WorkFlowNotificationQueue } from "../queue";
 import { analyzeReview } from "../jobs/llm-functions";
-import { arrayOverlaps, and } from "drizzle-orm";
+import { arrayOverlaps, and, eq } from "drizzle-orm";
 import { userWorkFlowsTable } from "../db/models/workflows";
 
 async function sendFeedbackNotifications(
@@ -70,6 +70,7 @@ export const feedbackWorker = new Worker(
         .from(userWorkFlowsTable)
         .where(
           and(
+            eq(userWorkFlowsTable.userId, userId),
             arrayOverlaps(userWorkFlowsTable.notifyCategories, category),
             userWorkFlowsTable.isActive
           )

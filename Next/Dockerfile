@@ -3,11 +3,6 @@ FROM node:18-alpine as builder
 # Install pnpm
 RUN npm install -g pnpm
 
-# Accept and set the build-time ARG
-ARG DATABASE_URL
-# Set default if not provided
-ENV DATABASE_URL=${DATABASE_URL:-postgresql://example}
-
 # Set working dir and copy files
 WORKDIR /app
 COPY . .
@@ -15,7 +10,7 @@ COPY . .
 # Install deps
 RUN pnpm install --frozen-lockfile
 
-# Build with DATABASE_URL in env
+ENV $(cat .env | grep -v '^#' | xargs)
 RUN pnpm build
 
 # --------------------------------

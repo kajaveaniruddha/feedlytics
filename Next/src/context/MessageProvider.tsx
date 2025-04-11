@@ -18,7 +18,8 @@ interface MessageContextType {
   maxWorkflows: number;
   setMessageCount: (count: number) => void;
   setMaxMessages: (max: number) => void;
-  session: any
+  session: any;
+  name: string
 }
 
 export const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -27,6 +28,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [messageCount, setMessageCount] = useState<number>(0);
   const [maxWorkflows, setMaxWorkflows] = useState<number>(5);
   const [maxMessages, setMaxMessages] = useState<number>(50);
+  const [name, setName] = useState<string>("");
   const { data: session } = useSession();
   const { toast } = useToast();
   const username = session?.user?.username;
@@ -41,6 +43,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
       setMaxWorkflows(res.data?.maxWorkflows as number);
       // console.log(res.data?.messageCount)
       setMaxMessages(res.data?.maxMessages as number);
+      setName(res.data?.userDetails?.name as string)
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
@@ -57,7 +60,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MessageContext.Provider
-      value={{ session, messageCount, maxMessages, maxWorkflows, setMessageCount, setMaxMessages }}
+      value={{name, session, messageCount, maxMessages, maxWorkflows, setMessageCount, setMaxMessages }}
     >
       {children}
     </MessageContext.Provider>

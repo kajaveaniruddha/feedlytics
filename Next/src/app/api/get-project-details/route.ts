@@ -34,7 +34,7 @@ export async function GET(request: Request) {
         messageCount,
         maxMessages,
         maxWorkflows,
-        userDetails: { name, messageCount, maxMessages },
+        userDetails: { name },
       }),
       { status: 200 }
     );
