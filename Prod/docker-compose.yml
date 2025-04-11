@@ -19,15 +19,6 @@ services:
     ports:
       - "3001:3001"
 
-  widget:
-    image: aniii1802/feedlytics-widget:latest
-    networks:
-      - app-network
-    env_file:
-      - .env
-    ports:
-      - "4173:4173"
-
   redis:
     image: redis:7-alpine
     container_name: feedlytics-redis

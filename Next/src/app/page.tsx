@@ -1,28 +1,23 @@
-"use client"
-
-import { motion } from "framer-motion"
 import Link from "next/link"
-import { AuroraBackground } from "@/components/ui/aurora-background"
 import { LampContainer } from "@/components/ui/lamp"
 import { MessageSquare, BarChart3, Bell, Workflow, LayoutDashboard, ShieldCheck, ArrowRight } from "lucide-react"
 import Footer from "@/components/custom/footer"
 import DashboardShowcase from "@/components/custom/dashboard-showcase"
+import MotionDiv from "@/components/ui/motion-div"
+import { AuroraBackground } from "@/components/ui/aurora-background"
+
+export async function generateStaticParams() {
+  return [{}];
+}
 
 export default function LandingPage() {
   return (
-    <main className="flex flex-col min-h-screen">
+    <main >
       {/* Hero Section */}
       <AuroraBackground>
         <section className="relative w-full min-h-screen">
           <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-24 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 0.3,
-                duration: 0.8,
-                ease: "easeInOut",
-              }}
+            <MotionDiv
               className="flex flex-col gap-6 items-center max-w-4xl"
             >
               <div className="mb-2 px-4 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm font-medium text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
@@ -31,7 +26,7 @@ export default function LandingPage() {
               </div>
 
               <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400 pb-2">
-                The Fastest Way to Understand Your Users 
+                The Fastest Way to Understand Your Users
               </h1>
 
               <p className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300 max-w-2xl">
@@ -53,76 +48,69 @@ export default function LandingPage() {
                   See Demo
                 </Link>
               </div>
-            </motion.div>
-          </div>
-
-        </section>
-
-        {/* Features Overview */}
-        <section className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
-                Powerful Features
-              </h2>
-              <p className="text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl mx-auto">
-                Everything you need to collect, analyze, and act on user feedback
-              </p>
-            </div>
-
-            <motion.div initial={{ y: 10, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <FeatureCard
-                icon={<MessageSquare className="h-6 w-6" />}
-                title="Easy Feedback Collection"
-                description="Embed customizable forms or a chat widget directly into your app."
-              // clients={["Nuoptima", "Rock The Rankings", "Plerdy"]}
-              />
-
-              <FeatureCard
-                icon={<BarChart3 className="h-6 w-6" />}
-                title="AI-Powered Analysis"
-                description="Utilize Groq AI to automatically detect sentiment and categorize feedback."
-              />
-
-              <FeatureCard
-                icon={<Bell className="h-6 w-6" />}
-                title="Smart Routing"
-                description="Automatically notify the right teams via Slack, Google Chat, or custom webhooks based on feedback categories."
-              />
-
-              <FeatureCard
-                icon={<Workflow className="h-6 w-6" />}
-                title="Workflow Automation"
-                description="Create, manage, and customize workflows to handle feedback efficiently."
-              />
-
-              <FeatureCard
-                icon={<LayoutDashboard className="h-6 w-6" />}
-                title="Comprehensive Dashboard"
-                description="View, sort, and search all feedback with detailed insights and filters."
-              />
-
-              <FeatureCard
-                icon={<ShieldCheck className="h-6 w-6" />}
-                title="Secure Authentication"
-                description="Support for Google and GitHub authentication for seamless user access."
-              />
-            </motion.div>
+            </MotionDiv>
           </div>
         </section>
-
-        {/* Dashboard Showcase */}
-        <DashboardShowcase />
       </AuroraBackground>
+      {/* Features Overview */}
+      <section className="py-24 px-4 bg-neutral-50 dark:bg-neutral-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
+              Powerful Features
+            </h2>
+            <p className="text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl mx-auto">
+              Everything you need to collect, analyze, and act on user feedback
+            </p>
+          </div>
+
+          <MotionDiv className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<MessageSquare className="h-6 w-6" />}
+              title="Easy Feedback Collection"
+              description="Embed customizable forms or a chat widget directly into your app."
+            // clients={["Nuoptima", "Rock The Rankings", "Plerdy"]}
+            />
+
+            <FeatureCard
+              icon={<BarChart3 className="h-6 w-6" />}
+              title="AI-Powered Analysis"
+              description="Utilize Groq AI to automatically detect sentiment and categorize feedback."
+            />
+
+            <FeatureCard
+              icon={<Bell className="h-6 w-6" />}
+              title="Smart Routing"
+              description="Automatically notify the right teams via Slack, Google Chat, or custom webhooks based on feedback categories."
+            />
+
+            <FeatureCard
+              icon={<Workflow className="h-6 w-6" />}
+              title="Workflow Automation"
+              description="Create, manage, and customize workflows to handle feedback efficiently."
+            />
+
+            <FeatureCard
+              icon={<LayoutDashboard className="h-6 w-6" />}
+              title="Comprehensive Dashboard"
+              description="View, sort, and search all feedback with detailed insights and filters."
+            />
+
+            <FeatureCard
+              icon={<ShieldCheck className="h-6 w-6" />}
+              title="Secure Authentication"
+              description="Support for Google and GitHub authentication for seamless user access."
+            />
+          </MotionDiv>
+        </div>
+      </section>
+
+      {/* Dashboard Showcase */}
+      <DashboardShowcase />
       {/* Final CTA */}
       <section className="relative">
         <LampContainer>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
+          <MotionDiv
             className="mt-8 mb-20 max-w-4xl mx-auto text-center relative z-10"
           >
             <h2 className="mt-8 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl">Ready to Enhance Your Feedback Process?</h2>
@@ -136,11 +124,11 @@ export default function LandingPage() {
               Start Your Free Trial
               <ArrowRight className="h-5 w-5" />
             </Link>
-          </motion.div>
+          </MotionDiv>
         </LampContainer>
       </section>
       <Footer />
-    </main>
+    </main >
   )
 }
 
