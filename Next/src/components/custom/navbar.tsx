@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
@@ -40,53 +40,54 @@ const Navbar = () => {
   return (
     <>
       {/* Mobile Navbar */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="fixed top-4 right-4 z-50 sm:hidden">
-            <Menu />
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side="left"
-          aria-labelledby="sheet-dialog-title"
-          className="w-60 custom-shadow flex flex-col h-full"
-        >
-          <motion.aside
-            className="w-full h-full flex flex-col"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      <div className="sm:hidden">
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 right-4 z-50 sm:hidden">
+              <Menu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            aria-labelledby="sheet-dialog-title"
+            className="w-60 custom-shadow flex flex-col h-full"
           >
-            <div className="p-4 border-b border-gray-800">
-              <SheetTitle id="sheet-dialog-title" className="text-2xl font-bold text-primary">
-                {activePage || "Dashboard"}
-              </SheetTitle>
-            </div>
-            <nav className="flex-1 pt-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.key}
-                  href={`/${item.key}`}
-                  className={`flex items-center px-6 py-3 rounded-2xl hover:text-primary transition-all duration-300 ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"
-                    }`}
-                  onClick={() => {
-                    setActivePage(item.key);
-                    toggleMenu();
-                  }}
-                >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="p-4 border-t">
-              <UserMenu username={username} avatarUrl={userInfo.avatarUrl}/>
-            </div>
-          </motion.aside>
-        </SheetContent>
-      </Sheet>
-
+            <motion.aside
+              className="w-full h-full flex flex-col"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="p-4 border-b border-gray-800">
+                <SheetTitle id="sheet-dialog-title" className="text-2xl font-bold text-primary">
+                  {activePage || "Dashboard"}
+                </SheetTitle>
+              </div>
+              <nav className="flex-1 pt-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.key}
+                    href={`/${item.key}`}
+                    className={`flex items-center px-6 py-3 rounded-2xl hover:text-primary transition-all duration-300 ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"
+                      }`}
+                    onClick={() => {
+                      setActivePage(item.key);
+                      toggleMenu();
+                    }}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="p-4 border-t">
+                <UserMenu username={username} avatarUrl={userInfo.avatarUrl} />
+              </div>
+            </motion.aside>
+          </SheetContent>
+        </Sheet>
+      </div>
       {/* Desktop Navbar */}
       <motion.aside
         className="max-sm:hidden w-60 custom-shadow flex flex-col fixed h-full"

@@ -5,9 +5,11 @@ import "./index.css";
 
 // window.feedlytics_widget = { username: "aniii" };
 const init = () => {
+  // Create widget container and attach shadow DOM for CSS encapsulation
   const chatbotNode = document.createElement("div");
-  chatbotNode.username = "feedlytics_widget-ui-container";
+  const shadowRoot = chatbotNode.attachShadow({ mode: "open" });
   document.body.appendChild(chatbotNode);
+  
   const urlBotId = window.location.pathname.split("/").pop();
   if (!window.feedlytics_widget.username && urlBotId) {
     window.feedlytics_widget = window.feedlytics_widget || {};
@@ -18,7 +20,7 @@ const init = () => {
     throw new Error("Widget is not initialized");
   }
 
-  createRoot(chatbotNode).render(
+  createRoot(shadowRoot).render(
     <StrictMode>
       <App />
     </StrictMode>

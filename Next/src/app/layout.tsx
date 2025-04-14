@@ -4,8 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ModeToggle } from "@/components/custom/mode-toggle";
-import { ReactLenis } from "@/lib/lenis"
-import FeedlyticsWidget from "@/components/custom/feedlytics-widget";
+import { ReactLenis } from "@/lib/lenis";
+import Script from "next/script";
+
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
@@ -50,7 +51,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -71,13 +71,17 @@ export default function RootLayout({
             <ModeToggle />
             <Toaster />
           </ThemeProvider>
-          <script dangerouslySetInnerHTML={{
-            __html: `
-        window.feedlytics_widget = {
-          username: "aniii"
-        };
-      ` }} />
-          <script defer src="https://widget.feedlytics.in/feedlytics_widget.js"></script>
+          <Script id="feedlytics-widget-init" strategy="afterInteractive">
+            {`
+              window.feedlytics_widget = {
+                username: "aniii"
+              };
+            `}
+          </Script>
+          <Script
+            src="http://localhost:5173/feedlytics_widget.js"
+            strategy="afterInteractive"
+          />
         </body>
       </ReactLenis>
     </html>

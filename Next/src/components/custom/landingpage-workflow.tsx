@@ -112,7 +112,7 @@ function WorkflowStep({ number, title, description, imageSrc, imageAlt, directio
                     className="flex-1"
                 >
                     <div className="rounded-xl overflow-hidden">
-                        <Image width={100} height={100} src={imageSrc || "/placeholder.svg"} alt={imageAlt} className="w-full h-auto" />
+                        <Image width={100} height={100} src={imageSrc || "/placeholder.svg"} alt={imageAlt} className="w-full h-auto" priority />
                     </div>
                 </motion.div>
             </div>
