@@ -19,15 +19,24 @@ export interface ApiResponse {
   messagesFound?: number;
   userDetails?: {
     name: string;
-    profile_pic: string;
+    avatar_url: string;
+    bgColor: string;
+    collectEmail: boolean; // changed from string to boolean
+    collectName: boolean; // changed from string to boolean
+    textColor: string;
   };
 }
 
 export interface userDetailsType {
   name: string;
-  avatar_url:string;
+  username: string;
+  avatar_url: string;
   introduction: string;
   questions: string[];
+  bgColor: string;
+  textColor: string;
+  collectName: boolean;
+  collectEmail: boolean;
 }
 
 export interface ApiResponseUserDetails {

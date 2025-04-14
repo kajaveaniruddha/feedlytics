@@ -11,9 +11,14 @@ export async function GET(request: Request) {
     const userDetails = await db
       .select({
         name: usersTable.name,
+        avatar_url: usersTable.avatarUrl,
         messageCount: usersTable.messageCount,
         maxMessages: usersTable.maxMessages,
         maxWorkflows: usersTable.maxWorkflows,
+        textColor: usersTable.textColor,
+        bgColor: usersTable.bgColor,
+        collectName: usersTable.collectName,
+        collectEmail: usersTable.collectEmail,
       })
       .from(usersTable)
       .where(eq(usersTable.id, parseInt(user.id ?? "0")))
@@ -26,7 +31,17 @@ export async function GET(request: Request) {
       );
     }
 
-    const { name, messageCount, maxMessages, maxWorkflows } = userDetails[0];
+    const {
+      name,
+      avatar_url,
+      messageCount,
+      maxMessages,
+      maxWorkflows,
+      bgColor,
+      collectEmail,
+      collectName,
+      textColor,
+    } = userDetails[0];
 
     return new Response(
       JSON.stringify({
@@ -34,7 +49,14 @@ export async function GET(request: Request) {
         messageCount,
         maxMessages,
         maxWorkflows,
-        userDetails: { name },
+        userDetails: {
+          name,
+          avatar_url,
+          bgColor,
+          collectEmail,
+          collectName,
+          textColor,
+        },
       }),
       { status: 200 }
     );

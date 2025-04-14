@@ -10,6 +10,7 @@ import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, Mess
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { useMessageContext } from "@/hooks/use-message-context";
 
 const navItems = [
   { icon: Home, label: "Dashboard", key: "dashboard" },
@@ -23,7 +24,7 @@ const Navbar = () => {
   const [activePage, setActivePage] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data: session } = useSession();
+  const { session, userInfo } = useMessageContext();
   const user = session?.user || {};
   const username = user.username || user.email || "Guest";
 
@@ -80,7 +81,7 @@ const Navbar = () => {
               ))}
             </nav>
             <div className="p-4 border-t">
-              <UserMenu username={username} />
+              <UserMenu username={username} avatarUrl={userInfo.avatarUrl}/>
             </div>
           </motion.aside>
         </SheetContent>
@@ -112,14 +113,14 @@ const Navbar = () => {
           ))}
         </nav>
         <div className="p-6">
-          <UserMenu username={username} />
+          <UserMenu username={username} avatarUrl={userInfo.avatarUrl} />
         </div>
       </motion.aside>
     </>
   );
 };
 
-const UserMenu = ({ username }: { username: string }) => (
+const UserMenu = ({ username, avatarUrl }: { username: string, avatarUrl: string }) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button
@@ -127,7 +128,7 @@ const UserMenu = ({ username }: { username: string }) => (
         className="w-full justify-start custom-shadow"
       >
         <Avatar className="w-8 h-8 mr-2">
-          <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
+          <AvatarImage src={avatarUrl} alt="@user" />
           <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 truncate text-left">

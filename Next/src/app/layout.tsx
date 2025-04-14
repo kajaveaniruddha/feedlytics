@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ModeToggle } from "@/components/custom/mode-toggle";
 import { ReactLenis } from "@/lib/lenis"
+import FeedlyticsWidget from "@/components/custom/feedlytics-widget";
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
@@ -70,6 +71,13 @@ export default function RootLayout({
             <ModeToggle />
             <Toaster />
           </ThemeProvider>
+      <script dangerouslySetInnerHTML={{
+        __html: `
+        window.feedlytics_widget = {
+          username: "aniii"
+        };
+      ` }} />
+      <script defer src="https://feedlytics.in/feedlytics_widget.js"></script>  
         </body>
       </ReactLenis>
     </html>

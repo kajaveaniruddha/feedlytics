@@ -27,8 +27,14 @@ export async function GET(request: Request) {
     const user = await db
       .select({
         name: usersTable.name,
+        username: usersTable.username,
+        avatar_url: usersTable.avatarUrl,
         introduction: usersTable.introduction,
         questions: usersTable.questions,
+        textColor: usersTable.textColor,
+        bgColor: usersTable.bgColor,
+        collectName: usersTable.collectName,
+        collectEmail: usersTable.collectEmail,
       })
       .from(usersTable)
       .where(eq(usersTable.email, userEmail))

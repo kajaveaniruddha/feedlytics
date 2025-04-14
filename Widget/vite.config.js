@@ -1,26 +1,26 @@
-import { defineConfig } from "vite";
+import path from "node:path";
 import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig } from "vite";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  define: {
-    "process.env": {
-      NODE_ENV: "production",
-    },
-  },
   plugins: [react()],
+  assetsInclude: ["**/*.svg"],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   build: {
-    lib: {
-      entry: "./src/index.jsx",
-      name: "widget",
-      fileName: (format) => `widget.${format}.js`,
+    assetsDir: ".",
+    rollupOptions: {
+      output: {
+        format: "iife",
+        name: "App",
+        entryFileNames: "feedlytics_widget.js",
+      },
     },
-    target: "esnext",
+  },
+  optimizeDeps: {
+    exclude: ["lucide-react"],
   },
 });

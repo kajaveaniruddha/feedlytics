@@ -13,9 +13,9 @@ export const feedbacksTable = pgTable(
   "feedbacks",
   {
     id: serial("id").primaryKey(),
-    userId: integer('user_id')
-    .notNull()
-    .references(() => usersTable.id, { onDelete: 'cascade' }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
     stars: integer("stars").notNull().default(5),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -24,6 +24,8 @@ export const feedbacksTable = pgTable(
       .array()
       .notNull()
       .default(sql`ARRAY[]::text[]`),
+    name: varchar("name", { length: 50 }).default("sender"),
+    email: varchar("email", { length: 50 }),
   },
   (table) => [
     { starsCheck: sql`CHECK (${table.stars} >= 0 AND ${table.stars} <= 5)` },

@@ -50,6 +50,13 @@
       "when": 1744365851741,
       "tag": "0006_wooden_echo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744442532791,
+      "tag": "0007_slow_thanos",
+      "breakpoints": true
     }
   ]
 }

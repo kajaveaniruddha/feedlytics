@@ -13,11 +13,23 @@ export async function PUT(request: Request) {
     );
   }
 
-  const { introduction, questions } = await request.json();
+  // Extract additional fields: username, name, avatarUrl, and new style fields
+  const { introduction, questions, username, name, avatar_url, bg_color, text_color, collect_info } =
+    await request.json();
   try {
     const updateResult = await db
       .update(usersTable)
-      .set({ introduction, questions })
+      .set({
+        introduction,
+        questions,
+        username,
+        name,
+        avatarUrl: avatar_url,
+        bgColor: bg_color,
+        textColor: text_color,
+        collectName: collect_info?.name,
+        collectEmail: collect_info?.email,
+      })
       .where(eq(usersTable.id, parseInt(session.user.id ?? "0")));
 
     if (!updateResult.rowCount) {
@@ -37,7 +49,6 @@ export async function PUT(request: Request) {
       }),
       { status: 200 }
     );
-    
   } catch (error) {
     console.error(error);
     return new Response(

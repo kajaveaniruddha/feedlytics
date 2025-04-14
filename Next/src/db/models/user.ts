@@ -15,7 +15,7 @@ export const usersTable = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 50 }).default("user"),
-    avatarUrl:varchar("avatar_url").default("https://github.com/shadcn.png"),
+    avatarUrl: varchar("avatar_url").default("https://github.com/shadcn.png"),
     username: varchar("username", { length: 50 }).notNull().unique(),
     email: varchar("email", { length: 100 }).notNull().unique(),
     password: varchar("password", { length: 255 }),
@@ -35,7 +35,12 @@ export const usersTable = pgTable(
       ),
     messageCount: integer("message_count").default(0),
     maxMessages: integer("max_messages").default(50),
-    maxWorkflows: integer("max_workflows").default(5)
+    maxWorkflows: integer("max_workflows").default(5),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    bgColor: varchar("bg_color", { length: 7 }).default("#00000"),
+    textColor: varchar("text_color", { length: 7 }).default("#ffffff"),
+    collectName: boolean("collect_name").notNull().default(false),
+    collectEmail: boolean("collect_email").notNull().default(false),
   },
   (table) => [
     {
@@ -43,8 +48,6 @@ export const usersTable = pgTable(
     },
   ]
 );
-
-
 
 export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;

@@ -2,7 +2,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -12,12 +12,48 @@ import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
 
+// Add helper to compute lighter shade of a hex color
+function lightenColor(color, percent) {
+  // Assumes color in the format "#RRGGBB"
+  let num = parseInt(color.slice(1), 16);
+  let r = (num >> 16) & 0xff;
+  let g = (num >> 8) & 0xff;
+  let b = num & 0xff;
+  r = Math.min(255, Math.max(0, r + Math.round(2.55 * percent)));
+  g = Math.min(255, Math.max(0, g + Math.round(2.55 * percent)));
+  b = Math.min(255, Math.max(0, b + Math.round(2.55 * percent)));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
 export const Widget = ({ username }) => {
   const [rating, setRating] = useState(3);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [widgetSettings, setWidgetSettings] = useState(null);
+
+  useEffect(() => {
+    axios
+      .post(`${DASHBOARD_BASE_URL}/api/get-widget-settings`, { username })
+      .then((response) => {
+        setWidgetSettings(response.data);
+      })
+      .catch((error) =>
+        console.error("Error fetching widget settings:", error)
+      );
+  }, [username]);
+
+  // Optimised theme styles
+  const themeStyle = widgetSettings
+    ? {
+        backgroundColor: widgetSettings.bg_color,
+        color: widgetSettings.text_color,
+      }
+    : {};
+  const themeInputStyle = widgetSettings
+    ? { backgroundColor: lightenColor(widgetSettings.bg_color, 60) }
+    : {};
 
   const onSelectStar = (index) => {
     setRating(index + 1);
@@ -31,13 +67,13 @@ export const Widget = ({ username }) => {
 
     const form = e.target;
     const data = {
-      username: username, 
+      username: username,
       content: form.feedback.value,
       stars: rating,
     };
 
     const apiUrl = `${DASHBOARD_BASE_URL}/api/v1/send-feedback`;
-    console.log('Sending feedback:', data);
+    console.log("Sending feedback:", data);
 
     try {
       const response = await axios.post(apiUrl, data);
@@ -45,7 +81,9 @@ export const Widget = ({ username }) => {
       setSuccessMessage(response.data.message || "Feedback sent successfully!");
       setSubmitted(true);
     } catch (error) {
-      const message = error.response?.data?.message || "Something went wrong. Please try again.";
+      const message =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
       setErrorMessage(message);
       console.error("Error sending feedback:", message);
     } finally {
@@ -68,25 +106,30 @@ export const Widget = ({ username }) => {
       <div className="widget fixed bottom-4 right-4 z-50">
         <Popover>
           <PopoverTrigger asChild>
-            <Button className="rounded-full shadow-lg hover:scale-105">
+            <Button
+              style={themeStyle}
+              className="rounded-full shadow-lg transition-all hover:scale-105"
+            >
               <MessageCircleIcon className="mr-2 h-5 w-5" />
               Feedback
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md">
+          <PopoverContent
+            style={themeStyle}
+            className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md"
+          >
             <style>{tailwindStyles}</style>
             {submitted ? (
-              <div className="animate-slide-fade-in flex flex-col items-center">
+              <div
+                style={themeStyle}
+                className="animate-slide-fade-in flex flex-col items-center"
+              >
                 <h3 className="text-lg font-bold">
                   Thank you for your feedback 🎉
                 </h3>
-                {/* <p className="mt-4">
-                  We appreciate your feedback. It helps us improve our product
-                  and provide better service to our customers.
-                </p> */}
               </div>
             ) : (
-              <div>
+              <div style={themeStyle}>
                 <h3 className="text-lg font-bold">Send us your feedback</h3>
                 {errorMessage && (
                   <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
@@ -100,18 +143,27 @@ export const Widget = ({ username }) => {
                 )}
                 <form className="space-y-2" onSubmit={submit}>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Enter your name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                      />
-                    </div>
+                    {(!widgetSettings || widgetSettings.collect_info.name) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                          id="name"
+                          placeholder="Enter your name"
+                          style={themeInputStyle}
+                        />
+                      </div>
+                    )}
+                    {(!widgetSettings || widgetSettings.collect_info.email) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          style={themeInputStyle}
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="feedback">Feedback</Label>
@@ -119,6 +171,7 @@ export const Widget = ({ username }) => {
                       id="feedback"
                       placeholder="Tell us what you think"
                       className="min-h-[100px]"
+                      style={themeInputStyle}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -142,14 +195,13 @@ export const Widget = ({ username }) => {
                 </form>
               </div>
             )}
-            <div className="text-gray-600 text-xs mt-2">
+            <div style={themeStyle} className="text-gray-600 text-xs mt-2">
               Powered by{" "}
-              <a
-                href="https://feedlytics.vercel.app/"
-                target="_blank"
-                className="text-indigo-600 hover:underline"
-              >
-                Feedlytics ⚡️
+              <a href="https://feedlytics.in/" target="_blank">
+                <span className="text-indigo-600 hover:underline">
+                  Feedlytics
+                </span>
+                ⚡️
               </a>
             </div>
           </PopoverContent>

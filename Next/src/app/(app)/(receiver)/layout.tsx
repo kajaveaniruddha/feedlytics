@@ -18,8 +18,8 @@ export default function RootLayout({
     <main lang="en" suppressHydrationWarning>
       <AuthProvider>
         <section className={`flex`}>
-          <Navbar />
           <MessageProvider>
+            <Navbar />
             <div className="w-full mx-auto max-sm:w-[95%] sm:ml-64" style={{ scrollbarGutter: "stable" }}>
               {children}
             </div>

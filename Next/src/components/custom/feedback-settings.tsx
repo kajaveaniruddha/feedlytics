@@ -21,9 +21,6 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
   const widget_script = `<my-widget username="${username}"></my-widget>
   <script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.umd.js"></script>`
   
-  console.log("profileUrl", profileUrl)
-  console.log("widget_script", widget_script)
-  
   const copyToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(profileUrl)

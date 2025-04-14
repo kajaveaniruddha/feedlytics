@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GithubProvider from "next-auth/providers/github"; // New import
+import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google" 
 import bcrypt from "bcryptjs";
 import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
@@ -20,10 +21,10 @@ import { or, eq } from "drizzle-orm";
 // }
 
 async function generateUniqueUsername(
-  baseName: string,
+  userId: string,
   provider: "github" | "google"
 ) {
-  const username = provider + "_" + baseName;
+  const username = provider + "_" + userId;
   return username;
 }
 
@@ -80,6 +81,10 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
+    GoogleProvider({
+      clientId: process.env.AUTHH_GOOGLE_ID!,
+      clientSecret: process.env.AUTHH_GOOGLE_SECRET!,
+    }),
   ],
   pages: { signIn: "/login" },
   session: {
@@ -88,7 +93,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "github") {
+      if (account?.provider === "github" || account?.provider === "google") {
         try {
           const existingUser = await db
             .select()
@@ -97,10 +102,9 @@ export const authOptions: NextAuthOptions = {
             .limit(1);
 
           if (existingUser.length === 0) {
-            // Generate unique username from GitHub display name or login
             const uniqueUsername = await generateUniqueUsername(
-              (profile as any).login,
-              "github"
+              user.id as string,
+              account?.provider
             );
 
             // Create new user
@@ -116,7 +120,7 @@ export const authOptions: NextAuthOptions = {
           // Allow sign in for both new and existing users
           return true;
         } catch (error) {
-          console.error("Error during GitHub sign in:", error);
+          console.error("Error during provider sign in:", error);
           return false;
         }
       }
@@ -147,7 +151,7 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.isAcceptingMessage = user.isAcceptingMessages;
         token.isVerified = user.isVerified;
-      } else if (account?.provider === "github") {
+      } else if (account?.provider === "github" || account?.provider === "google") {
         // For subsequent GitHub provider sessions, fetch fresh data
         const dbUser = await db
           .select()
