@@ -1,15 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import "./index.css";
 
-// window.feedlytics_widget = { username: "aniii" };
+window.feedlytics_widget = { username: "aniii" };
 const init = () => {
-  // Create widget container and attach shadow DOM for CSS encapsulation
   const chatbotNode = document.createElement("div");
   const shadowRoot = chatbotNode.attachShadow({ mode: "open" });
   document.body.appendChild(chatbotNode);
-  
+
   const urlBotId = window.location.pathname.split("/").pop();
   if (!window.feedlytics_widget.username && urlBotId) {
     window.feedlytics_widget = window.feedlytics_widget || {};
@@ -20,11 +18,19 @@ const init = () => {
     throw new Error("Widget is not initialized");
   }
 
-  createRoot(shadowRoot).render(
-    <StrictMode>
-      <App />
-    </StrictMode>
-  );
+  fetch(new URL("./index.css", import.meta.url))
+    .then((res) => res.text())
+    .then((cssText) => {
+      const styleTag = document.createElement("style");
+      styleTag.textContent = cssText;
+      shadowRoot.appendChild(styleTag);
+
+      createRoot(shadowRoot).render(
+        <StrictMode>
+          <App />
+        </StrictMode>
+      );
+    });
 };
 
 init();

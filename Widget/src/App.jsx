@@ -5,7 +5,7 @@ function App() {
 
   return (
     <>
-      <Widget username="aniii" />
+      <Widget username={window.feedlytics_widget.username} />
     </>
   );
 }

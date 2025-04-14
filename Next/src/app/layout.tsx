@@ -74,12 +74,12 @@ export default function RootLayout({
           <Script id="feedlytics-widget-init" strategy="afterInteractive">
             {`
               window.feedlytics_widget = {
-                username: "aniii"
+                username: "github_kajaveaniruddha"
               };
             `}
           </Script>
           <Script
-            src="http://localhost:5173/feedlytics_widget.js"
+            src="https://widget.feedlytics.in/feedlytics_widget.js"
             strategy="afterInteractive"
           />
         </body>
