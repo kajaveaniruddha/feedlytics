@@ -18,9 +18,13 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
   const [widgetCopied, setWidgetCopied] = useState(false)
 
   const profileUrl = typeof window !== "undefined" ? `${window.location.host}/u/${username}` : `feedlytics.in/u/${username}`
-  const widget_script = `<my-widget username="${username}"></my-widget>
-  <script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.umd.js"></script>`
-  
+  const widget_script = `<script>
+        window.feedlytics_widget = {
+            username: ${username}
+        }
+        </script>
+        <script defer src="https://widget.feedlytics.in/feedlytics_widget.js"></script>`
+
   const copyToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
       navigator.clipboard?.writeText(profileUrl)

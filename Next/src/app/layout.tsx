@@ -71,13 +71,13 @@ export default function RootLayout({
             <ModeToggle />
             <Toaster />
           </ThemeProvider>
-      <script dangerouslySetInnerHTML={{
-        __html: `
+          <script dangerouslySetInnerHTML={{
+            __html: `
         window.feedlytics_widget = {
           username: "aniii"
         };
       ` }} />
-      <script defer src="https://feedlytics.in/feedlytics_widget.js"></script>  
+          <script defer src="https://widget.feedlytics.in/feedlytics_widget.js"></script>
         </body>
       </ReactLenis>
     </html>
