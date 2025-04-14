@@ -72,7 +72,7 @@ function WorkflowStep({ number, title, description, imageSrc, imageAlt, directio
     const isRight = direction === "right"
 
     return (
-        <div className="mb-24 last:mb-0">
+        <div className="mb-24 last:mb-0 w-[90%] mx-auto">
             <div className={`flex flex-col ${isRight ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-8 md:gap-16`}>
                 {/* Step Number */}
                 <div className="md:hidden flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold text-xl mb-4">
@@ -112,7 +112,7 @@ function WorkflowStep({ number, title, description, imageSrc, imageAlt, directio
                     className="flex-1"
                 >
                     <div className="rounded-xl overflow-hidden">
-                        <Image width={100} height={100} src={imageSrc || "/placeholder.svg"} alt={imageAlt} className="w-full h-auto" priority />
+                        <Image width={100} height={100} src={imageSrc} alt={imageAlt} className="w-full h-auto" priority />
                     </div>
                 </motion.div>
             </div>

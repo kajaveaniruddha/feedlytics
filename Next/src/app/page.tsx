@@ -66,16 +66,16 @@ export default function LandingPage() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="relative"
             >
-              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-sm">
+              <div className="relative rounded-xl overflow-hidden border border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-sm">
                 <Image
                   width={400}
                   height={300}
                   src="/DemoGif.gif"
                   alt="Feedlytics Dashboard"
-                  className="w-2/3 h-auto"
+                  className="w-full sm:w-2/3 h-auto"
                   priority
                 />
-                <div className=" flex flex-col gap-10  absolute top-6 right-6">
+                <div className=" flex flex-col gap-10 absolute top-6 right-3">
                   <div className="text-secondary-foreground bg-white dark:bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-200 dark:border-neutral-700 max-sm:hidden">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5 text-emerald-500" />
