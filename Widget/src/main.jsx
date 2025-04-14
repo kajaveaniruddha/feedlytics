@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 
-window.feedlytics_widget = { username: "aniii" };
+// window.feedlytics_widget = { username: "aniii" };
 const init = () => {
   const chatbotNode = document.createElement("div");
   const shadowRoot = chatbotNode.attachShadow({ mode: "open" });
