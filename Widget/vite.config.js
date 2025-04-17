@@ -10,15 +10,17 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production")
+  },
   build: {
-    assetsDir: ".",
-    rollupOptions: {
-      output: {
-        format: "iife",
-        name: "App",
-        entryFileNames: "feedlytics_widget.js",
-      },
+    lib: {
+      entry: path.resolve(__dirname, "src/main.jsx"),
+      name: "FeedlyticsWidget",
+      formats: ["iife"],
+      fileName: () => "feedlytics_widget.js",
     },
+    rollupOptions: {},
   },
   optimizeDeps: {
     exclude: ["lucide-react"],
