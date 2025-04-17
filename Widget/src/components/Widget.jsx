@@ -11,6 +11,7 @@ import {
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
+import root from "react-shadow"; // added import
 
 // Add helper to compute lighter shade of a hex color
 function lightenColor(color, percent) {
@@ -92,122 +93,124 @@ export const Widget = ({ username }) => {
   };
 
   return (
-    <>
-      <style>{tailwindStyles}</style>
-      <style>{`
-        @keyframes slideFadeIn {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-fade-in {
-          animation: slideFadeIn 0.5s ease-out;
-        }
-      `}</style>
-      <div className="widget fixed bottom-4 right-4 z-50">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              style={themeStyle}
-              className="rounded-full shadow-lg transition-all hover:scale-105"
-            >
-              <MessageCircleIcon className="mr-2 h-5 w-5" />
-              Feedback
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            style={themeStyle}
-            className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md"
-          >
-            <style>{tailwindStyles}</style>
-            {submitted ? (
-              <div
+    <root.div>
+      <>
+        <style>{tailwindStyles}</style>
+        <style>{`
+          @keyframes slideFadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .animate-slide-fade-in {
+            animation: slideFadeIn 0.5s ease-out;
+          }
+        `}</style>
+        <div className="widget fixed bottom-4 right-4 z-50">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
                 style={themeStyle}
-                className="animate-slide-fade-in flex flex-col items-center"
+                className="rounded-full shadow-lg transition-all hover:scale-105"
               >
-                <h3 className="text-lg font-bold">
-                  Thank you for your feedback 🎉
-                </h3>
-              </div>
-            ) : (
-              <div style={themeStyle}>
-                <h3 className="text-lg font-bold">Send us your feedback</h3>
-                {errorMessage && (
-                  <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
-                    {errorMessage}
-                  </div>
-                )}
-                {successMessage && (
-                  <div className="mt-2 text-sm text-green-600 animate-slide-fade-in">
-                    {successMessage}
-                  </div>
-                )}
-                <form className="space-y-2" onSubmit={submit}>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(!widgetSettings || widgetSettings.collect_info.name) && (
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                          id="name"
-                          placeholder="Enter your name"
-                          style={themeInputStyle}
-                        />
-                      </div>
-                    )}
-                    {(!widgetSettings || widgetSettings.collect_info.email) && (
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          style={themeInputStyle}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="feedback">Feedback</Label>
-                    <Textarea
-                      id="feedback"
-                      placeholder="Tell us what you think"
-                      className="min-h-[100px]"
-                      style={themeInputStyle}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {[...Array(5)].map((_, index) => (
-                        <StarIcon
-                          key={index}
-                          className={`h-5 w-5 cursor-pointer ${
-                            rating > index
-                              ? "fill-primary"
-                              : "fill-muted stroke-muted-foreground"
-                          }`}
-                          onClick={() => onSelectStar(index)}
-                        />
-                      ))}
+                <MessageCircleIcon className="mr-2 h-5 w-5" />
+                Feedback
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              style={themeStyle}
+              className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md"
+            >
+              <style>{tailwindStyles}</style>
+              {submitted ? (
+                <div
+                  style={themeStyle}
+                  className="animate-slide-fade-in flex flex-col items-center"
+                >
+                  <h3 className="text-lg font-bold">
+                    Thank you for your feedback 🎉
+                  </h3>
+                </div>
+              ) : (
+                <div style={themeStyle}>
+                  <h3 className="text-lg font-bold">Send us your feedback</h3>
+                  {errorMessage && (
+                    <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
+                      {errorMessage}
                     </div>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Sending..." : "Submit"}
-                    </Button>
-                  </div>
-                </form>
+                  )}
+                  {successMessage && (
+                    <div className="mt-2 text-sm text-green-600 animate-slide-fade-in">
+                      {successMessage}
+                    </div>
+                  )}
+                  <form className="space-y-2" onSubmit={submit}>
+                    <div className="grid grid-cols-2 gap-4">
+                      {(!widgetSettings || widgetSettings.collect_info.name) && (
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Name</Label>
+                          <Input
+                            id="name"
+                            placeholder="Enter your name"
+                            style={themeInputStyle}
+                          />
+                        </div>
+                      )}
+                      {(!widgetSettings || widgetSettings.collect_info.email) && (
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            style={themeInputStyle}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback">Feedback</Label>
+                      <Textarea
+                        id="feedback"
+                        placeholder="Tell us what you think"
+                        className="min-h-[100px]"
+                        style={themeInputStyle}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {[...Array(5)].map((_, index) => (
+                          <StarIcon
+                            key={index}
+                            className={`h-5 w-5 cursor-pointer ${
+                              rating > index
+                                ? "fill-primary"
+                                : "fill-muted stroke-muted-foreground"
+                            }`}
+                            onClick={() => onSelectStar(index)}
+                          />
+                        ))}
+                      </div>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Sending..." : "Submit"}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+              <div style={themeStyle} className="text-gray-600 text-xs mt-2">
+                Powered by{" "}
+                <a href="https://feedlytics.in/" target="_blank">
+                  <span className="text-indigo-600 hover:underline">
+                    Feedlytics
+                  </span>
+                  ⚡️
+                </a>
               </div>
-            )}
-            <div style={themeStyle} className="text-gray-600 text-xs mt-2">
-              Powered by{" "}
-              <a href="https://feedlytics.in/" target="_blank">
-                <span className="text-indigo-600 hover:underline">
-                  Feedlytics
-                </span>
-                ⚡️
-              </a>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </>
+    </root.div>
   );
 };
 
