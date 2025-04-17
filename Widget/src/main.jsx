@@ -1,11 +1,35 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import root from "react-shadow";
 
-window.feedlytics_widget = { username: "aniii" };
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// window.feedlytics_widget = { username: "aniii" };
+const init = () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+
+  const urlBotId = window.location.pathname.split("/").pop();
+  if (!window.feedlytics_widget.username && urlBotId) {
+    window.feedlytics_widget = window.feedlytics_widget || {};
+    window.feedlytics_widget.username = urlBotId;
+  }
+
+  if (!window.feedlytics_widget.username) {
+    throw new Error("Widget is not initialized");
+  }
+
+  fetch(new URL("./index.css", import.meta.url))
+    .then((res) => res.text())
+    .then((cssText) => {
+      createRoot(container).render(
+        <StrictMode>
+          <div>
+            <style>{cssText}</style>
+            <App />
+          </div>
+        </StrictMode>
+      );
+    });
+};
+
+init();
