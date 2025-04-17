@@ -1,12 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import root from "react-shadow";
 
-// window.feedlytics_widget = { username: "aniii" };
+window.feedlytics_widget = { username: "aniii" };
 const init = () => {
-  const chatbotNode = document.createElement("div");
-  const shadowRoot = chatbotNode.attachShadow({ mode: "open" });
-  document.body.appendChild(chatbotNode);
+  const container = document.createElement("div");
+  document.body.appendChild(container);
 
   const urlBotId = window.location.pathname.split("/").pop();
   if (!window.feedlytics_widget.username && urlBotId) {
@@ -21,13 +21,12 @@ const init = () => {
   fetch(new URL("./index.css", import.meta.url))
     .then((res) => res.text())
     .then((cssText) => {
-      const styleTag = document.createElement("style");
-      styleTag.textContent = cssText;
-      shadowRoot.appendChild(styleTag);
-
-      createRoot(shadowRoot).render(
+      createRoot(container).render(
         <StrictMode>
-          <App />
+          <root.div>
+            <style>{cssText}</style>
+            <App />
+          </root.div>
         </StrictMode>
       );
     });
