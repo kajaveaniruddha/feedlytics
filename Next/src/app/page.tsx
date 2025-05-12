@@ -1,6 +1,5 @@
 "use client"
 import Link from "next/link"
-import { LampContainer } from "@/components/ui/lamp"
 import { MessageSquare, BarChart3, Bell, Workflow, LayoutDashboard, ShieldCheck, ArrowRight, Zap, CheckCircle2 } from "lucide-react"
 import Footer from "@/components/custom/footer"
 import DashboardShowcase from "@/components/custom/dashboard-showcase"
@@ -74,6 +73,7 @@ export default function LandingPage() {
                   alt="Feedlytics Dashboard"
                   className="w-full sm:w-2/3 h-auto"
                   priority
+                  unoptimized
                 />
                 <div className=" flex flex-col gap-10 absolute top-6 right-3">
                   <div className="text-secondary-foreground bg-white dark:bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-200 dark:border-neutral-700 max-sm:hidden">
@@ -153,26 +153,7 @@ export default function LandingPage() {
 
       {/* Dashboard Showcase */}
       <DashboardShowcase />
-      {/* Final CTA */}
-      <section className="relative">
-        <LampContainer>
-          <MotionDiv
-            className="mt-8 mb-20 max-w-4xl mx-auto text-center relative z-10"
-          >
-            <h2 className="mt-8 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl">Ready to Enhance Your Feedback Process?</h2>
-            <p className="text-lg md:text-xl  text-neutral-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of companies using Feedlytics to improve their products
-            </p>
-            <Link
-              href="/login"
-              className="px-8 py-4 rounded-full bg-white text-black font-medium text-lg hover:scale-105 transition-all inline-flex items-center gap-2"
-            >
-              Start Your Free Trial
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </MotionDiv>
-        </LampContainer>
-      </section>
+
       <Footer />
     </main >
   )

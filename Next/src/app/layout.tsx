@@ -5,13 +5,12 @@ import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ModeToggle } from "@/components/custom/mode-toggle";
 import { ReactLenis } from "@/lib/lenis";
-import Script from "next/script";
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://feedlytics.in"),
-  title: 'Feedlytics – Real-Time Feedback Intelligence for SaaS Teams',
+  title: 'Feedlytics – Instant Feedback Analytics for SaaS Teams',
   description:
     'Collect, analyze, and route user feedback in real-time using AI-powered sentiment and category detection. Automate team notifications via Slack, Google Chat, and more.',
   keywords: [
@@ -71,17 +70,6 @@ export default function RootLayout({
             <ModeToggle />
             <Toaster />
           </ThemeProvider>
-          <Script id="feedlytics-widget-init" strategy="afterInteractive">
-            {`
-              window.feedlytics_widget = {
-                username: "github_kajaveaniruddha"
-              };
-            `}
-          </Script>
-          <Script
-            src="https://widget.feedlytics.in/feedlytics_widget.js"
-            strategy="afterInteractive"
-          />
         </body>
       </ReactLenis>
     </html>
