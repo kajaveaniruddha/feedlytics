@@ -3,11 +3,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useState, useEffect } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
@@ -33,6 +28,7 @@ export const Widget = ({ username }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [widgetSettings, setWidgetSettings] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     axios
@@ -105,110 +101,110 @@ export const Widget = ({ username }) => {
             animation: slideFadeIn 0.5s ease-out;
           }
         `}</style>
-        <div className="widget fixed bottom-4 right-4 z-50">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
+
+        {isOpen && (
+          <div
+            style={themeStyle}
+            className="fixed bottom-4 sm:bottom-8 md:bottom-12 lg:bottom-20 right-2 sm:right-4 rounded-lg bg-card p-4 shadow-lg w-full max-w-md sm:max-w-[90%] md:max-w-[80%] lg:max-w-md widget z-50"
+          >
+            <style>{tailwindStyles}</style>
+            {submitted ? (
+              <div
                 style={themeStyle}
-                className="rounded-full shadow-lg transition-all hover:scale-105"
+                className="animate-slide-fade-in flex flex-col items-center"
               >
-                <MessageCircleIcon className="mr-2 h-5 w-5" />
-                Feedback
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              style={themeStyle}
-              className="widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md"
-            >
-              <style>{tailwindStyles}</style>
-              {submitted ? (
-                <div
-                  style={themeStyle}
-                  className="animate-slide-fade-in flex flex-col items-center"
-                >
-                  <h3 className="text-lg font-bold">
-                    Thank you for your feedback 🎉
-                  </h3>
-                </div>
-              ) : (
-                <div style={themeStyle}>
-                  <h3 className="text-lg font-bold">Send us your feedback</h3>
-                  {errorMessage && (
-                    <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
-                      {errorMessage}
-                    </div>
-                  )}
-                  {successMessage && (
-                    <div className="mt-2 text-sm text-green-600 animate-slide-fade-in">
-                      {successMessage}
-                    </div>
-                  )}
-                  <form className="space-y-2" onSubmit={submit}>
-                    <div className="grid grid-cols-2 gap-4">
-                      {(!widgetSettings || widgetSettings.collect_info.name) && (
-                        <div className="space-y-2">
-                          <Label htmlFor="name">Name</Label>
-                          <Input
-                            id="name"
-                            placeholder="Enter your name"
-                            style={themeInputStyle}
-                          />
-                        </div>
-                      )}
-                      {(!widgetSettings || widgetSettings.collect_info.email) && (
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            style={themeInputStyle}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="feedback">Feedback</Label>
-                      <Textarea
-                        id="feedback"
-                        placeholder="Tell us what you think"
-                        className="min-h-[100px]"
-                        style={themeInputStyle}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {[...Array(5)].map((_, index) => (
-                          <StarIcon
-                            key={index}
-                            className={`h-5 w-5 cursor-pointer ${
-                              rating > index
-                                ? "fill-primary"
-                                : "fill-muted stroke-muted-foreground"
-                            }`}
-                            onClick={() => onSelectStar(index)}
-                          />
-                        ))}
-                      </div>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Sending..." : "Submit"}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              )}
-              <div style={themeStyle} className="text-gray-600 text-xs mt-2">
-                Powered by{" "}
-                <a href="https://feedlytics.in/" target="_blank">
-                  <span className="text-indigo-600 hover:underline">
-                    Feedlytics
-                  </span>
-                  ⚡️
-                </a>
+                <h3 className="text-lg font-bold">
+                  Thank you for your feedback 🎉
+                </h3>
               </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+            ) : (
+              <div style={themeStyle}>
+                <h3 className="font-bold text-base sm:text-lg">
+                  Send us your feedback
+                </h3>
+                {errorMessage && (
+                  <div className="mt-2 text-sm text-red-600 animate-slide-fade-in">
+                    {errorMessage}
+                  </div>
+                )}
+                {successMessage && (
+                  <div className="mt-2 text-sm text-green-600 animate-slide-fade-in">
+                    {successMessage}
+                  </div>
+                )}
+                <form className="space-y-2" onSubmit={submit}>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(!widgetSettings || widgetSettings.collect_info.name) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                          id="name"
+                          placeholder="Enter your name"
+                          style={themeInputStyle}
+                        />
+                      </div>
+                    )}
+                    {(!widgetSettings || widgetSettings.collect_info.email) && (
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          style={themeInputStyle}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="feedback">Feedback</Label>
+                    <Textarea
+                      id="feedback"
+                      placeholder="Tell us what you think"
+                      className="min-h-[100px]"
+                      style={themeInputStyle}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {[...Array(5)].map((_, index) => (
+                        <StarIcon
+                          key={index}
+                          className={`h-5 w-5 cursor-pointer ${
+                            rating > index
+                              ? "fill-primary"
+                              : "fill-muted stroke-muted-foreground"
+                          }`}
+                          onClick={() => onSelectStar(index)}
+                        />
+                      ))}
+                    </div>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? "Sending..." : "Submit"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+            <div style={themeStyle} className="text-gray-600 text-xs mt-2">
+              Powered by{" "}
+              <a href="https://feedlytics.in/" target="_blank">
+                <span className="text-indigo-600 hover:underline">
+                  Feedlytics
+                </span>
+                ⚡️
+              </a>
+            </div>
+          </div>
+        )}
+        <Button
+          style={themeStyle}
+          className="widget fixed bottom-4 right-4 z-50 rounded-full shadow-lg transition-all hover:scale-105"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <MessageCircleIcon className="mr-2 h-5 w-5 " />
+          Feedback
+        </Button>
       </>
     </root.div>
   );
@@ -228,12 +224,13 @@ function StarIcon(props) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />{" "}
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
 }
 
-function MessageCircleIcon(props) {
+const MessageCircleIcon = (props) => {
   return (
     <svg
       {...props}
@@ -248,7 +245,8 @@ function MessageCircleIcon(props) {
       strokeLinejoin="round"
       className="lucide lucide-message-circle"
     >
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />{" "}
       <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
     </svg>
   );
-}
+};
