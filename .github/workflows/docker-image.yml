@@ -33,7 +33,7 @@ jobs:
 
       - name: Build and push Next.js
         run: |
-          docker build -t $DOCKER_USERNAME/feedlytics-nextjs:latest ./Next
+          docker build --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} -t $DOCKER_USERNAME/feedlytics-nextjs:latest ./Next
           docker push $DOCKER_USERNAME/feedlytics-nextjs:latest
 
       - name: Build and push Services

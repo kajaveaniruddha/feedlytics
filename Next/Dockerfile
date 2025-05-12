@@ -2,7 +2,9 @@ FROM node:18-alpine as builder
 
 # Install pnpm
 RUN npm install -g pnpm
+ARG DATABASE_URL
 
+ENV DATABASE_URL=$DATABASE_URL
 # Set working dir and copy files
 WORKDIR /app
 COPY . .
