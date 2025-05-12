@@ -3,6 +3,7 @@ import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/custom/navbar";
 import { MessageProvider } from "@/context/MessageProvider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -27,6 +28,17 @@ export default function RootLayout({
           <Toaster />
         </section>
       </AuthProvider>
+      <Script id="feedlytics-widget-init" strategy="afterInteractive">
+        {`
+              window.feedlytics_widget = {
+                username: "github_kajaveaniruddha"
+              };
+            `}
+      </Script>
+      <Script
+        src="https://widget.feedlytics.in/feedlytics_widget.js"
+        strategy="afterInteractive"
+      />
     </main>
   );
 }
