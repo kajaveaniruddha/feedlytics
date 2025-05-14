@@ -40,6 +40,7 @@ const FormSignup = () => {
             username: "",
             email: "",
             password: "",
+            confirmPassword: "",
         },
     });
 
@@ -108,7 +109,7 @@ const FormSignup = () => {
                                 <Input
                                     placeholder="Enter your name"
                                     {...field}
-                                    className="border-0 placeholder:text-[hsl(var(--form-placeholder))]"
+                                    className="placeholder:text-[hsl(var(--form-placeholder))]"
                                 />
                             </FormControl>
                             <FormMessage />
@@ -128,7 +129,7 @@ const FormSignup = () => {
                                 <Input
                                     placeholder="Enter your email"
                                     {...field}
-                                    className="border-0 placeholder:text-[hsl(var(--form-placeholder))]"
+                                    className="placeholder:text-[hsl(var(--form-placeholder))]"
                                 />
                             </FormControl>
                             <FormMessage />
@@ -152,7 +153,7 @@ const FormSignup = () => {
                                         field.onChange(e);
                                         debounced(e.target.value);
                                     }}
-                                    className=" border-0  placeholder:text-[hsl(var(--form-placeholder))]"
+                                    className="  placeholder:text-[hsl(var(--form-placeholder))]"
                                 />
                             </FormControl>
                             {isCheckingUsername && (
@@ -188,6 +189,26 @@ const FormSignup = () => {
                         </FormItem>
                     )}
                 />
+                <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                        <FormItem>
+                            <span className="flex gap-2">
+                                <Lock className="w-4 h-4 " />
+                                <FormLabel>Confirm Password</FormLabel>
+                            </span>
+                            <FormControl>
+                                <Input
+                                    type="password"
+                                    placeholder="Confirm your password"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -212,7 +233,9 @@ const FormSignup = () => {
                     Login
                 </Link>
             </div>
+
         </Form>
+
     )
 }
 

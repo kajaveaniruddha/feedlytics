@@ -30,7 +30,7 @@ const SSOAuth = ({ authType }: SSOAuthProps) => {
     }
 
     return (
-        <div className="mb-4 w-full">
+        <div className={`mb-4 w-full ${loading ? "pointer-events-none opacity-50" : ""}`}>
             <h2 className=" text-lg mb-4 text-center">{authType === "signup" ? "Register" : "Login"}</h2>
             <div className="flex gap-3">
                 <Button
