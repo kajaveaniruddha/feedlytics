@@ -15,7 +15,9 @@ export async function GET(
         name: usersTable.name,
         introduction: usersTable.introduction,
         questions: usersTable.questions,
-        avatar_url: usersTable.avatarUrl
+        avatar_url: usersTable.avatarUrl,
+        collectName: usersTable.collectName,
+        collectEmail: usersTable.collectEmail
       })
       .from(usersTable)
       .where(eq(usersTable.username, username))

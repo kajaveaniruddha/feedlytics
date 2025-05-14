@@ -37,7 +37,7 @@ export const feedbackWorker = new Worker(
   async (job: Job) => {
     console.log("Testing feedback worker");
     console.log("Received job data:", job.data);
-    const { userId, stars, content, createdAt } = job.data;
+    const { userId, stars, content, createdAt, email, name } = job.data;
 
     try {
       // Analyze sentiment and feedback classification
@@ -57,6 +57,8 @@ export const feedbackWorker = new Worker(
       // Insert feedback message with analysis results
       await db.insert(feedbacksTable).values({
         userId,
+        email,
+        name,
         stars,
         content,
         sentiment,

@@ -41,13 +41,8 @@ jobs:
           docker build -t $DOCKER_USERNAME/feedlytics-services:latest ./Services
           docker push $DOCKER_USERNAME/feedlytics-services:latest
 
-      - name: Build and push Widget
-        run: |
-          docker build -t $DOCKER_USERNAME/feedlytics-widget:latest ./Widget
-          docker push $DOCKER_USERNAME/feedlytics-widget:latest
-
       - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
@@ -55,4 +50,5 @@ jobs:
           script: |
             cd feedlytics/
             docker rmi -f $(docker images -q) || true
+            docker-compose down || true
             docker-compose up -d --pull always

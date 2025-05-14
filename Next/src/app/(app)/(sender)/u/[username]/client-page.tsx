@@ -23,8 +23,8 @@ import StarRating from "@/components/custom/star-rating";
 import { AnimatePresence, motion } from "framer-motion";
 import Confetti from "react-confetti";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const ClientPage = ({ username }: { username: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +37,8 @@ const ClientPage = ({ username }: { username: string }) => {
         resolver: zodResolver(SendMessageSchema),
         defaultValues: {
             username: username,
+            name: "",
+            email: "",
             stars: 5,
             content: "",
         },
@@ -148,6 +150,38 @@ const ClientPage = ({ username }: { username: string }) => {
                                         onSubmit={form.handleSubmit(onSubmit)}
                                         className="space-y-6 mt-4"
                                     >
+                                        {userDetails?.collectName && (
+                                            <FormField
+                                                control={form.control}
+                                                name="name"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Input placeholder="Name" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        )}
+                                        {userDetails?.collectEmail && (
+                                            <FormField
+                                                control={form.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormControl>
+                                                            <Input
+                                                                placeholder="Email"
+                                                                {...field}
+                                                                type="email"
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        )}
                                         <FormField
                                             control={form.control}
                                             name="stars"

@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
 
 export async function POST(request: Request) {
-  const { username, stars, content } = await request.json();
+  const { username, stars, content, email, name } = await request.json();
 
   try {
     const [user] = await db
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       .where(eq(usersTable.id, user.id));
 
     try {
-      console.log(process.env.SERVICES_URL)
+      console.log(process.env.SERVICES_URL);
       const queueResponse = await fetch(
         `${process.env.SERVICES_URL}/add-feedback`,
         {
@@ -90,6 +90,7 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             data: {
               userId: user.id,
+              email,
               stars,
               content,
               createdAt: new Date(),

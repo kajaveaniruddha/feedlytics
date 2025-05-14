@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
-import root from "react-shadow"; // added import
+import root from "react-shadow";
 
 // Add helper to compute lighter shade of a hex color
 function lightenColor(color, percent) {
@@ -65,16 +65,18 @@ export const Widget = ({ username }) => {
     const form = e.target;
     const data = {
       username: username,
+      name: form.name?.value || "",
+      email: form.email?.value || "",
       content: form.feedback.value,
       stars: rating,
     };
 
     const apiUrl = `${DASHBOARD_BASE_URL}/api/send-message`;
-    console.log("Sending feedback:", data);
+    // console.log("Sending feedback:", data);
 
     try {
       const response = await axios.post(apiUrl, data);
-      console.log(response.data);
+      // console.log(response.data);
       setSuccessMessage(response.data.message || "Feedback sent successfully!");
       setSubmitted(true);
     } catch (error) {
@@ -172,14 +174,23 @@ export const Widget = ({ username }) => {
                           key={index}
                           className={`h-5 w-5 cursor-pointer ${
                             rating > index
-                              ? "fill-primary"
+                              ? "fill-[#FFD700]"
                               : "fill-muted stroke-muted-foreground"
                           }`}
                           onClick={() => onSelectStar(index)}
                         />
                       ))}
                     </div>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      style={{
+                        backgroundColor: widgetSettings
+                          ? lightenColor(widgetSettings.bg_color, -20)
+                          : "#4F46E5",
+                        color: widgetSettings?.text_color || "#FFFFFF",
+                      }}
+                    >
                       {isSubmitting ? "Sending..." : "Submit"}
                     </Button>
                   </div>
@@ -218,9 +229,9 @@ function StarIcon(props) {
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill="none"
+      fill="#FFD700"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="0"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -240,7 +251,7 @@ const MessageCircleIcon = (props) => {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1"
       strokeLinecap="round"
       strokeLinejoin="round"
       className="lucide lucide-message-circle"

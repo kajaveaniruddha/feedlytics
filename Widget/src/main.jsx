@@ -1,9 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import root from "react-shadow";
 
-// window.feedlytics_widget = { username: "aniii" };
+window.feedlytics_widget = { username: "github_kajaveaniruddha" };
 const init = () => {
   const container = document.createElement("div");
   document.body.appendChild(container);
