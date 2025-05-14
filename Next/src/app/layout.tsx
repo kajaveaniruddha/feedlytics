@@ -10,7 +10,7 @@ const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://feedlytics.in"),
-  title: 'Feedlytics – Instant Feedback Analytics for SaaS Teams',
+  title: 'Feedlytics – Instant Feedback Analytics & Notification System for SaaS Teams',
   description:
     'Collect, analyze, and route user feedback in real-time using AI-powered sentiment and category detection. Automate team notifications via Slack, Google Chat, and more.',
   keywords: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     'feedback forms',
   ],
   openGraph: {
-    title: 'Feedlytics – Real-Time Feedback Intelligence for SaaS Teams',
+    title: 'Feedlytics – Instant Feedback Analytics & Notification System for SaaS Teams',
     description:
       'Collect, analyze, and route user feedback in real-time using AI-powered sentiment and category detection. Automate team notifications via Slack, Google Chat, and more.',
     url: 'https://feedlytics.in',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@feedlytics',
-    title: 'Feedlytics – Real-Time Feedback Intelligence for SaaS Teams',
+    title: 'Feedlytics – Instant Feedback Analytics & Notification System for SaaS Teams',
     description:
       'Collect, analyze, and route user feedback in real-time using AI-powered sentiment and category detection. Automate team notifications via Slack, Google Chat, and more.',
     images: ['https://feedlytics.in/opengraph-image.png'],

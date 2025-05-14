@@ -22,8 +22,8 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
         window.feedlytics_widget = {
             username: ${username}
         }
-        </script>
-        <script defer src="https://widget.feedlytics.in/feedlytics_widget.js"></script>`
+</script>
+<script defer src="https://widget.feedlytics.in/feedlytics_widget.js"></script>`
 
   const copyToClipboard = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -83,7 +83,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
         <CardContent>
           <div className="space-y-3">
             <div className="relative">
-              <Textarea value={widget_script} readOnly rows={3} className="font-mono text-sm text-primary pr-10" />
+              <Textarea value={widget_script} readOnly rows={6} className="font-mono text-sm text-primary pr-10" />
             </div>
             <Button onClick={copyWidgetToClipboard} variant="outline" className="w-full sm:w-auto">
               {widgetCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
@@ -98,7 +98,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <h3 className="text-lg font-semibold">Accept Feedbacks</h3>
-              <p className={cn("text-sm text-muted-foreground", acceptMessages ? "text-primary" : "text-yellow-500")}>
+              <p className={cn("text-sm text-muted-foreground", acceptMessages ? "text-primary" : "text-peimary")}>
                 {acceptMessages ? "You are currently accepting feedback" : "You are not accepting feedback right now"}
               </p>
             </div>

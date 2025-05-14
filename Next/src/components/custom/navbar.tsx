@@ -146,12 +146,14 @@ const UserMenu = ({ username, avatarUrl }: { username: string, avatarUrl: string
       <div className="space-y-1 pt-2">
         <Button
           variant="ghost"
+          disabled
           className="w-full justify-start scale-95 hover:scale-100 transition-transform"
         >
           <Settings className="w-4 h-4 mr-2" />
           Settings
         </Button>
         <Button
+          disabled
           variant="ghost"
           className="w-full justify-start scale-95 hover:scale-100 transition-transform"
         >

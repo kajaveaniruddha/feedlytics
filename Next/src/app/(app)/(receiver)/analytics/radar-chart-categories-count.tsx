@@ -17,11 +17,6 @@ import {
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type ChartDataItem = {
-    category: string;
-    count: number;
-};
-
 const chartConfig = {
     desktop: {
         label: "Category",
@@ -63,9 +58,9 @@ export default function RadarChartCategoriesCount({ categoryCounts, isLoading }:
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="pb-0 max-w-xl">
+                <ChartContainer config={chartConfig} className="pb-0 max-w-xl items-center">
                     <RadarChart data={chartData}>
-                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <ChartTooltip cursor={true} content={<ChartTooltipContent />} />
                         <PolarGrid
                             className="fill-[hsl(var(--chart-2))] opacity-10" // updated fill class
                             gridType="circle"
