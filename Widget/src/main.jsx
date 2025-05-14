@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 
-window.feedlytics_widget = { username: "github_kajaveaniruddha" };
+// window.feedlytics_widget = { username: "aniii" };
 const init = () => {
   const container = document.createElement("div");
   document.body.appendChild(container);
