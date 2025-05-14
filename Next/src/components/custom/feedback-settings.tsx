@@ -83,7 +83,7 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
         <CardContent>
           <div className="space-y-3">
             <div className="relative">
-              <Textarea value={widget_script} readOnly rows={6} className="font-mono text-sm text-primary pr-10" />
+              <Textarea value={widget_script} readOnly rows={7} className="font-mono text-sm text-primary pr-10" />
             </div>
             <Button onClick={copyWidgetToClipboard} variant="outline" className="w-full sm:w-auto">
               {widgetCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
