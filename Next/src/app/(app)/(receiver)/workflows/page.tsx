@@ -10,6 +10,7 @@ import { IconPhChatsFill } from "@/components/icons/googlechat"
 import React from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import type { IWorkFlows, ProviderConfig } from "@/types"
+import WebhookGuide from "@/components/custom/webhook-guide"
 
 const Page = () => {
     const [workflowsData, setWorkflowsData] = useState<Record<string, any[]>>({})
@@ -95,6 +96,7 @@ const Page = () => {
             >
                 Manage your workflows to receive real-time feedback alerts directly in your selected groups.
             </motion.p>
+
             <Card className=" h-fit">
                 <CardHeader>
                     {selectedWorkflow ? "Edit Workflow" : "Add Workflow"}
@@ -135,6 +137,8 @@ const Page = () => {
                     ))
                 )}
             </div>
+            {/* Webhook Guides Section */}
+            <WebhookGuide />
         </motion.section >
     )
 }

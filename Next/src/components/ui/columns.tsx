@@ -39,7 +39,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  
+
   {
     accessorKey: "createdAt",
     header: "Date",
@@ -91,11 +91,11 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       }
 
       return (
-          <span className=" flex justify-center">
-            {sentiment.icon && (
-              <sentiment.icon className="text-secondary-foreground " />
-            )}
-          </span>
+        <>
+          {sentiment.icon && (
+            <sentiment.icon className="text-secondary-foreground " />
+          )}
+        </>
       )
     },
     filterFn: (row, id, value) => {
@@ -143,10 +143,19 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
       return rowCategories.some((category) => filterValues.includes(category));
     },
   },
-
   {
     accessorKey: "content",
     header: "Feedback Content",
     cell: ({ getValue }) => <p className="">{getValue()}</p>,
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ getValue }) => <p className="">{getValue() || "-"}</p>,
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ getValue }) => <p className="">{getValue() || "-"}</p>,
   },
 ];

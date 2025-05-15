@@ -1,26 +1,33 @@
+"use client"
 import React from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Table } from 'lucide-react';
+import { Card, CardContent } from '../ui/card';
+import { useAcceptMessages } from '@/hooks/use-accept-messages';
+import { cn } from '@/lib/utils';
+import { Switch } from '../ui/switch';
 
 export const FeedbackLink: React.FC = () => {
+  const { acceptMessages, isLoading, handleSwitchChange } = useAcceptMessages()
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.5 }}
-      className="flex justify-center"
+      className="flex justify-center w-full z-30"
     >
-      <Link href="/feedbacks" passHref>
-        <motion.div
-          className="bg-secondary rounded-lg px-6 py-4 flex items-center justify-center custom-shadow transition-all duration-300 cursor-pointer w-full max-w-md"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Table className="w-6 h-6 mr-3 text-primary" />
-          <span className="text-md font-light">Go to Feedbacks Table</span>
-        </motion.div>
-      </Link>
+     <Card className=' w-full'>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold">Accept Feedbacks</h3>
+              <p className={cn("text-sm text-muted-foreground", acceptMessages ? "text-primary" : "text-secondary")}>
+                {acceptMessages ? "You are currently accepting feedback" : "You are not accepting feedback right now"}
+              </p>
+            </div>
+            <Switch checked={acceptMessages} disabled={isLoading} onCheckedChange={handleSwitchChange} />
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

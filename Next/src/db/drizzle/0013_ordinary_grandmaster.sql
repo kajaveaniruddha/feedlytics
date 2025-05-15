@@ -1,0 +1,1 @@
+ALTER TABLE "feedbacks" ALTER COLUMN "name" DROP DEFAULT;

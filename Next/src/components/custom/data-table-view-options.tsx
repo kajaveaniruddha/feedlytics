@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "../ui/button"
+import { ReactNode } from "react"
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>
@@ -26,7 +27,7 @@ export function DataTableViewOptions<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-8 lg:flex"
+          className="ml-auto h-8 flex"
         >
           <Settings2 />
           View
@@ -49,7 +50,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {column.columnDef.header as ReactNode}
               </DropdownMenuCheckboxItem>
             )
           })}

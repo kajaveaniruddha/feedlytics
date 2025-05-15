@@ -1,19 +1,16 @@
 "use client"
 
 import React, { useCallback, useState } from "react"
-import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { useAcceptMessages } from "@/hooks/use-accept-messages"
 import { Check, Copy, LinkIcon, Code } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
 
 export const FeedbackSettings = React.memo(({ username }: { username: string }) => {
   const { toast } = useToast()
-  const { acceptMessages, isLoading, handleSwitchChange } = useAcceptMessages()
+
   const [urlCopied, setUrlCopied] = useState(false)
   const [widgetCopied, setWidgetCopied] = useState(false)
 
@@ -93,19 +90,6 @@ export const FeedbackSettings = React.memo(({ username }: { username: string }) 
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">Accept Feedbacks</h3>
-              <p className={cn("text-sm text-muted-foreground", acceptMessages ? "text-primary" : "text-peimary")}>
-                {acceptMessages ? "You are currently accepting feedback" : "You are not accepting feedback right now"}
-              </p>
-            </div>
-            <Switch checked={acceptMessages} disabled={isLoading} onCheckedChange={handleSwitchChange} />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* <Card>
         <CardContent className="pt-6">

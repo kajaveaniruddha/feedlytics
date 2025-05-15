@@ -1,6 +1,6 @@
 "use client";
 
-import { Crown, Zap } from "lucide-react";
+import { Crown } from "lucide-react";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import {
   Card,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/chart";
 import { Button } from "../ui/button";
 import { useMessageContext } from "@/hooks/use-message-context";
+
 const chartData = [{ month: "january", total: 50, collected: 0 }];
 
 const chartConfig = {
@@ -38,7 +39,7 @@ interface props {
 export default function Component({
   username,
 }: props) {
-  const { messageCount, maxMessages } =
+  const { messageCount, maxMessages, userInfo } =
     useMessageContext();
   chartData[0].collected = messageCount;
   chartData[0].total = maxMessages - messageCount;
@@ -49,7 +50,7 @@ export default function Component({
       <CardHeader className="text-center space-y-1.5">
         <CardTitle className="text-2xl font-bold">Total Feedbacks</CardTitle>
         <CardDescription className="text-secondary-foreground font-medium">
-          Current Plan: FREE
+          Current Plan: <span className=" font-bold tracking-wide">{userInfo.userTier.toUpperCase()}</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 relative pt-4">
@@ -112,15 +113,26 @@ export default function Component({
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-center gap-4 pb-6">
-        <Button
-          variant="default"
-          size="lg"
-          onClick={() => alert("Not Available Yet")}
-          className=" z-20"
-        >
-          <Crown className="w-5 h-5 mr-2" />
-          Upgrade to Pro
-        </Button>
+        {userInfo.userTier === "free" ? <form action="/api/checkout-sessions" method="POST" className="z-20">
+          <section>
+            <Button
+              variant="default"
+              size="lg"
+              type="submit"
+              role="link"
+            >
+              <Crown className="w-5 h-5 mr-2" />
+              Upgrade to Premium
+            </Button>
+          </section>
+        </form> :
+          <Button
+            variant="default"
+            size="lg"
+          >
+            <Crown className="w-5 h-5 mr-2" />
+            Premium User
+          </Button>}
         <div className="text-sm">
           Showing total feedbacks for{" "}
           <span className=" font-medium">

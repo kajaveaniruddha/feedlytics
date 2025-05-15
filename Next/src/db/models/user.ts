@@ -37,10 +37,11 @@ export const usersTable = pgTable(
     maxMessages: integer("max_messages").default(50),
     maxWorkflows: integer("max_workflows").default(5),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    bgColor: varchar("bg_color", { length: 7 }).default("#00000"),
+    bgColor: varchar("bg_color", { length: 7 }).default("#000000"),
     textColor: varchar("text_color", { length: 7 }).default("#ffffff"),
     collectName: boolean("collect_name").notNull().default(false),
     collectEmail: boolean("collect_email").notNull().default(false),
+    userTier: varchar("user_tier", { length: 50 }).default("free"),
   },
   (table) => [
     {

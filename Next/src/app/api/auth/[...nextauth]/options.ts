@@ -7,19 +7,6 @@ import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
 import { or, eq } from "drizzle-orm";
 
-// async function generateUniqueUsername(baseName: string) {
-//   // For emails, take the part before @, otherwise use the whole baseName
-//   const baseUsername = baseName.includes("@")
-//     ? baseName.split("@")[0]
-//     : baseName;
-
-//   // Clean the username and append Unix timestamp
-//   const username = `${baseUsername
-//     .toLowerCase()
-//     .replace(/[^a-z0-9]/g, "")}_${Date.now()}`;
-//   return username;
-// }
-
 async function generateUniqueUsername(
   userId: string,
   provider: "github" | "google"
@@ -82,8 +69,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET!,
     }),
     GoogleProvider({
-      clientId: process.env.AUTHH_GOOGLE_ID!,
-      clientSecret: process.env.AUTHH_GOOGLE_SECRET!,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
   ],
   pages: { signIn: "/login" },
@@ -103,7 +90,7 @@ export const authOptions: NextAuthOptions = {
 
           if (existingUser.length === 0) {
             const uniqueUsername = await generateUniqueUsername(
-              user.id as string,
+              account?.providerAccountId,
               account?.provider
             );
 
@@ -115,7 +102,7 @@ export const authOptions: NextAuthOptions = {
               username: uniqueUsername,
               isVerified: true,
               password: "",
-            });
+            }).onConflictDoNothing();
           }
           // Allow sign in for both new and existing users
           return true;

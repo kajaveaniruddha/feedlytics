@@ -21,6 +21,7 @@ interface MessageContextType {
   session: any;
   userInfo: {
     name: string;
+    userTier: "free" | "premium";
     avatarUrl: string;
     bgColor: string;
     textColor: string;
@@ -37,6 +38,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [maxMessages, setMaxMessages] = useState<number>(50);
   const [userInfo, setUserInfo] = useState({
     name: "",
+    userTier: "free" as "free" | "premium",
     avatarUrl: "",
     bgColor: "",
     textColor: "",
@@ -58,13 +60,14 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
       setMaxMessages(res.data?.maxMessages as number);
       setUserInfo({
         name: res.data?.userDetails?.name as string,
+        userTier: res.data?.userDetails?.userTier as "free" | "premium",
         avatarUrl: res.data?.userDetails?.avatar_url as string,
         bgColor: res.data?.userDetails?.bgColor as string,
         textColor: res.data?.userDetails?.textColor as string,
         collectEmail: res.data?.userDetails?.collectEmail as boolean,
         collectName: res.data?.userDetails?.collectName as boolean,
       });
-      console.log(res.data?.userDetails?.avatar_url);
+      // console.log(res.data?.userDetails?.avatar_url);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({

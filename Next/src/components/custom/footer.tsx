@@ -13,16 +13,22 @@ const Footer = (props: Props) => {
                 </div>
                 <div className="flex gap-8">
                     <Link
-                        href="/privacy"
+                        href="/about"
                         className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                     >
-                        Privacy
+                        About Us
                     </Link>
                     <Link
-                        href="/terms"
+                        href="/privacy-policy"
                         className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                     >
-                        Terms
+                        Privacy Policy
+                    </Link>
+                    <Link
+                        href="/terms-and-conditions"
+                        className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                    >
+                        Terms & Conditions
                     </Link>
                     <Link
                         href="https://www.linkedin.com/in/aniruddhakajave/"

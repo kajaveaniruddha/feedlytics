@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const userDetails = await db
       .select({
         name: usersTable.name,
+        userTier: usersTable.userTier,
         avatar_url: usersTable.avatarUrl,
         messageCount: usersTable.messageCount,
         maxMessages: usersTable.maxMessages,
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
 
     const {
       name,
+      userTier,
       avatar_url,
       messageCount,
       maxMessages,
@@ -51,6 +53,7 @@ export async function GET(request: Request) {
         maxWorkflows,
         userDetails: {
           name,
+          userTier,
           avatar_url,
           bgColor,
           collectEmail,

@@ -24,7 +24,7 @@ export const feedbacksTable = pgTable(
       .array()
       .notNull()
       .default(sql`ARRAY[]::text[]`),
-    name: varchar("name", { length: 50 }).default("sender"),
+    name: varchar("name", { length: 50 }),
     email: varchar("email", { length: 50 }),
   },
   (table) => [

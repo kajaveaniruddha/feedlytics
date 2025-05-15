@@ -19,6 +19,7 @@ export interface ApiResponse {
   messagesFound?: number;
   userDetails?: {
     name: string;
+    userTier: "free" | "premium";
     avatar_url: string;
     bgColor: string;
     collectEmail: boolean; // changed from string to boolean
@@ -29,6 +30,7 @@ export interface ApiResponse {
 
 export interface userDetailsType {
   name: string;
+  userTier: "free" | "premium";
   username: string;
   avatar_url: string;
   introduction: string;

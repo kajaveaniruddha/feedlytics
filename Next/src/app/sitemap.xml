@@ -1,0 +1,32 @@
+// sitemap.ts
+// Generates a simple sitemap for Next.js
+
+export default function generateSitemap() {
+  // Add your static routes here
+  const staticRoutes = [
+    "/",
+    "/about",
+    "/privacy-policy",
+    "/terms-and-conditions",
+  ];
+
+  // You can add dynamic routes here if needed
+
+  const urls = staticRoutes.map((route) => {
+    return `<url><loc>${
+      process.env.NEXT_PUBLIC_BASE_URL || "https://feedlytics.in"
+    }${route}</loc></url>`;
+  });
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join(
+    "\n"
+  )}\n</urlset>`;
+}
+
+// Example API route handler for Next.js (if you want to expose /sitemap.xml)
+// import type { NextApiRequest, NextApiResponse } from 'next';
+// export default function handler(req: NextApiRequest, res: NextApiResponse) {
+//   res.setHeader('Content-Type', 'application/xml');
+//   res.write(generateSitemap());
+//   res.end();
+// }
