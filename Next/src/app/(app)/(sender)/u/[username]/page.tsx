@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
 import ClientPage from "./client-page";
 import { Metadata } from "next";
+import { TanstackProvider } from "@/context/tanstack-provider";
 
 export const metadata: Metadata = {
   title: "Feedlytics | Collect Feedback",
@@ -13,7 +13,9 @@ const Page = async ({ params }: { params: Promise<{ username: string }> }) => {
   return (
     <>
       <section className=" w-full h-screen flex justify-center items-center">
+        <TanstackProvider>
           <ClientPage username={username} />
+        </TanstackProvider>
       </section>
     </>
   );
