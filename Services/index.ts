@@ -20,10 +20,30 @@ app.post("/get-verification-email", async (req: any, res: any) => {
       },
     })
     .then(() => {
-      res.send({ status: 200, message: "Mail sent successfully" });
+      res.send({ status: 200, message: "Verification Mail sent successfully" });
     })
     .catch(() => {
-      res.send({ status: 500, message: "Mail not sent due to queue error." });
+      res.send({ status: 500, message: "Verification Mail not sent due to queue error." });
+    });
+});
+
+app.post("/get-payment-email", async (req: any, res: any) => {
+  const { data } = req.body;
+  await emailQueue
+    .add("sendPaymentEmail", data, {
+      removeOnComplete: {
+        age: 5, // keep up to 5 seconds
+        count: 0, // keep up to 0 jobs
+      },
+      removeOnFail: {
+        age: 5, // keep up to 5seconds
+      },
+    })
+    .then(() => {
+      res.send({ status: 200, message: "Payment Mail sent successfully" });
+    })
+    .catch(() => {
+      res.send({ status: 500, message: "Payment Mail not sent due to queue error." });
     });
 });
 

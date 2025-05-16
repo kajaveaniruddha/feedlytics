@@ -1,26 +1,34 @@
 import { Job, Worker } from "bullmq";
 import { emailQueue } from "../queue";
-import { sendVerificationEmail } from "../jobs/sendVerificationEmail";
+import { sendPaymentEmail, sendVerificationEmail } from "../jobs/send-email";
 
 export const queueWorker = new Worker(
   "emailQueue", // Match the name used in the queue definition
   async (job: Job) => {
     try {
-      // if (job.name === "sendVerificationEmail") {
-      //   Process the email sending job
-      // }
-      console.log("Running email worker")
-      const data = job.data;
-      console.log("Processing job with data:", data);
+      if (job.name === "sendVerificationEmail") {
+        console.log("Running email worker");
+        const data = job.data;
+        console.log("Processing job with data:", data);
 
-      // Call the sendVerificationEmail function
-      await sendVerificationEmail(
-        data.email,
-        data.username,
-        data.verifyCode,
-        new Date(data.expiryDate)
-      );
+        // Call the sendVerificationEmail function
+        await sendVerificationEmail(
+          data.email,
+          data.username,
+          data.verifyCode,
+          new Date(data.expiryDate)
+        );
+      }
+      if (job.name === "sendPaymentEmail") {
+        console.log("Running email worker");
+        const data = job.data;
+        console.log("Processing job with data:", data);
 
+        // Call the sendPaymentEmail function
+        await sendPaymentEmail(
+          data.email,
+        );
+      }
       // Update the job progress when 100% done
       // await job.updateProgress(100);
     } catch (error) {

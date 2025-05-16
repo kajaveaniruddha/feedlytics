@@ -63,6 +63,36 @@ export async function POST(request: Request) {
         }
       }
     }
+    const queueResponse = await fetch(
+      `${process.env.SERVICES_URL}/get-payment-email`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: {
+            email,
+          },
+        }),
+      }
+    );
+
+    if (!queueResponse.ok) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Failed to send email.",
+        }),
+        { status: 500 }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "User registered successfully.",
+      }),
+      { status: 201 }
+    );
   }
 
   return NextResponse.json({ received: true });
