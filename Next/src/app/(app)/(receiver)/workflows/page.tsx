@@ -11,32 +11,40 @@ import React from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import type { IWorkFlows, ProviderConfig } from "@/types"
 import WebhookGuide from "@/components/custom/webhook-guide"
+import { useQuery } from "@tanstack/react-query"
+import { useToast } from "@/components/ui/use-toast"
 
 const Page = () => {
-    const [workflowsData, setWorkflowsData] = useState<Record<string, any[]>>({})
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
     const [selectedWorkflow, setSelectedWorkflow] = useState<IWorkFlows | null>(null)
+    const { toast } = useToast()
 
-    const fetchWorkflows = async () => {
-        try {
+    const {
+        data: workflowsData,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    } = useQuery<Record<string, any[]>>({
+        queryKey: ["user-workflows"],
+        queryFn: async () => {
             const res = await axios.get("/api/user-workflows")
-            if (res.data.success) {
-                setWorkflowsData(res.data.workflows)
-                setError(null)
-            } else {
-                setError(res.data.error || "Error loading workflows")
+            if (!res.data.success) {
+                throw new Error(res.data.error || "Error loading workflows")
             }
-        } catch (err) {
-            setError("Error fetching workflows")
-        } finally {
-            setLoading(false)
-        }
-    }
+            return res.data.workflows as Record<string, any[]>
+        },
+        staleTime: 5000,
+        refetchOnWindowFocus: false,
+    })
 
     useEffect(() => {
-        fetchWorkflows()
-    }, [])
+        if (isError) {
+            toast({
+                title: "Error",
+                description: (error as Error)?.message || "Error loading workflows",
+            })
+        }
+    }, [isError, error, toast])
 
     const providersConfig: ProviderConfig[] = [
         {
@@ -58,7 +66,7 @@ const Page = () => {
     ]
 
     const refreshData = () => {
-        fetchWorkflows()
+        refetch()
     }
 
     // Global form submit handler clears selection and refreshes data.
@@ -114,13 +122,13 @@ const Page = () => {
                 </CardContent>
             </Card>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                {loading ? (
+                {isLoading ? (
                     <>
                         <GroupsListSkeleton />
                         <GroupsListSkeleton />
                     </>
-                ) : error ? (
-                    <p className="text-red-600">{error}</p>
+                ) : isError ? (
+                    <p className="text-red-600">{(error as Error)?.message || "Error loading workflows"}</p>
                 ) : (
                     providersConfig.map((config) => (
                         <WorkFlowList
@@ -130,7 +138,7 @@ const Page = () => {
                             icon={config.icon}
                             emptyListText={config.emptyListText}
                             emptyListSubtext={config.emptyListSubtext}
-                            workflows={workflowsData[config.provider] || []}
+                            workflows={workflowsData?.[config.provider] || []}
                             onRefresh={refreshData}
                             onEdit={handleEdit}
                         />

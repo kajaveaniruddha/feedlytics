@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/custom/navbar";
 import { MessageProvider } from "@/context/MessageProvider";
 import Script from "next/script";
+import { TanstackProvider } from "@/context/tanstack-provider";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -22,7 +23,9 @@ export default function RootLayout({
           <MessageProvider>
             <Navbar />
             <div className="w-full mx-auto max-sm:w-[95%] sm:ml-64" style={{ scrollbarGutter: "stable" }}>
-              {children}
+              <TanstackProvider>
+                {children}
+              </TanstackProvider>
             </div>
           </MessageProvider>
           <Toaster />

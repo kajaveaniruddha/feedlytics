@@ -25,13 +25,31 @@ import Confetti from "react-confetti";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
 
 const ClientPage = ({ username }: { username: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [userDetails, setUserDetails] = useState<userDetailsType>();
     const [submitted, setSubmitted] = useState<boolean>(false);
     const { toast } = useToast();
+
+    const { data: userDetails, isLoading, isError, error, refetch } = useQuery<userDetailsType>({
+        queryKey: ["user-form-details", username],
+        queryFn: async () => {
+            const res = await axios.get<ApiResponseUserDetails>(`/api/get-user-form-details/${username}`);
+            return res.data.userDetails;
+        },
+        staleTime: 5000,
+        refetchOnWindowFocus: false,
+    });
+
+    useEffect(() => {
+        if (isError) {
+            toast({
+                title: "Error",
+                description: (error as Error)?.message || "Failed to fetch user details",
+            });
+        }
+    }, [isError, error, toast]);
 
     const form = useForm({
         resolver: zodResolver(SendMessageSchema),
@@ -62,32 +80,6 @@ const ClientPage = ({ username }: { username: string }) => {
             setIsSubmitting(false);
         }
     };
-
-    const fetchUserDetails = useCallback(async (refresh: boolean = false) => {
-        setIsLoading(true);
-        try {
-            const res = await axios.get<ApiResponseUserDetails>(`/api/get-user-form-details/${username}`);
-            setUserDetails(res.data.userDetails);
-            if (refresh) {
-                toast({
-                    title: "Refreshed page",
-                    description: "Showing latest page details.",
-                });
-            }
-        } catch (error) {
-            const axiosError = error as AxiosError<ApiResponse>;
-            toast({
-                title: "Error",
-                description: axiosError.response?.data.message,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    }, [toast, username]);
-
-    useEffect(() => {
-        fetchUserDetails();
-    }, [fetchUserDetails]);
 
     return (
         <>

@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 export { default } from "next-auth/middleware";
 import { getToken } from "next-auth/jwt";
+import { rateLimit } from "./config/rateLimiter";
+
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
+  // Rate limiting
+  const response = NextResponse.next();
+  const rateLimitResult = await rateLimit({ request, response });
+  if (rateLimitResult) return rateLimitResult;
+
   const token = await getToken({ req: request });
   const url = request.nextUrl;
   if (
@@ -15,8 +22,8 @@ export async function middleware(request: NextRequest) {
     !token &&
     (url.pathname.startsWith("/dashboard") ||
       url.pathname.startsWith("/analytics") ||
-      url.pathname.startsWith("/feedbacks")||
-      url.pathname.startsWith("/workflows")||
+      url.pathname.startsWith("/feedbacks") ||
+      url.pathname.startsWith("/workflows") ||
       url.pathname.startsWith("/metadata"))
   ) {
     return NextResponse.redirect(new URL("/login", request.url));

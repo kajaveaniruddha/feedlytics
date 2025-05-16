@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Message } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import axios, { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "../ui/columns";
 import { useMessageContext } from "@/hooks/use-message-context";
 import { Card, CardContent } from "../ui/card";
+import { useQuery } from "@tanstack/react-query";
 export interface ExtendedMessage extends Message {
   id: string;
 }
@@ -17,40 +18,44 @@ export interface ExtendedMessage extends Message {
 const MessageTable: React.FC = () => {
   const { setMessageCount } = useMessageContext();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchMessages = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get<ApiResponse>("/api/get-messages", {});
+  const {
+    data: messages = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<Message[]>({
+    queryKey: ["messages-table"],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponse>("/api/get-messages");
       const messagesData: Message[] = res.data?.messages || [];
-      setMessages(messagesData);
-      setMessageCount(messagesData.length)
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
+      setMessageCount(messagesData.length);
+      return messagesData;
+    },
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Show toast on error
+  useEffect(() => {
+    if (isError) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: axiosError.response?.data.message,
+        description: (error as Error)?.message || "Failed to fetch messages",
       });
-    } finally {
-      setLoading(false);
     }
-  }, [setMessageCount, toast]);
-
-  useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+  }, [isError, error, toast]);
 
   return (
     <Card className="w-full min-h-screen flex flex-col gap-y-4 p-6">
-        <Button onClick={fetchMessages} variant="outline" size="sm" className=" z-20 border-border w-fit">
-          {loading ?
+        <Button onClick={() => refetch()} variant="outline" size="sm" className=" z-20 border-border w-fit">
+          {isLoading ?
             <Loader2 className="h-4 w-4 animate-spin mx-auto " /> : <RefreshCcw className="h-4 w-4 " />
           }
         </Button>
-        {!loading &&
+        {!isLoading &&
           <DataTable columns={columns} data={messages as ExtendedMessage[]} />}
     </Card>
   );

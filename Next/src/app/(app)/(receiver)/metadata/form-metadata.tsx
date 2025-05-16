@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/components/ui/use-toast";
+import { toast, useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { updateUserData } from "@/schemas/updateUserData";
@@ -22,10 +22,12 @@ import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types";
 import { useDebounceCallback } from "usehooks-ts";
 import { z } from "zod";
 import { Switch } from "@/components/ui/switch";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const MetadataPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<userDetailsType>();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const form = useForm({
     resolver: zodResolver(updateUserData),
     defaultValues: {
@@ -43,57 +45,55 @@ const MetadataPage = () => {
     },
     mode: "onChange",
   });
+  const { setValue, watch, formState: { isDirty } } = form;
+
+  const { data: userDetails, isLoading: isUserLoading, isError, error } = useQuery<userDetailsType>({
+    queryKey: ["user-details-metadata"],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponseUserDetails>("/api/get-user-details");
+      return res.data.userDetails;
+    },
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (isError) {
+      toast({ title: "Error", description: (error as Error)?.message || "Failed to fetch user details." });
+    }
+  }, [isError, error, toast]);
+
+  useEffect(() => {
+    if (userDetails) {
+      setValue("name", userDetails?.name || "");
+      setValue("username", userDetails?.username || "");
+      setValue("avatar_url", userDetails?.avatar_url || "");
+      setValue("introduction", userDetails?.introduction || "");
+      setValue("questions.0", userDetails?.questions?.[0] || "");
+      setValue("questions.1", userDetails?.questions?.[1] || "");
+      setValue("bg_color", userDetails?.bgColor || "#ffffff");
+      setValue("text_color", userDetails?.textColor || "#000000");
+      setValue("collect_info", {
+        name: userDetails?.collectName ?? false,
+        email: userDetails?.collectEmail ?? true,
+      });
+    }
+  }, [userDetails, setValue]);
 
   const [username, setUsername] = useState(form.getValues("username") || "");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const debounced = useDebounceCallback(setUsername, 500);
 
-  const { setValue, watch, formState: { isDirty } } = form;
   const currentIntroduction = watch("introduction");
   const currentQuestions = watch("questions");
   const currentUsername = watch("username");
-
-  const fetchUserDetails = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await axios.get<ApiResponseUserDetails>("/api/get-user-details");
-      const fetchedInfo = res.data.userDetails;
-      setUserInfo(fetchedInfo);
-      // Set the form default values with fetched data
-      setValue("name", fetchedInfo?.name || "");
-      setValue("username", fetchedInfo?.username || "");
-      setValue("avatar_url", fetchedInfo?.avatar_url || "");
-      setValue("introduction", fetchedInfo?.introduction || "");
-      setValue("questions.0", fetchedInfo?.questions?.[0] || "");
-      setValue("questions.1", fetchedInfo?.questions?.[1] || "");
-      setValue("bg_color", fetchedInfo?.bgColor || "#ffffff");
-      setValue("text_color", fetchedInfo?.textColor || "#000000");
-      // Updated mapping for collect_info using collectName and collectEmail
-      setValue("collect_info", {
-        name: fetchedInfo?.collectName ?? false,
-        email: fetchedInfo?.collectEmail ?? true,
-      });
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description: axiosError.response?.data.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setValue]);
-
-  useEffect(() => {
-    fetchUserDetails();
-  }, [fetchUserDetails]);
 
   // Username uniqueness check effect
   useEffect(() => {
     const checkUsernameUnique = async () => {
       // Only check if username is non-empty and changed from original value
-      if (username && username !== userInfo?.username) {
+      if (username && username !== userDetails?.username) {
         setIsCheckingUsername(true);
         setUsernameMessage("");
         try {
@@ -111,43 +111,45 @@ const MetadataPage = () => {
       }
     };
     checkUsernameUnique();
-  }, [username, userInfo]);
+  }, [username, userDetails]);
 
   const isSameAsInitialValues = () => {
     return (
-      userInfo?.introduction === currentIntroduction &&
-      userInfo?.questions?.[0] === currentQuestions?.[0] &&
-      userInfo?.questions?.[1] === currentQuestions?.[1] &&
-      userInfo?.username === currentUsername &&
-      userInfo?.name === form.getValues("name") &&
-      userInfo?.avatar_url === form.getValues("avatar_url") &&
-      userInfo?.bgColor === form.getValues("bg_color") &&
-      userInfo?.textColor === form.getValues("text_color") &&
-      userInfo?.collectName === form.getValues("collect_info.name") &&
-      userInfo?.collectEmail === form.getValues("collect_info.email")
+      userDetails?.introduction === currentIntroduction &&
+      userDetails?.questions?.[0] === currentQuestions?.[0] &&
+      userDetails?.questions?.[1] === currentQuestions?.[1] &&
+      userDetails?.username === currentUsername &&
+      userDetails?.name === form.getValues("name") &&
+      userDetails?.avatar_url === form.getValues("avatar_url") &&
+      userDetails?.bgColor === form.getValues("bg_color") &&
+      userDetails?.textColor === form.getValues("text_color") &&
+      userDetails?.collectName === form.getValues("collect_info.name") &&
+      userDetails?.collectEmail === form.getValues("collect_info.email")
     );
   };
 
-  const onSubmit = async (data: z.infer<typeof updateUserData>) => {
-    setIsLoading(true);
-    try {
+  const mutation = useMutation({
+    mutationFn: async (data: z.infer<typeof updateUserData>) => {
       const response = await fetch("/api/update-user-data", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       const result = await response.json();
-      if (!response.ok) {
-        toast({ title: "Error", description: result.message });
-        return;
-      }
+      if (!response.ok) throw new Error(result.message);
+      return result;
+    },
+    onSuccess: (result) => {
       toast({ title: "Success", description: result.message });
-    } catch (error) {
-      console.error(error);
-      toast({ title: "Error", description: "Something went wrong." });
-    } finally {
-      setIsLoading(false);
-    }
+      queryClient.invalidateQueries({ queryKey: ["user-details-metadata"] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error?.message || "Something went wrong." });
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof updateUserData>) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -319,10 +321,10 @@ const MetadataPage = () => {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isLoading || !isDirty || isSameAsInitialValues()}
+            disabled={isUserLoading || !isDirty || isSameAsInitialValues()}
             className="w-full"
           >
-            {isLoading ? (
+            {isUserLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
               </>

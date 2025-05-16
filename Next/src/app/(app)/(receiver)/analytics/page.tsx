@@ -1,12 +1,13 @@
 "use client"
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import BarChartRatings from "./bar-ratings-chart";
 import PieChartMessageCount from "./pie-chart-message-count";
 import PieChartMessageSentimentAnalysis from "./pie-chart-message-sentiment-analysis";
 import RadarChartCategoriesCount from "./radar-chart-categories-count";
+import { useEffect } from "react";
 
 type AnalyticsData = {
   userDetails: {
@@ -24,29 +25,36 @@ type AnalyticsData = {
 };
 
 const Page = () => {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchAnalytics = useCallback(async () => {
-    try {
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<AnalyticsData>({
+    queryKey: ["analytics"],
+    queryFn: async () => {
       const response = await axios.get("/api/get-analytics");
-      if (response.data.success) {
-        setData(response.data);
+      if (!response.data.success) {
+        throw new Error("Failed to fetch analytics data");
       }
-    } catch (error) {
+      return response.data as AnalyticsData;
+    },
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Show toast on error
+  useEffect(() => {
+    if (isError) {
       toast({
         title: "Error",
-        description: "Failed to fetch analytics data",
+        description: (error as Error)?.message || "Failed to fetch analytics data",
       });
-    } finally {
-      setIsLoading(false);
     }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+  }, [isError, error, toast]);
 
   return (
     <motion.section
@@ -83,8 +91,8 @@ const Page = () => {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <PieChartMessageCount
-            messageCount={data?.userDetails.messageCount || 0}
-            maxMessages={data?.userDetails.maxMessages || 0}
+            messageCount={data?.userDetails?.messageCount || 0}
+            maxMessages={data?.userDetails?.maxMessages || 0}
             isLoading={isLoading}
           />
         </motion.div>

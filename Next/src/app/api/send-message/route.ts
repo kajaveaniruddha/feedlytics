@@ -1,8 +1,21 @@
 import { db } from "@/db/db";
 import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
+import { rateLimit } from "@/config/rateLimiter";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Custom rate limit: 5 requests per 10 seconds per IP
+  const response= new NextResponse();
+  const rateLimitResult = await rateLimit({
+    request,
+    response,
+    ipLimit: 5,
+    ipWindow: 10,
+  });
+
+  if (rateLimitResult) return rateLimitResult;
+
   const { username, stars, content, email, name } = await request.json();
 
   try {
@@ -91,6 +104,7 @@ export async function POST(request: Request) {
             data: {
               userId: user.id,
               email,
+              name,
               stars,
               content,
               createdAt: new Date(),

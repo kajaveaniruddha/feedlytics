@@ -107,7 +107,7 @@ export const Widget = ({ username }) => {
         {isOpen && (
           <div
             style={themeStyle}
-            className="fixed bottom-4 sm:bottom-8 md:bottom-12 lg:bottom-20 right-2 sm:right-4 rounded-lg bg-card p-4 shadow-lg w-full max-w-md sm:max-w-[90%] md:max-w-[80%] lg:max-w-md widget z-50"
+            className="fixed sm:bottom-8 bottom-20 right-2 sm:right-4 rounded-lg bg-card p-4 shadow-lg w-full max-w-md sm:max-w-[90%] md:max-w-[80%] lg:max-w-md widget z-50"
           >
             <style>{tailwindStyles}</style>
             {submitted ? (
