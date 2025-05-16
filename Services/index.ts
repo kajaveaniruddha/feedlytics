@@ -1,11 +1,19 @@
 import express from "express";
 import { emailQueue, feedbackQueue } from "./src/queue";
 import "dotenv/config";
+import client from "prom-client";
 
 const app = express();
 const port = process.env.PORT || 3001;
+client.collectDefaultMetrics({ register: client.register });
 
 app.use(express.json());
+
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", client.register.contentType);
+  const metrics = await client.register.metrics();
+  res.send(metrics);
+});
 
 app.post("/get-verification-email", async (req: any, res: any) => {
   const { data } = req.body;
@@ -23,7 +31,10 @@ app.post("/get-verification-email", async (req: any, res: any) => {
       res.send({ status: 200, message: "Verification Mail sent successfully" });
     })
     .catch(() => {
-      res.send({ status: 500, message: "Verification Mail not sent due to queue error." });
+      res.send({
+        status: 500,
+        message: "Verification Mail not sent due to queue error.",
+      });
     });
 });
 
@@ -43,7 +54,10 @@ app.post("/get-payment-email", async (req: any, res: any) => {
       res.send({ status: 200, message: "Payment Mail sent successfully" });
     })
     .catch(() => {
-      res.send({ status: 500, message: "Payment Mail not sent due to queue error." });
+      res.send({
+        status: 500,
+        message: "Payment Mail not sent due to queue error.",
+      });
     });
 });
 
@@ -129,7 +143,10 @@ app.get("/health-feedback", async (req: any, res: any) => {
       res.send({ status: 200, message: "Feedback added to DB successfully" });
     })
     .catch(() => {
-      res.send({ status: 500, message: "Feedback not added to DB due to queue error." });
+      res.send({
+        status: 500,
+        message: "Feedback not added to DB due to queue error.",
+      });
     });
 });
 

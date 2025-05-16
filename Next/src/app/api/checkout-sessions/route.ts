@@ -35,6 +35,7 @@ export async function POST() {
       metadata: {
         email: user.email,
       },
+      customer_email: user.email,
     });
     if (!session.url) throw new Error("Missing session URL");
     return NextResponse.redirect(session.url, 303);

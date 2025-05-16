@@ -31,6 +31,23 @@ services:
     ports:
       - "6379:6379"
 
+  prom-server:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    restart: always
+    ports:
+      - "3002:3000"
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
