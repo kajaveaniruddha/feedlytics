@@ -67,7 +67,7 @@ const Page = () => {
                     OTP has been sent to your registered email
                     <br />
                     <span className="text-xs text-gray-500">
-                      (If you don't see it, please check your spam folder as
+                      (If you don&apos;t see it, please check your spam folder as
                       well.)
                     </span>
                   </FormLabel>
