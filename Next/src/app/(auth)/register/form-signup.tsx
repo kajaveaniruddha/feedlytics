@@ -153,7 +153,7 @@ const FormSignup = () => {
                                         field.onChange(e);
                                         debounced(e.target.value);
                                     }}
-                                    className="  placeholder:text-[hsl(var(--form-placeholder))]"
+                                    className="placeholder:text-[hsl(var(--form-placeholder))]"
                                 />
                             </FormControl>
                             {isCheckingUsername && (
