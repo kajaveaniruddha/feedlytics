@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ModeToggle } from "@/components/custom/mode-toggle";
 import { ReactLenis } from "@/lib/lenis";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
 
@@ -72,6 +73,7 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
       </ReactLenis>
+      <GoogleAnalytics gaId="G-M9DGL0TJV7"/>
     </html>
   );
 }

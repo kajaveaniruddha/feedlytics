@@ -2,7 +2,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL } from "@/lib/utils";
@@ -29,6 +29,7 @@ export const Widget = ({ username }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [widgetSettings, setWidgetSettings] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const popupRef = useRef(null);
 
   useEffect(() => {
     axios
@@ -40,6 +41,24 @@ export const Widget = ({ username }) => {
         console.error("Error fetching widget settings:", error)
       );
   }, [username]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event) {
+      const path = event.composedPath ? event.composedPath() : [];
+      if (
+        popupRef.current &&
+        path.length > 0 &&
+        !path.includes(popupRef.current)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Optimised theme styles
   const themeStyle = widgetSettings
@@ -106,6 +125,7 @@ export const Widget = ({ username }) => {
 
         {isOpen && (
           <div
+            ref={popupRef}
             style={themeStyle}
             className="fixed bottom-20 right-2 sm:right-4 rounded-lg bg-card p-4 shadow-lg w-full max-w-md sm:max-w-[90%] md:max-w-[80%] lg:max-w-md widget z-50"
           >

@@ -16,6 +16,7 @@
     "@daveyplate/next-rate-limit": "^2.0.1",
     "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@next/third-parties": "^15.3.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.2",
