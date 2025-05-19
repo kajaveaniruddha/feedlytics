@@ -30,6 +30,7 @@ export const Widget = ({ username }) => {
   const [widgetSettings, setWidgetSettings] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     axios
@@ -46,11 +47,9 @@ export const Widget = ({ username }) => {
     if (!isOpen) return;
     function handleClickOutside(event) {
       const path = event.composedPath ? event.composedPath() : [];
-      if (
-        popupRef.current &&
-        path.length > 0 &&
-        !path.includes(popupRef.current)
-      ) {
+      const clickedOutsidePopup = popupRef.current && !path.includes(popupRef.current);
+      const clickedOutsideButton = buttonRef.current && !path.includes(buttonRef.current);
+      if (clickedOutsidePopup && clickedOutsideButton) {
         setIsOpen(false);
       }
     }
@@ -229,6 +228,7 @@ export const Widget = ({ username }) => {
           </div>
         )}
         <Button
+          ref={buttonRef}
           style={themeStyle}
           className="widget fixed bottom-4 right-4 z-50 rounded-full shadow-lg transition-all hover:scale-105"
           onClick={() => setIsOpen(!isOpen)}
