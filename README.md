@@ -67,7 +67,7 @@ Spreadsheets, scattered emails, and disconnected tools just don’t scale.
 - 🤖 **AI-Powered Insights**  
   → Auto-analysis with **Groq’s LLM (LLaMA 3.1)** for:
 
-  - Sentiment detection (Positive / Negative)
+  - Sentiment detection (Positive / Negative / Neutral)
   - Categorization: Bug, Request, Complaint, Suggestion, Question, Praise, or Other
 
 - 🚨 **Real-Time Alerts**  
@@ -87,9 +87,14 @@ Spreadsheets, scattered emails, and disconnected tools just don’t scale.
 
 ---
 
-## 📸 Application Screenshots
+## 📸 Application Working & Screenshots
 
-> _Add screenshots and high-level architecture diagram here_
+> ![feedlytics](https://github.com/user-attachments/assets/6c86d36d-1251-431b-a957-e8f6e24f5aea)
+> ![flowchart-0](https://github.com/user-attachments/assets/7e93f0e5-11b4-459d-ab53-697ccc42e74a)
+> ![image](https://github.com/user-attachments/assets/5d6db0af-1965-4444-a444-ff566610c596)
+> ![image](https://github.com/user-attachments/assets/9698e4b9-a736-400d-9e85-52dea7060af9)
+> ![image](https://github.com/user-attachments/assets/db8973ad-3909-4013-9c74-d83b9a04c2e8)
+> ![image](https://github.com/user-attachments/assets/5c3cae79-4c6a-4693-813f-72b8b1c43589)
 
 ---
 
