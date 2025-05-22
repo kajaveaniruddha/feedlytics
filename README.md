@@ -17,30 +17,30 @@
 <h3 align="center">Built with the tools and technologies:</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Express-black?logo=express&logoColor=white" />
-  <img src="https://img.shields.io/badge/JSON-000000?logo=json&logoColor=white" />
-  <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white" />
-  <img src="https://img.shields.io/badge/Autoprefixer-DD3735?logo=autoprefixer&logoColor=white" />
-  <img src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white" />
-  <img src="https://img.shields.io/badge/PostCSS-DD3A0A?logo=postcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/.ENV-green" />
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black" />
-  <img src="https://img.shields.io/badge/Nodemon-76D04B?logo=nodemon&logoColor=black" />
-  <img src="https://img.shields.io/badge/GNU%20Bash-4EAA25?logo=gnubash&logoColor=white" />
-  <img src="https://img.shields.io/badge/LangChain-black?logo=data:image/svg+xml;base64,..." />
-  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/XML-000?logo=xml&logoColor=white" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/ts-node-3178C6" />
-  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" />
-  <img src="https://img.shields.io/badge/Zod-purple" />
+  <img src="https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/BullMQ-FF0000?logo=redis&logoColor=white" />
+  <img src="https://img.shields.io/badge/Nodemailer-yellow?logo=gmail&logoColor=white" />
+  <img src="https://img.shields.io/badge/Groq-000000?logo=groq&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/Framer_Motion-EF007B?logo=framer&logoColor=white" />
+  <img src="https://img.shields.io/badge/TanStack%20Query-FF4154?logo=reactquery&logoColor=white" />
+  <img src="https://img.shields.io/badge/TanStack%20Table-000000?logo=data:image/svg+xml;base64,...&logoColor=white" />
+  <img src="https://img.shields.io/badge/NextAuth.js-000000?logo=next.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS_EC2-FF9900?logo=amazonaws&logoColor=white" />
+  <img src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white" />
+  <img src="https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white" />
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" />
   <img src="https://img.shields.io/badge/Stripe-008CDD?logo=stripe&logoColor=white" />
-  <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white" />
-  <img src="https://img.shields.io/badge/Axios-5A29E4?logo=axios&logoColor=white" />
-  <img src="https://img.shields.io/badge/React%20Hook%20Form-EC5990?logo=reacthookform&logoColor=white" />
-  <img src="https://img.shields.io/badge/YAML-000?logo=yaml&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google_SSO-4285F4?logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/GitHub_SSO-181717?logo=github&logoColor=white" />
 </p>
 
 ---
@@ -48,7 +48,7 @@
 ## 📌 What is Feedlytics?
 
 > Feedlytics helps teams **collect, manage, and analyze feedback with AI** from users.  
-Users can either submit customizable forms or embed a lightweight chat widget into their apps to collect actionable insights.
+> Users can either submit customizable forms or embed a lightweight chat widget into their apps to collect actionable insights.
 
 ---
 
@@ -66,6 +66,7 @@ Spreadsheets, scattered emails, and disconnected tools just don’t scale.
 
 - 🤖 **AI-Powered Insights**  
   → Auto-analysis with **Groq’s LLM (LLaMA 3.1)** for:
+
   - Sentiment detection (Positive / Negative)
   - Categorization: Bug, Request, Complaint, Suggestion, Question, Praise, or Other
 
@@ -115,3 +116,4 @@ docker-compose up --build
 cd apps/dashboard # or apps/widget
 pnpm install
 pnpm dev
+```
