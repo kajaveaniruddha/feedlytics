@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://feedlytics.in"><img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge" /></a>
+</p>
+
 <h1 align="center">FEEDLYTICS</h1>
 
 <p align="center"><i>Transform Feedback into Actionable Insights Effortlessly</i></p>
@@ -38,3 +42,76 @@
   <img src="https://img.shields.io/badge/React%20Hook%20Form-EC5990?logo=reacthookform&logoColor=white" />
   <img src="https://img.shields.io/badge/YAML-000?logo=yaml&logoColor=white" />
 </p>
+
+---
+
+## 📌 What is Feedlytics?
+
+> Feedlytics helps teams **collect, manage, and analyze feedback with AI** from users.  
+Users can either submit customizable forms or embed a lightweight chat widget into their apps to collect actionable insights.
+
+---
+
+## ❓ Problem it Solves
+
+SaaS teams often struggle to gather feedback from multiple sources, make sense of it quickly, and respond on time.  
+Spreadsheets, scattered emails, and disconnected tools just don’t scale.
+
+---
+
+## 💡 How Feedlytics Solves It
+
+- 🗂️ **Centralized Feedback Collection**  
+  → Collect all feedback in one place using a lightweight React widget or customizable forms.
+
+- 🤖 **AI-Powered Insights**  
+  → Auto-analysis with **Groq’s LLM (LLaMA 3.1)** for:
+  - Sentiment detection (Positive / Negative)
+  - Categorization: Bug, Request, Complaint, Suggestion, Question, Praise, or Other
+
+- 🚨 **Real-Time Alerts**  
+  → Trigger instant workflows via **Slack** or **Google Chat** when important feedback arrives.
+
+- 📊 **Smart Dashboard**  
+  → Filter, search, and sort through feedback with blazing-fast UI using **TanStack Tables** and **Next.js**.
+
+- 💳 **Built-in Payments**  
+  → Integrated with **Stripe** for secure checkouts and plan upgrades.
+
+- ⚙️ **High-Traffic Ready**  
+  → Powered by Redis queues, rate limiting, and Bloom filters to handle scale.
+
+- 🌐 **Robust Cloud Deployment**  
+  → Deployed with **Docker on AWS EC2**, reverse proxied by **NGINX**, monitored with **Prometheus + Grafana**.
+
+---
+
+## 📸 Application Screenshots
+
+> _Add screenshots and high-level architecture diagram here_
+
+---
+
+## 🚀 Live Demo
+
+👉 [https://feedlytics.in](https://feedlytics.in)
+
+---
+
+## 🧪 Run Locally
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/feedlytics.git
+cd feedlytics
+
+# Create .env files for all services (admin, widget, services)
+cp .env.example .env
+
+# Start services using Docker
+docker-compose up --build
+
+# OR for local dev:
+cd apps/dashboard # or apps/widget
+pnpm install
+pnpm dev
