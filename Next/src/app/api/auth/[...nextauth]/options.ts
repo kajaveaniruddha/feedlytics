@@ -1,11 +1,15 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
-import GoogleProvider from "next-auth/providers/google" 
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
 import { or, eq } from "drizzle-orm";
+
+interface ExtendedAuthOptions extends NextAuthOptions {
+  trustHost?: boolean;
+}
 
 async function generateUniqueUsername(
   userId: string,
@@ -15,7 +19,7 @@ async function generateUniqueUsername(
   return username;
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: ExtendedAuthOptions = {
   providers: [
     CredentialsProvider({
       id: "credentials",
@@ -78,6 +82,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "github" || account?.provider === "google") {
@@ -95,14 +100,17 @@ export const authOptions: NextAuthOptions = {
             );
 
             // Create new user
-            await db.insert(usersTable).values({
-              email: user.email!,
-              name: user.name,
-              avatarUrl: user.image,
-              username: uniqueUsername,
-              isVerified: true,
-              password: "",
-            }).onConflictDoNothing();
+            await db
+              .insert(usersTable)
+              .values({
+                email: user.email!,
+                name: user.name,
+                avatarUrl: user.image,
+                username: uniqueUsername,
+                isVerified: true,
+                password: "",
+              })
+              .onConflictDoNothing();
           }
           // Allow sign in for both new and existing users
           return true;
@@ -138,7 +146,10 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.isAcceptingMessage = user.isAcceptingMessages;
         token.isVerified = user.isVerified;
-      } else if (account?.provider === "github" || account?.provider === "google") {
+      } else if (
+        account?.provider === "github" ||
+        account?.provider === "google"
+      ) {
         // For subsequent GitHub provider sessions, fetch fresh data
         const dbUser = await db
           .select()

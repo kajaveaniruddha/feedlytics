@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       .from(usersTable)
       .where(eq(usersTable.username, username));
     const user = users[0];
-    console.log(user)
+    // console.log(user);
     const response = {
       bg_color: user?.bgColor || "#ffffff",
       text_color: user?.textColor || "#000000",
@@ -27,12 +27,23 @@ export async function POST(request: Request) {
       },
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+    
   } catch (error) {
     console.error("Error in get-widget-settings:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
     );
   }
 }
