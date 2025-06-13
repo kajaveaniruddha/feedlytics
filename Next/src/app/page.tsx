@@ -10,6 +10,7 @@ import FeatureCard from "@/components/custom/feature-card"
 import Image from "next/image"
 import LandingPageWorkFlow from "@/components/custom/landingpage-workflow"
 import Script from "next/script"
+import FaqSection from "@/components/custom/faq-section"
 
 
 export default function LandingPage() {
@@ -152,10 +153,8 @@ export default function LandingPage() {
             </MotionDiv>
           </div>
         </section>
-
-        {/* Dashboard Showcase */}
         <DashboardShowcase />
-
+        <FaqSection/>
         <Footer />
       </main >
       <Script id="feedlytics-widget-init" strategy="afterInteractive">

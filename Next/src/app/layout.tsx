@@ -15,16 +15,17 @@ export const metadata: Metadata = {
   description:
     'Collect, analyze, and route user feedback in real-time using AI-powered sentiment and category detection. Automate team notifications via Slack, Google Chat, and more.',
   keywords: [
-    'SaaS feedback tool',
-    'real-time feedback analysis',
+    'Top feedback and analytics tool',
+    'Best feedback tool',
+    'Best feedback analysis',
+    'AI feedback analytics platform',
     'AI sentiment analysis',
-    'feedback automation',
+    'feedback automation tool',
     'user feedback system',
     'Slack feedback integration',
-    'Groq LLM sentiment',
-    'feedback categorization',
-    'in-app feedback widget',
-    'feedback forms',
+    'feedback categorization AI',
+    'in-app survey widget',
+    'customer feedback forms',
   ],
   openGraph: {
     title: 'Feedlytics – Instant Feedback Analytics & Notification System for SaaS Teams',
@@ -73,7 +74,7 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
       </ReactLenis>
-      <GoogleAnalytics gaId="G-M9DGL0TJV7"/>
+      <GoogleAnalytics gaId="G-M9DGL0TJV7" />
     </html>
   );
 }
