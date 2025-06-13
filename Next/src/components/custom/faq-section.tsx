@@ -38,10 +38,10 @@ const faqData: FAQItem[] = [
     {
         question: "Is user data secure and compliant?",
         answer:
-            "Yes, data privacy and compliance are top priorities. Feedlytics uses TLS encryption, follows GDPR guidelines, and securely stores data with proper retention policies. Your users' data is never shared or sold.",
+            "Yes, data privacy and compliance are top priorities. Feedlytics uses TLS encryption, follows GDPR guidelines, and securely stores data with proper retention policies. Your users&apos; data is never shared or sold.",
     },
     {
-        question: "What's the pricing model? Are there any hidden fees?",
+        question: "What&apos;s the pricing model? Are there any hidden fees?",
         answer:
             "Feedlytics offers two simple and transparent plans: Free and Premium. The Free plan includes up to 50 total feedbacks and 10 workflows, ideal for early-stage users. The Premium plan - paid once per account, allows 100 total feedbacks and 20 workflows, perfect for growing teams. There are no hidden fees, and you can not cancel once upgraded!",
     },
@@ -53,7 +53,7 @@ const faqData: FAQItem[] = [
     {
         question: "How quickly can I start seeing actionable insights?",
         answer:
-            "Setup takes just 30 seconds for forms and upto 60 seconds with our simple widget integration. Once installed, you'll start receiving categorized and sentiment-tagged feedback in real-time. Alerts and dashboards update instantly so you can act fast.",
+            "Setup takes just 30 seconds for forms and upto 60 seconds with our simple widget integration. Once installed, you&apos;ll start receiving categorized and sentiment-tagged feedback in real-time. Alerts and dashboards update instantly so you can act fast.",
     },
     {
         question: "Which tools and platforms does Feedlytics integrate with?",
@@ -150,7 +150,7 @@ export default function FaqSection() {
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">Frequently Asked Questions</h2>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Everything you need to know about Feedlytics. Can't find the answer you're looking for?
+                        Everything you need to know about Feedlytics. Can&apos;t find the answer you&apos;re looking for?
                         <a href="mailto:aakajave@gmail.com" className="text-blue-600 hover:text-blue-800 ml-1">
                             Contact our support team
                         </a>
