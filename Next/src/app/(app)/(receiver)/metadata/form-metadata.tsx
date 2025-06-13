@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,11 +10,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import axios, { AxiosError } from "axios";
-import { toast, useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { updateUserData } from "@/schemas/updateUserData";
@@ -23,9 +23,12 @@ import { useDebounceCallback } from "usehooks-ts";
 import { z } from "zod";
 import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import FeedbackPreview from "./feedback-preview";
 
 const MetadataPage = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -45,6 +48,7 @@ const MetadataPage = () => {
     },
     mode: "onChange",
   });
+
   const { setValue, watch, formState: { isDirty } } = form;
 
   const { data: userDetails, isLoading: isUserLoading, isError, error } = useQuery<userDetailsType>({
@@ -61,7 +65,7 @@ const MetadataPage = () => {
     if (isError) {
       toast({ title: "Error", description: (error as Error)?.message || "Failed to fetch user details." });
     }
-  }, [isError, error, toast]);
+  }, [isError, error]);
 
   useEffect(() => {
     if (userDetails) {
@@ -88,6 +92,9 @@ const MetadataPage = () => {
   const currentIntroduction = watch("introduction");
   const currentQuestions = watch("questions");
   const currentUsername = watch("username");
+  const currentBgColor = watch("bg_color");
+  const currentTextColor = watch("text_color");
+  const currentCollectInfo = watch("collect_info");
 
   // Username uniqueness check effect
   useEffect(() => {
@@ -152,188 +159,291 @@ const MetadataPage = () => {
     mutation.mutate(data);
   };
 
+  const handleReset = () => {
+    console.log(userDetails)
+    if (userDetails) {
+      setValue("name", userDetails?.name || "");
+      setValue("username", userDetails?.username || "");
+      setValue("avatar_url", userDetails?.avatar_url || "");
+      setValue("introduction", userDetails?.introduction || "");
+      setValue("questions.0", userDetails?.questions?.[0] || "");
+      setValue("questions.1", userDetails?.questions?.[1] || "");
+      setValue("bg_color", userDetails?.bgColor || "#ffffff");
+      setValue("text_color", userDetails?.textColor || "#000000");
+      setValue("collect_info.name", userDetails?.collectName ?? false);
+      setValue("collect_info.email", userDetails?.collectEmail ?? true);
+
+      toast({
+        title: "Reset Complete",
+        description: "All values have been reset to their default settings."
+      });
+
+    }
+  };
+
+  // Preview values
+  const previewValues = {
+    name: form.getValues("name"),
+    introduction: form.getValues("introduction"),
+    bg_color: currentBgColor,
+    text_color: currentTextColor,
+    collect_info: currentCollectInfo
+  };
+
   return (
     <section className="container py-8 min-h-screen">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Name Field */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Enter your name" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Username Field with uniqueness check */}
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Enter your username"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      debounced(e.target.value);
-                    }}
-                  />
-                </FormControl>
-                {isCheckingUsername && (
-                  <Loader2 className="animate-spin mt-2 text-[hsl(var(--brand-green))]" />
-                )}
-                <p className={`text-sm mt-2 ${usernameMessage === "Username is available"
-                  ? "text-[hsl(var(--brand-green))]"
-                  : "text-[hsl(var(--form-label))]"
-                  }`}>
-                  {usernameMessage}
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Avatar URL Field */}
-          <FormField
-            control={form.control}
-            name="avatar_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Avatar URL</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Enter your avatar URL" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Introduction Field */}
-          <FormField
-            control={form.control}
-            name="introduction"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Introduction</FormLabel>
-                <FormControl>
-                  <Textarea {...field} placeholder="Enter introduction" className="w-full" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Question 1 Field */}
-          <FormField
-            control={form.control}
-            name="questions.0"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Question 1</FormLabel>
-                <FormControl>
-                  <Textarea {...field} placeholder="Enter first question" className="w-full" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Question 2 Field */}
-          <FormField
-            control={form.control}
-            name="questions.1"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Question 2</FormLabel>
-                <FormControl>
-                  <Textarea {...field} placeholder="Enter second question" className="w-full" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* New Field: Background Color */}
-          <FormField
-            control={form.control}
-            name="bg_color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Background Color</FormLabel>
-                <FormControl>
-                  <Input {...field} type="color" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* New Field: Text Color */}
-          <FormField
-            control={form.control}
-            name="text_color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Text Color</FormLabel>
-                <FormControl>
-                  <Input {...field} type="color" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* New Field: Collect Name */}
-          <FormField
-            control={form.control}
-            name="collect_info.name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Collect Name ? </FormLabel>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* New Field: Collect Email */}
-          <FormField
-            control={form.control}
-            name="collect_info.email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Collect Email ? </FormLabel>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isUserLoading || !isDirty || isSameAsInitialValues()}
-            className="w-full"
-          >
-            {isUserLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </Button>
-        </form>
-      </Form>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left side: Form controls */}
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <Tabs defaultValue="appearance" className="w-full">
+                <TabsList className="grid grid-cols-2 mb-4">
+                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                </TabsList>
+
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <TabsContent value="appearance" className="space-y-4">
+                      <h2 className="text-xl font-semibold">Visual Settings</h2>
+                      <Separator />
+
+                      {/* Background Color */}
+                      <FormField
+                        control={form.control}
+                        name="bg_color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>Background Color</FormLabel>
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 border rounded" style={{ backgroundColor: field.value }} />
+                                <FormControl>
+                                  <Input {...field} type="color" className="w-10 h-10 p-1" />
+                                </FormControl>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Text Color */}
+                      <FormField
+                        control={form.control}
+                        name="text_color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>Text Color</FormLabel>
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 border rounded" style={{ backgroundColor: field.value }} />
+                                <FormControl>
+                                  <Input {...field} type="color" className="w-10 h-10 p-1" />
+                                </FormControl>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Avatar URL */}
+                      <FormField
+                        control={form.control}
+                        name="avatar_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Avatar URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Enter your avatar URL" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Collect Name Toggle */}
+                      <FormField
+                        control={form.control}
+                        name="collect_info.name"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel>Collect Name</FormLabel>
+                              <div className="text-sm text-muted-foreground">Show name field in the feedback form</div>
+                            </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Collect Email Toggle */}
+                      <FormField
+                        control={form.control}
+                        name="collect_info.email"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                              <FormLabel>Collect Email</FormLabel>
+                              <div className="text-sm text-muted-foreground">Show email field in the feedback form</div>
+                            </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="content" className="space-y-4">
+                      <h2 className="text-xl font-semibold">Content Settings</h2>
+                      <Separator />
+
+                      {/* Name Field */}
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Enter your name" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Username Field with uniqueness check */}
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Enter your username"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  debounced(e.target.value);
+                                }}
+                              />
+                            </FormControl>
+                            {isCheckingUsername && (
+                              <Loader2 className="animate-spin mt-2 text-[hsl(var(--brand-green))]" />
+                            )}
+                            <p className={`text-sm mt-2 ${usernameMessage === "Username is available"
+                              ? "text-[hsl(var(--brand-green))]"
+                              : "text-[hsl(var(--form-label))]"
+                              }`}>
+                              {usernameMessage}
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Introduction Field */}
+                      <FormField
+                        control={form.control}
+                        name="introduction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Introduction</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Enter introduction" className="min-h-24" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Question 1 Field */}
+                      <FormField
+                        control={form.control}
+                        name="questions.0"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Question 1</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Enter first question" className="min-h-20" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Question 2 Field */}
+                      <FormField
+                        control={form.control}
+                        name="questions.1"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Question 2</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Enter second question" className="min-h-20" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </TabsContent>
+
+                    <div className="flex gap-4 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleReset}
+                        className="flex-1"
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Reset
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isUserLoading || !isDirty || isSameAsInitialValues()}
+                        className="flex-1"
+                      >
+                        {mutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                          </>
+                        ) : (
+                          "Save changes"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side: Preview */}
+        <Card>
+          <CardContent className="pt-6">
+            <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              This is how your feedback widget will appear to your users.
+            </p>
+            <Separator className="mb-6" />
+            <div className="flex justify-center">
+              <div className="relative pb-16">
+                <FeedbackPreview formValues={previewValues} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </section>
   );
 };
