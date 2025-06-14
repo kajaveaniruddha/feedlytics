@@ -23,6 +23,8 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import type { IWorkFlows } from "@/types";
 import { IconPhChatsFill } from "@/components/icons/googlechat";
 import { IconDeviconPlainSlack } from "@/components/icons/slack";
+import { toast } from "@/components/ui/use-toast";
+import Link from "next/link";
 
 type IWorkFlowsProps = {
   onSuccess?: (updatedWorkflow?: IWorkFlows) => void;
@@ -67,6 +69,7 @@ const WorkflowForm: React.FC<IWorkFlowsProps> = ({ onSuccess, selectedWorkflow }
       } else {
         res = await axios.post("/api/user-workflows", values);
       }
+
       if (res.data.success) {
         form.reset();
         if (selectedWorkflow) {
@@ -75,11 +78,46 @@ const WorkflowForm: React.FC<IWorkFlowsProps> = ({ onSuccess, selectedWorkflow }
         } else {
           onSuccess && onSuccess();
         }
+        toast({
+          title: "Success",
+          description: res.data.message || "Workflow saved successfully",
+          variant: "default"
+        });
       } else {
-        console.error(res.data.error || "Error submitting form");
+        toast({
+          title: "Error",
+          description: res.data.message || res.data.error || "Error submitting form",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error("Error submitting form", error);
+    } catch (error: any) {
+      // Handle axios error responses
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Error submitting form";
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+
+      // If it's a workflow limit error, we might want to show an upgrade button
+      if (error.response?.status === 403 && errorMessage.includes("maximum workflow limit")) {
+        toast({
+          title: "Upgrade Available",
+          description: "Would you like to upgrade your plan to add more workflows?",
+          variant: "default",
+          action: (
+            <Link href={"/dashboard"} className="border px-2 py-2 text-xs rounded-md inline-flex shadow-sm whitespace-nowrap">
+              <span>
+              Upgrade Plan
+            </span>
+            </Link>
+          )
+        });
+      }
     }
   };
 
