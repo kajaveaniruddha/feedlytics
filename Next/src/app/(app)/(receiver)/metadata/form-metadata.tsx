@@ -96,6 +96,21 @@ const MetadataPage = () => {
   const currentTextColor = watch("text_color");
   const currentCollectInfo = watch("collect_info");
 
+  // Add debounced color state for preview optimization
+  const [debouncedBgColor, setDebouncedBgColor] = useState(form.getValues("bg_color") || "#ffffff");
+  const [debouncedTextColor, setDebouncedTextColor] = useState(form.getValues("text_color") || "#000000");
+  const debouncedBgColorCallback = useDebounceCallback(setDebouncedBgColor, 200);
+  const debouncedTextColorCallback = useDebounceCallback(setDebouncedTextColor, 200);
+
+  // Watch color changes and debounce them
+  useEffect(() => {
+    debouncedBgColorCallback(currentBgColor);
+  }, [currentBgColor, debouncedBgColorCallback]);
+
+  useEffect(() => {
+    debouncedTextColorCallback(currentTextColor);
+  }, [currentTextColor, debouncedTextColorCallback]);
+
   // Username uniqueness check effect
   useEffect(() => {
     const checkUsernameUnique = async () => {
@@ -185,8 +200,8 @@ const MetadataPage = () => {
   const previewValues = {
     name: form.getValues("name"),
     introduction: form.getValues("introduction"),
-    bg_color: currentBgColor,
-    text_color: currentTextColor,
+    bg_color: debouncedBgColor,
+    text_color: debouncedTextColor,
     collect_info: currentCollectInfo
   };
 
