@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 4173 --host",
     "build": "vite build",
-    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview --port 4173",
+    "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}'",
+    "test": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.0",
@@ -37,5 +38,6 @@
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
     "vite": "^4.3.2"
-  }
+  },
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
 }

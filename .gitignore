@@ -1,1 +1,10 @@
-.env
+node_modules
+**/node_modules
+dist
+build
+.DS_Store
+.env*
+.vscode
+.git
+.gitignore
+*.log

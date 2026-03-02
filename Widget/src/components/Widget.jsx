@@ -5,21 +5,8 @@ import { Textarea } from "./ui/textarea";
 import { useState, useEffect, useRef } from "react";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
-import { DASHBOARD_BASE_URL } from "@/lib/utils";
+import { DASHBOARD_BASE_URL,lightenColor } from "@/lib/utils";
 import root from "react-shadow";
-
-// Add helper to compute lighter shade of a hex color
-function lightenColor(color, percent) {
-  // Assumes color in the format "#RRGGBB"
-  let num = parseInt(color.slice(1), 16);
-  let r = (num >> 16) & 0xff;
-  let g = (num >> 8) & 0xff;
-  let b = num & 0xff;
-  r = Math.min(255, Math.max(0, r + Math.round(2.55 * percent)));
-  g = Math.min(255, Math.max(0, g + Math.round(2.55 * percent)));
-  b = Math.min(255, Math.max(0, b + Math.round(2.55 * percent)));
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
 
 export const Widget = ({ username }) => {
   const [rating, setRating] = useState(3);

@@ -1,0 +1,22 @@
+# Start with the base image
+FROM node:18-alpine
+
+# Install necessary tools
+RUN apk add --no-cache bash git
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Set the working directory
+WORKDIR /app
+
+# Copy ONLY the dependency manifests
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies. This layer is cached and only re-runs if your manifests change.
+RUN pnpm install --frozen-lockfile
+
+# Expose the port
+ENV PORT=3000
+EXPOSE 3000
+
+# The command to start the development server
+CMD ["pnpm", "dev"]

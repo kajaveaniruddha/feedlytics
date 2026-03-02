@@ -114,11 +114,14 @@ cd feedlytics
 # Create .env files for all services (admin, widget, services)
 cp .env.example .env
 
-# Start services using Docker
-docker-compose up --build
+# Feedlytics (dev environment)
 
-# OR for local dev:
-cd apps/dashboard # or apps/widget
-pnpm install
-pnpm dev
+## Quick start (development)
+
+1. Copy `.env.example` to `.env.development` and fill local values.
+2. `make dev` or `docker-compose -f docker-compose.dev.yml up --build`
+3. Next.js: http://localhost:3000
+4. Services: http://localhost:3001
+5. Widget: http://localhost:4173
+6. Adminer (DB UI): http://localhost:8080
 ```
