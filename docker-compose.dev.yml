@@ -1,0 +1,124 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: feedlytics-redis-dev
+    command: ["redis-server", "--requirepass", "redispass"]
+    environment:
+      - REDIS_PASSWORD=redispass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redispass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  services:
+    build:
+      context: ./Services
+      dockerfile: Dockerfile.dev
+    container_name: feedlytics-services-dev
+    env_file:
+      - .env.development
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    develop:
+      watch:
+        - action: sync
+          path: ./Services/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./Services/package.json
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./Services:/app
+      - /app/node_modules
+    command:
+      [
+        "sh",
+        "-c",
+        "./scripts/wait-for-deps.sh pnpm run db:push && pnpm run dev",
+      ]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  nextjs:
+    build:
+      context: ./Next
+      dockerfile: Dockerfile.dev
+    container_name: feedlytics-next-dev
+    env_file:
+      - .env.development
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    develop:
+      watch:
+        - action: sync
+          path: ./Next/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./Next/package.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Next:/app
+      - /app/node_modules
+    command: ["pnpm", "dev"]
+    depends_on:
+      - services
+    networks:
+      - app-network
+
+  widget:
+    build:
+      context: ./Widget
+      dockerfile: Dockerfile.dev
+    container_name: feedlytics-widget-dev
+    env_file:
+      - .env.development
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    develop:
+      watch:
+        - action: sync
+          path: ./Widget/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./Widget/package.json
+    ports:
+      - "4173:4173"
+    volumes:
+      - ./Widget:/app
+      - /app/node_modules
+    command: ["pnpm", "run", "dev"]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redisdata:

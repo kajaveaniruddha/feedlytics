@@ -1,0 +1,25 @@
+# Use the official Node.js 18 image
+FROM node:18-alpine
+
+# Install necessary system packages. psql and redis-cli are for the wait-for-deps.sh script.
+RUN apk add --no-cache postgresql-client redis bash git
+
+# Use corepack to manage pnpm (the modern, recommended way)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Set the working directory in the container
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml* tsconfig.json* ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Add postgresql-client to get the psql command
+RUN apk add --no-cache postgresql-client
+
+# Expose the port the app runs on
+ENV NODE_ENV=development
+EXPOSE 3001
+
+CMD ["pnpm", "run", "dev"]
