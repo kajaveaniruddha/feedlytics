@@ -2,14 +2,15 @@
 FROM node:18-alpine
 
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@latest
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package.json, lockfile, and .npmrc
 COPY package*.json ./
-COPY pnpm-lock.yaml* ./ 
+COPY pnpm-lock.yaml* ./
+COPY .npmrc ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile

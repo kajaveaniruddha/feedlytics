@@ -1,7 +1,7 @@
 FROM node:18-alpine as builder
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@latest
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ARG STRIPE_PRICE_ID
@@ -15,6 +15,7 @@ ENV DATABASE_URL=$DATABASE_URL \
     STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET 
 # Set working dir and copy files
 WORKDIR /app
+COPY .npmrc ./
 COPY . .
 
 # Install deps
@@ -26,7 +27,7 @@ RUN pnpm build
 # --------------------------------
 
 FROM node:18-alpine as runner
-RUN npm install -g pnpm
+RUN npm install -g pnpm@latest
 WORKDIR /app
 COPY --from=builder /app ./
 EXPOSE 3000

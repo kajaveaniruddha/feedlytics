@@ -2,13 +2,13 @@
 FROM node:18-alpine
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@latest
 
 # Set working directory
 WORKDIR /app
 
-# Copy dependencies manifest
-COPY package.json pnpm-lock.yaml* ./
+# Copy dependencies manifest and .npmrc
+COPY package.json pnpm-lock.yaml* .npmrc ./
 
 # Install deps
 RUN pnpm install

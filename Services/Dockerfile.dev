@@ -4,13 +4,13 @@ FROM node:18-alpine
 # Install necessary system packages. psql and redis-cli are for the wait-for-deps.sh script.
 RUN apk add --no-cache postgresql-client redis bash git
 
-# Use corepack to manage pnpm (the modern, recommended way)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm globally
+RUN npm install -g pnpm@latest
 
 # Set the working directory in the container
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* tsconfig.json* ./
+COPY package.json pnpm-lock.yaml* tsconfig.json* .npmrc ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
