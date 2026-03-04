@@ -94,9 +94,6 @@ jobs:
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
             cd feedlytics/
-            for svc in ${{ steps.targets.outputs.compose_services }}; do
-              docker-compose stop $svc || true
-              docker-compose rm -f $svc || true
-              docker rmi ${{ env.DOCKER_USERNAME }}/feedlytics-${svc}:latest || true
-            done
-            docker-compose up -d --pull always ${{ steps.targets.outputs.compose_services }}
+            docker compose pull ${{ steps.targets.outputs.compose_services }}
+            docker compose up -d --force-recreate ${{ steps.targets.outputs.compose_services }}
+            docker image prune -f
