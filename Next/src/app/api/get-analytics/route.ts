@@ -4,8 +4,9 @@ import { db } from "@/db/db";
 import { feedbacksTable } from "@/db/models/feedback";
 import { usersTable } from "@/db/models/user";
 import { eq, sql } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET(request: Request) {
+async function handler(request: Request) {
   const user = (await getServerSideSession()) as User;
   const userId = parseInt(user.id ?? "0");
 
@@ -95,3 +96,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handler, "/api/get-analytics");

@@ -83,6 +83,17 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 | **Services** | `3001` | API, BullMQ workers, AI analysis |
 | **Widget** | `4173` | Embeddable feedback widget (Vite + React) |
 | **Redis** | `6379` | Job queues, rate limiting, caching |
+| **Prometheus** | `9090` | Metrics collection and storage |
+| **Grafana** | `3002` | Dashboards and visualization |
+| **node-exporter** | `9100` | Host CPU, RAM, disk metrics |
+
+---
+
+## Monitoring
+
+Feedlytics includes Prometheus + Grafana monitoring for VPS system metrics (CPU, RAM, disk) and API latency tracking (p99/p95/p90).
+
+See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORING.md)**
 
 ---
 
@@ -90,24 +101,24 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 
 ```
 feedlytics/
-├── Next/                   # Next.js dashboard (App Router)
-│   ├── src/
-│   ├── Dockerfile          # Production build
-│   └── Dockerfile.dev      # Development (hot reload)
-├── Services/               # Express + BullMQ backend
-│   ├── src/
-│   ├── scripts/            # wait-for-deps.sh
-│   ├── Dockerfile
-│   └── Dockerfile.dev
-├── Widget/                 # Vite + React embeddable widget
-│   ├── src/
-│   ├── Dockerfile
-│   └── Dockerfile.dev
-├── Prod/                   # Production deployment configs (Nginx, Prometheus, Grafana)
+├── Next/                   # Next.js dashboard — see Next/README.md
+├── Services/               # Express + BullMQ backend — see Services/README.md
+├── Widget/                 # Vite + React embeddable widget — see Widget/README.md
+├── monitoring/             # Prometheus, Grafana configs + MONITORING.md
+├── Prod/                   # Production-only configs (Nginx, build script)
 ├── docker-compose.dev.yml  # Local development (uses Dockerfile.dev)
-├── docker-compose.yml      # Production build (uses Dockerfile)
+├── docker-compose.yml      # Production (image-only, no build context)
 └── .env.development.example # Environment variable template
 ```
+
+### Service Documentation
+
+| Service | README | Description |
+|---|---|---|
+| **Next.js** | [Next/README.md](Next/README.md) | Dashboard, auth, billing, API routes, metrics |
+| **Services** | [Services/README.md](Services/README.md) | BullMQ workers, AI analysis, email, Prometheus metrics |
+| **Widget** | [Widget/README.md](Widget/README.md) | Embeddable feedback widget (Shadow DOM) |
+| **Monitoring** | [monitoring/MONITORING.md](monitoring/MONITORING.md) | Prometheus + Grafana setup and queries |
 
 ---
 

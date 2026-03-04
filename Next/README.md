@@ -1,56 +1,84 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Next.js Dashboard
 
-## Getting Started
+The main web application — user-facing dashboard for managing feedback, analytics, billing, and settings.
 
-First, run the UI development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 15** (App Router)
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS** + Radix UI + shadcn/ui
+- **Drizzle ORM** with Neon Postgres (serverless driver)
+- **NextAuth.js** (GitHub + Google OAuth)
+- **Stripe** (payments and billing)
+- **TanStack Query + Table** (data fetching and tables)
+- **prom-client** (Prometheus metrics)
+
+## Port
+
+`3000` in both development and production.
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start dev server with hot reload |
+| `pnpm build` | Production build |
+| `pnpm start` | Start production server |
+| `pnpm db:push` | Push Drizzle schema to database |
+| `pnpm db:generate` | Generate Drizzle migrations |
+| `pnpm db:migrate` | Run Drizzle migrations |
+| `pnpm db:studio` | Open Drizzle Studio (DB browser) |
+| `pnpm lint` | Run ESLint |
+| `pnpm test` | Run tests with Vitest |
+
+## API Routes
+
+| Route | Method | Description |
+|---|---|---|
+| `/api/auth/*` | * | NextAuth.js authentication |
+| `/api/register` | POST | User registration |
+| `/api/verify-code` | POST | Email verification |
+| `/api/get-analytics` | GET | Dashboard analytics (instrumented with Prometheus) |
+| `/api/get-messages` | GET | Fetch feedback messages |
+| `/api/get-categories` | GET | Feedback categories |
+| `/api/send-message` | POST | Submit feedback (from widget) |
+| `/api/get-widget-settings` | POST | Widget configuration |
+| `/api/get-user-details` | GET | User profile |
+| `/api/update-user-data` | POST | Update user settings |
+| `/api/checkout-sessions` | POST | Stripe checkout |
+| `/api/stripe-webhook` | POST | Stripe webhook handler |
+| `/api/user-workflows` | * | Notification workflow config |
+| `/api/metrics` | GET | Prometheus metrics endpoint |
+
+## Metrics
+
+This service exposes Prometheus metrics at `/api/metrics`. The `get-analytics` route is instrumented with latency tracking. To instrument additional routes, use the `withMetrics` helper:
+
+```typescript
+import { withMetrics } from "@/lib/metrics";
+
+async function handler(request: Request) {
+  // your logic
+}
+
+export const GET = withMetrics(handler, "/api/your-route");
 ```
 
-Second, run the python FastApi server:
+## Key Directories
 
-```bash
-cd /API
-
-#then
-
-uvicorn main:app --reload
 ```
-
-Third, run the redis server for email services:
-
-```bash
-docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
-
-#or
-
-get verification code from mongodb database that you have connected
+Next/
+├── src/
+│   ├── app/
+│   │   ├── (app)/          # Authenticated app pages
+│   │   ├── (auth)/         # Login/register pages
+│   │   └── api/            # API routes
+│   ├── components/         # Shared UI components
+│   ├── config/             # Auth config, session helpers
+│   ├── db/                 # Drizzle ORM setup + models
+│   ├── lib/                # Utilities, metrics
+│   └── schemas/            # Zod validation schemas
+├── Dockerfile              # Production image
+└── Dockerfile.dev          # Development image (hot reload)
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
