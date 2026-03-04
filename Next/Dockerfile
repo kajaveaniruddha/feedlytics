@@ -1,7 +1,7 @@
 FROM node:18-alpine as builder
 
 # Install pnpm
-RUN npm install -g pnpm@latest
+RUN npm config set strict-ssl false && npm install -g pnpm
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ARG STRIPE_PRICE_ID
@@ -27,7 +27,7 @@ RUN pnpm build
 # --------------------------------
 
 FROM node:18-alpine as runner
-RUN npm install -g pnpm@latest
+RUN npm config set strict-ssl false && npm install -g pnpm
 WORKDIR /app
 COPY --from=builder /app ./
 EXPOSE 3000

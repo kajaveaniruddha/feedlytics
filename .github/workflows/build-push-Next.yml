@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Build and push Next.js
 
 on:
   workflow_dispatch:

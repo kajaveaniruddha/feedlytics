@@ -5,7 +5,7 @@ FROM node:18-alpine
 RUN apk add --no-cache postgresql-client redis bash git
 
 # Install pnpm globally
-RUN npm install -g pnpm@latest
+RUN npm config set strict-ssl false && npm install -g pnpm
 
 # Set the working directory in the container
 WORKDIR /app

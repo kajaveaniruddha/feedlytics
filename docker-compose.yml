@@ -37,7 +37,7 @@ services:
       
   widget:
     build:
-      context: ./feedlytics-widget
+      context: ./Widget
       dockerfile: Dockerfile
     image: aniii1802/feedlytics-widget
     ports:

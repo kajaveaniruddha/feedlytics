@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   redis:
     image: redis:7-alpine
@@ -24,10 +22,14 @@ services:
       context: ./Services
       dockerfile: Dockerfile.dev
     container_name: feedlytics-services-dev
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - .env.development
     environment:
       NODE_ENV: development
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
     develop:
@@ -48,7 +50,7 @@ services:
       [
         "sh",
         "-c",
-        "./scripts/wait-for-deps.sh pnpm run db:push && pnpm run dev",
+        "sh ./scripts/wait-for-deps.sh pnpm run db:push && pnpm run dev",
       ]
     depends_on:
       redis:
@@ -61,10 +63,14 @@ services:
       context: ./Next
       dockerfile: Dockerfile.dev
     container_name: feedlytics-next-dev
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - .env.development
     environment:
       NODE_ENV: development
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
     develop:
@@ -92,6 +98,9 @@ services:
       context: ./Widget
       dockerfile: Dockerfile.dev
     container_name: feedlytics-widget-dev
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - .env.development
     environment:

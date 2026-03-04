@@ -2,7 +2,7 @@
 FROM node:18-alpine
 
 # Install pnpm globally
-RUN npm install -g pnpm@latest
+RUN npm config set strict-ssl false && npm install -g pnpm
 
 # Set the working directory
 WORKDIR /app
