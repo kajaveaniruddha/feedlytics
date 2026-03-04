@@ -1,11 +1,7 @@
 services:
   nextjs:
-    build:
-      context: ./Next
-      dockerfile: Dockerfile
-      args:
-        DATABASE_URL: ${DATABASE_URL}
-    image: aniii1802/feedlytics-nextjs
+    image: aniii1802/feedlytics-nextjs:latest
+    restart: always
     ports:
       - "3000:3000"
     networks:
@@ -17,10 +13,8 @@ services:
       - .env
 
   services:
-    build:
-      context: ./Services
-      dockerfile: Dockerfile
-    image: aniii1802/feedlytics-services
+    image: aniii1802/feedlytics-services:latest
+    restart: always
     ports:
       - "3001:3001"
     networks:
@@ -34,14 +28,12 @@ services:
       retries: 3
     env_file:
       - .env
-      
+
   widget:
-    build:
-      context: ./Widget
-      dockerfile: Dockerfile
-    image: aniii1802/feedlytics-widget
+    image: aniii1802/feedlytics-widget:latest
+    restart: always
     ports:
-      - "5173:4173"
+      - "4173:4173"
     networks:
       - app-network
     env_file:

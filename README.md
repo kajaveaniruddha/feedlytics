@@ -179,6 +179,38 @@ docker compose -f docker-compose.dev.yml down -v
 
 ---
 
+## Deployment (GitHub Actions)
+
+Deployments are managed via the **Deploy Service** workflow (`Actions` tab > `Deploy Service` > `Run workflow`).
+
+You get checkboxes to pick **any combination** of services to build and deploy in a single run:
+
+| Input | Type | Description |
+|---|---|---|
+| **Deploy Next.js** | Checkbox | Build and deploy the Next.js dashboard |
+| **Deploy Services** | Checkbox | Build and deploy the Express/BullMQ backend |
+| **Deploy Widget** | Checkbox | Build and deploy the Vite widget |
+| **Branch** | Text | Branch to build from (defaults to `master`) |
+| **Deploy to VPS after build?** | Checkbox | Uncheck to only build + push to Docker Hub without deploying |
+
+The workflow builds the selected services, pushes images to Docker Hub, then SSHes into the VPS to do a zero-downtime restart of only those services. Unselected services remain untouched.
+
+**Required GitHub Secrets:**
+
+| Secret | Description |
+|---|---|
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `HOSTINGER_VPS_HOST` | VPS hostname/IP |
+| `HOSTINGER_VPS_USER` | VPS SSH username |
+| `HOSTINGER_VPS_PVT_KEY` | VPS SSH private key |
+| `DATABASE_URL` | Production Neon Postgres URL (for Next.js build args) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
+| `STRIPE_PRICE_ID` | Stripe price ID |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret |
+
+---
+
 ## Environment Variables
 
 See [`.env.development.example`](.env.development.example) for the full list with descriptions. Key variables:
