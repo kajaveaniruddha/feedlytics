@@ -3,6 +3,7 @@ import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq } from "drizzle-orm";
 import { stripe } from "@/lib/stripe";
+import { withMetrics } from "@/lib/metrics";
 
 export const config = {
   api: {
@@ -10,7 +11,7 @@ export const config = {
   },
 };
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const sig = request.headers.get("stripe-signature");
   let event;
   try {
@@ -97,3 +98,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ received: true });
 }
+
+export const POST = withMetrics(handlePOST, "/api/stripe-webhook");

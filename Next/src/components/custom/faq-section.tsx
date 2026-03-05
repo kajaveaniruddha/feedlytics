@@ -41,7 +41,7 @@ const faqData: FAQItem[] = [
             "Yes, data privacy and compliance are top priorities. Feedlytics uses TLS encryption, follows GDPR guidelines, and securely stores data with proper retention policies. Your users&apos; data is never shared or sold.",
     },
     {
-        question: "What&apos;s the pricing model? Are there any hidden fees?",
+        question: "What is the pricing model? Are there any hidden fees?",
         answer:
             "Feedlytics offers two simple and transparent plans: Free and Premium. The Free plan includes up to 50 total feedbacks and 10 workflows, ideal for early-stage users. The Premium plan - paid once per account, allows 100 total feedbacks and 20 workflows, perfect for growing teams. There are no hidden fees, and you can not cancel once upgraded!",
     },

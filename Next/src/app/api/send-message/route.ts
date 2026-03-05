@@ -3,8 +3,9 @@ import { eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
 import { rateLimit } from "@/config/rateLimiter";
 import { NextRequest, NextResponse } from "next/server";
+import { withMetrics } from "@/lib/metrics";
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   // Custom rate limit: 5 requests per 10 seconds per IP
   const response= new NextResponse();
   const rateLimitResult = await rateLimit({
@@ -179,8 +180,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// New OPTIONS handler for CORS preflight
-export function OPTIONS(request: Request) {
+function handleOPTIONS(request: Request) {
   return new Response(null, {
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -189,3 +189,6 @@ export function OPTIONS(request: Request) {
     },
   });
 }
+
+export const POST = withMetrics(handlePOST, "/api/send-message");
+export const OPTIONS = withMetrics(handleOPTIONS, "/api/send-message");

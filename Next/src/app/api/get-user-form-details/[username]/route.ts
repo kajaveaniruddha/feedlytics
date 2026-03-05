@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET(
+async function handleGET(
   req: Request,
   { params }: { params: Promise<{ username: string }> }
 ) {
@@ -46,3 +47,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/get-user-form-details");

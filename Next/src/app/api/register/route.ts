@@ -2,8 +2,9 @@ import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { withMetrics } from "@/lib/metrics";
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const { name, username, email, password } = await request.json();
 
@@ -97,3 +98,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const POST = withMetrics(handlePOST, "/api/register");

@@ -1,8 +1,9 @@
-import { usersTable } from "@/db/models/user";;
+import { usersTable } from "@/db/models/user";
 import { z } from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 import { db } from "@/db/db";
 import { and, eq } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
 const UsernameQuerySchema = z.object({ username: usernameValidation });
 
@@ -56,7 +57,7 @@ async function ensureBloomPopulated() {
   }
 }
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   try {
     await ensureBloomPopulated();
     const { searchParams } = new URL(request.url);
@@ -106,4 +107,6 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/check-username-unique");
 

@@ -1,8 +1,9 @@
 import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const { username, code } = await request.json();
     const decodedUsername = decodeURIComponent(username);
@@ -63,3 +64,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const POST = withMetrics(handlePOST, "/api/verify-code");

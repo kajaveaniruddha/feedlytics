@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function OPTIONS() {
+async function handleOPTIONS() {
   return NextResponse.json({}, {
     status: 200,
     headers: {
@@ -14,7 +15,7 @@ export async function OPTIONS() {
   });
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const { username } = await request.json();
     if (!username) {
@@ -58,3 +59,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const OPTIONS = withMetrics(handleOPTIONS, "/api/get-widget-settings");
+export const POST = withMetrics(handlePOST, "/api/get-widget-settings");

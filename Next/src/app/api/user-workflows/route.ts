@@ -6,6 +6,7 @@ import { getServerSideSession } from "@/config/getServerSideSession";
 import { User } from "next-auth";
 import { and, eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
+import { withMetrics } from "@/lib/metrics";
 
 function trimValues(obj: any): any {
   if (typeof obj === "string") return obj.trim();
@@ -23,7 +24,7 @@ function trimValues(obj: any): any {
   return obj;
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = (await getServerSideSession()) as User;
 
   try {
@@ -53,7 +54,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const user = (await getServerSideSession()) as User;
   let json = await req.json();
   json = trimValues(json);
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+async function handlePATCH(req: Request) {
   const user = (await getServerSideSession()) as User;
   let json = await req.json();
   json = trimValues(json);
@@ -152,7 +153,7 @@ export async function PATCH(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const user = (await getServerSideSession()) as User;
   const json = await req.json();
   const { id } = json;
@@ -179,3 +180,8 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/user-workflows");
+export const POST = withMetrics(handlePOST, "/api/user-workflows");
+export const PATCH = withMetrics(handlePATCH, "/api/user-workflows");
+export const DELETE = withMetrics(handleDELETE, "/api/user-workflows");

@@ -20,7 +20,6 @@ export default function LandingPage() {
         {/* Hero Section */}
         <AuroraBackground>
           <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-24">
-            <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -29,15 +28,15 @@ export default function LandingPage() {
                   duration: 0.8,
                   ease: "easeInOut",
                 }}
-                className="flex flex-col gap-6 text-center lg:text-left"
+                className="container mx-auto items-center justify-center flex flex-col gap-6 text-center"
               >
                 <div className="mb-2 px-4 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm font-medium text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5 w-fit mx-auto lg:mx-0">
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
                   FEEDLYTICS
                 </div>
 
-                <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
-                  AI-Powered Feedback Intelligence Platform for SaaS Teams
+                <h1 className="text-5xl md:text-7xl py-4 font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
+                  AI-Powered Feedback <br />Intelligence Platform for SaaS Teams
                 </h1>
 
                 <p className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300">
@@ -60,43 +59,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </motion.div>
-
-              {/* App Preview/Screenshot */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="relative"
-              >
-                <div className="relative rounded-xl overflow-hidden border border-neutral-200/50 dark:border-neutral-800/50 backdrop-blur-sm">
-                  <Image
-                    width={400}
-                    height={300}
-                    src="/DemoGif.gif"
-                    alt="Feedlytics Dashboard"
-                    className="w-full sm:w-2/3 h-auto"
-                    priority
-                    unoptimized
-                  />
-                  <div className=" flex flex-col gap-10 absolute top-6 right-3">
-                    <div className="text-secondary-foreground bg-white dark:bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-200 dark:border-neutral-700 max-sm:hidden">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                        <span className="text-sm font-medium">AI-Powered Analysis</span>
-                      </div>
-                    </div>
-
-                    <div className="text-secondary-foreground bg-white dark:bg-neutral-800 rounded-lg p-3 shadow-lg border border-neutral-200 dark:border-neutral-700 max-sm:hidden">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-amber-500" />
-                        <span className="text-sm font-medium">Real-time Insights</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
             </div>
-          </div>
         </AuroraBackground>
 
         <LandingPageWorkFlow />

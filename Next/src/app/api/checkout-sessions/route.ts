@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getServerSideSession } from "@/config/getServerSideSession";
+import { withMetrics } from "@/lib/metrics";
 
 import { stripe } from "../../../lib/stripe";
 
-export async function POST() {
+async function handlePOST() {
   try {
     const LoggedInUser = await getServerSideSession();
     if (LoggedInUser instanceof Response) {
@@ -46,3 +47,5 @@ export async function POST() {
     );
   }
 }
+
+export const POST = withMetrics(handlePOST, "/api/checkout-sessions");

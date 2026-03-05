@@ -21,20 +21,25 @@ export const httpRequestTotal = new client.Counter({
 
 export { register };
 
-type RouteHandler = (request: Request) => Promise<Response>;
-
-export function withMetrics(handler: RouteHandler, route: string): RouteHandler {
-  return async (request: Request) => {
+export function withMetrics(
+  handler: (...args: any[]) => any,
+  route: string,
+) {
+  return async (request: Request, ...args: any[]) => {
     const end = httpRequestDuration.startTimer();
     let statusCode = 500;
 
     try {
-      const response = await handler(request);
+      const response = await handler(request, ...args);
       statusCode = response.status;
       return response;
     } finally {
       end({ method: request.method, route, status_code: statusCode });
-      httpRequestTotal.inc({ method: request.method, route, status_code: statusCode });
+      httpRequestTotal.inc({
+        method: request.method,
+        route,
+        status_code: statusCode,
+      });
     }
   };
 }

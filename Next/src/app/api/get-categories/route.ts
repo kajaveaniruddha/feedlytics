@@ -3,8 +3,9 @@ import { db } from "@/db/db";
 import { feedbacksTable } from "@/db/models/feedback";
 import { eq, sql } from "drizzle-orm";
 import { User } from "next-auth";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   const user = await getServerSideSession() as User;
   try {
     const sentimentCounts = await db
@@ -37,3 +38,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/get-categories");

@@ -4,8 +4,9 @@ import { usersTable } from "@/db/models/user";
 import { feedbacksTable } from "@/db/models/feedback";
 import { db } from "@/db/db";
 import { eq, sql, inArray } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function DELETE(request: Request) {
+async function handleDELETE(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -78,3 +79,5 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+export const DELETE = withMetrics(handleDELETE, "/api/delete-messages");

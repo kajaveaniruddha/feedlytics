@@ -47,14 +47,39 @@ The **Feedlytics Overview** dashboard includes:
 - Disk Usage %
 
 ### API Metrics (from Next.js)
-- API Latency p99 / p95 / p90 for `/api/get-analytics`
-- API Request Rate by method and status code
-- API Latency p99 across all instrumented routes
-- Total Requests by status code
+- **Overall API Latency (p99 & p50)** — aggregate latency across all routes
+- **Per-API Latency p99** — one line per route
+- **Per-API Latency p95** — one line per route
+- **Overall Request Rate** by HTTP status code
+- **Per-API Request Rate** — QPS broken down by route
 
-## Instrumenting Additional API Routes
+### Instrumented Routes
 
-To add metrics to any Next.js API route, use the `withMetrics` helper:
+All Next.js API routes are instrumented with the `withMetrics` wrapper:
+
+| Route | Methods |
+|---|---|
+| `/api/accept-messages` | GET, PUT |
+| `/api/check-username-unique` | GET |
+| `/api/checkout-sessions` | POST |
+| `/api/delete-messages` | DELETE |
+| `/api/get-analytics` | GET |
+| `/api/get-categories` | GET |
+| `/api/get-messages` | GET |
+| `/api/get-project-details` | GET |
+| `/api/get-user-details` | GET |
+| `/api/get-user-form-details/[username]` | GET |
+| `/api/get-widget-settings` | OPTIONS, POST |
+| `/api/register` | POST |
+| `/api/send-message` | POST, OPTIONS |
+| `/api/stripe-webhook` | POST |
+| `/api/update-user-data` | PUT |
+| `/api/user-workflows` | GET, POST, PATCH, DELETE |
+| `/api/verify-code` | POST |
+
+## Adding Metrics to New API Routes
+
+To instrument a new Next.js API route, use the `withMetrics` helper:
 
 ```typescript
 // Before
@@ -65,18 +90,20 @@ export async function GET(request: Request) {
 // After
 import { withMetrics } from "@/lib/metrics";
 
-async function handler(request: Request) {
+async function handleGET(request: Request) {
   // ... your handler logic
 }
 
-export const GET = withMetrics(handler, "/api/your-route-name");
+export const GET = withMetrics(handleGET, "/api/your-route-name");
 ```
 
-The `withMetrics` wrapper automatically tracks:
-- Request duration (as a histogram for percentile calculations)
-- Request count (with method, route, and status_code labels)
+The wrapper supports all Next.js handler signatures — standard handlers, dynamic route handlers with context params, `NextRequest`, and synchronous handlers.
 
-New routes will automatically appear in Grafana's "All Routes" panel.
+It automatically tracks:
+- **Request duration** as a histogram (used for p99, p95, p50 percentile calculations)
+- **Request count** with `method`, `route`, and `status_code` labels
+
+New routes will automatically appear in the per-API Grafana panels.
 
 ## Useful Prometheus Queries
 
@@ -85,14 +112,20 @@ Run these in Prometheus (http://localhost:9090) or in Grafana's Explore tab:
 ### API Latency Percentiles
 
 ```promql
-# p99 latency for get-analytics
+# Overall p99 latency across all routes
+histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+# Overall p50 (median) latency
+histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+# Per-route p99
+histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))
+
+# Per-route p95
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))
+
+# p99 for a specific route
 histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{route="/api/get-analytics"}[5m]))
-
-# p95
-histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{route="/api/get-analytics"}[5m]))
-
-# p90
-histogram_quantile(0.90, rate(http_request_duration_seconds_bucket{route="/api/get-analytics"}[5m]))
 ```
 
 ### Request Rate

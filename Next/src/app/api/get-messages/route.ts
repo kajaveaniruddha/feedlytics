@@ -3,8 +3,9 @@ import { db } from "@/db/db";
 import { feedbacksTable } from "@/db/models/feedback";
 import { eq, sql, desc } from "drizzle-orm";
 import { getServerSideSession } from "@/config/getServerSideSession";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   const user = (await getServerSideSession()) as User;
 
   const url = new URL(request.url);
@@ -48,3 +49,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/get-messages");

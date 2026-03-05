@@ -4,8 +4,9 @@ import { db } from "@/db/db";
 import { usersTable } from "@/db/models/user";
 import { eq } from "drizzle-orm";
 import { authOptions } from "../auth/[...nextauth]/options";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -63,3 +64,5 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/get-user-details");

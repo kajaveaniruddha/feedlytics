@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ModeToggle } from "@/components/custom/mode-toggle";
-import { ReactLenis } from "@/lib/lenis";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
@@ -59,7 +58,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <ReactLenis root>
         <body className={`${roboto.className}`}>
           <ThemeProvider
             attribute="class"
@@ -73,7 +71,6 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </body>
-      </ReactLenis>
       <GoogleAnalytics gaId="G-M9DGL0TJV7" />
     </html>
   );

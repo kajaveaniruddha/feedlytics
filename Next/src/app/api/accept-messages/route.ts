@@ -3,8 +3,9 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
+import { withMetrics } from "@/lib/metrics";
 
-export async function GET() {
+async function handleGET() {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return new Response(
@@ -43,7 +44,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: Request) {
+async function handlePUT(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return new Response(
@@ -88,3 +89,6 @@ export async function PUT(request: Request) {
     );
   }
 }
+
+export const GET = withMetrics(handleGET, "/api/accept-messages");
+export const PUT = withMetrics(handlePUT, "/api/accept-messages");
