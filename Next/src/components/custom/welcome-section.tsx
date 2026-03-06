@@ -2,36 +2,30 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from 'lucide-react';
-import { Card } from "../ui/card";
+import { Sparkles } from "lucide-react";
 
 export const WelcomeSection = React.memo(({ name }: { name: string }) => (
-  <Card className="flex flex-col items-center justify-center py-12 ">
+  <div className="space-y-1">
     <motion.div
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="text-center"
+      transition={{ duration: 0.4 }}
+      className="flex items-center gap-2"
     >
-      <h1 className="text-4xl md:text-5xl font-bold pb-4 bg-gradient-to-r from-primary-foreground via-primary to-primary-foreground bg-clip-text text-transparent">
-        FeedLytics
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        Welcome back <span className="text-primary">{name}</span>
       </h1>
-      <h2 className="text-xl sm:text-3xl md:text-4xl font-semibold mb-4 flex items-center justify-center ">
-        <Sparkles className="w-6 h-6 mr-2 text-primary" />
-        {name}
-        <Sparkles className="w-6 h-6 ml-2 text-primary" />
-      </h2>
+      <Sparkles className="w-5 h-5 text-primary shrink-0" />
     </motion.div>
     <motion.p
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 0.3, duration: 0.5 }}
-      className="text-lg text-secondary-foreground max-w-lg text-center max-lg:px-2 "
+      transition={{ delay: 0.2, duration: 0.4 }}
+      className="text-sm text-muted-foreground"
     >
-      Ready to check your latest feedback and insights with AI?
+      Here&apos;s your feedback overview and quick actions.
     </motion.p>
-  </Card>
+  </div>
 ));
 
-WelcomeSection.displayName = 'WelcomeSection';
-
+WelcomeSection.displayName = "WelcomeSection";

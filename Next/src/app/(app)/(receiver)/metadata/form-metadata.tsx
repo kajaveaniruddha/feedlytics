@@ -451,8 +451,8 @@ const MetadataPage = () => {
               This is how your feedback widget will appear to your users.
             </p>
             <Separator className="mb-6" />
-            <div className="flex justify-center">
-              <div className="relative pb-16">
+            <div className="flex justify-center w-full">
+              <div className="relative pb-16 w-full lg:w-3/4 lg:max-w-md mx-auto">
                 <FeedbackPreview formValues={previewValues} />
               </div>
             </div>

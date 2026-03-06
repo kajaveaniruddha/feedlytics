@@ -11,15 +11,28 @@ import { FeedbackLink } from "@/components/custom/feedback-link";
 
 const TotalMessagesPieChart = dynamic(
   () => import("@/components/custom/total-messages-pie-chart"),
-  { loading: () => <Skeleton className="w-full h-[300px] bg-[hsl(var(--foreground))]" /> }
+  { loading: () => <Skeleton className="w-full h-[300px] rounded-xl" /> }
 );
+
+const stagger = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
+  },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
 
 const Page = () => {
   const { session, userInfo } = useMessageContext();
 
   if (!session || !session.user) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen text-muted-foreground">
         Please Login to access Feedlytics
       </div>
     );
@@ -29,26 +42,23 @@ const Page = () => {
 
   return (
     <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full min-h-screen mx-auto space-y-8 p-4 lg:p-8"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+      className="w-full min-h-screen mx-auto p-4 lg:p-8 space-y-6"
     >
-      <WelcomeSection name={userInfo.name} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
+      <motion.div variants={fadeUp}>
+        <WelcomeSection name={userInfo.name} />
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left column — wider */}
+        <motion.div variants={fadeUp} className="lg:col-span-3">
           <FeedbackSettings username={username} />
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className=" space-y-6"
-        >
+
+        {/* Right column */}
+        <motion.div variants={fadeUp} className="lg:col-span-2 space-y-6">
           <TotalMessagesPieChart username={username} />
           <FeedbackLink />
         </motion.div>
@@ -58,4 +68,3 @@ const Page = () => {
 };
 
 export default React.memo(Page);
-

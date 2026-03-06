@@ -1,16 +1,14 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-// Helper function to compute lighter shade of a hex color
+const RATING_LABELS = ["Terrible", "Bad", "Okay", "Good", "Excellent!"]
+
 function lightenColor(color: string, percent: number): string {
-  // Assumes color in the format "#RRGGBB"
   const num = Number.parseInt(color.slice(1), 16)
   const r = (num >> 16) & 0xff
   const g = (num >> 8) & 0xff
@@ -21,6 +19,15 @@ function lightenColor(color: string, percent: number): string {
   const newB = Math.min(255, Math.max(0, b + Math.round(2.55 * percent)))
 
   return "#" + ((1 << 24) + (newR << 16) + (newG << 8) + newB).toString(16).slice(1)
+}
+
+function blendColor(hex1: string, hex2: string, weight: number): string {
+  const n1 = Number.parseInt(hex1.slice(1), 16)
+  const n2 = Number.parseInt(hex2.slice(1), 16)
+  const r = Math.round(((n1 >> 16) & 0xff) * (1 - weight) + ((n2 >> 16) & 0xff) * weight)
+  const g = Math.round(((n1 >> 8) & 0xff) * (1 - weight) + ((n2 >> 8) & 0xff) * weight)
+  const b = Math.round((n1 & 0xff) * (1 - weight) + (n2 & 0xff) * weight)
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
 }
 
 interface FeedbackPreviewProps {
@@ -37,9 +44,9 @@ interface FeedbackPreviewProps {
 }
 
 export default function FeedbackPreview({ formValues }: FeedbackPreviewProps) {
-  const [rating, setRating] = useState(3)
+  const [rating, setRating] = useState(0)
+  const [hoveredStar, setHoveredStar] = useState(0)
 
-  // Theme styles based on form values
   const themeStyle = {
     backgroundColor: formValues.bg_color,
     color: formValues.text_color,
@@ -49,83 +56,150 @@ export default function FeedbackPreview({ formValues }: FeedbackPreviewProps) {
     backgroundColor: lightenColor(formValues.bg_color, 60),
   }
 
-  const onSelectStar = (index: number): void => {
-    setRating(index + 1)
-  }
+  const accentColor = lightenColor(formValues.bg_color, -20)
+  const accentTextColor = formValues.text_color || "#FFFFFF"
+  const activeStar = hoveredStar || rating
+
+  const secondaryColor = blendColor(formValues.text_color, formValues.bg_color, 0.4)
+  const tertiaryColor = blendColor(formValues.text_color, formValues.bg_color, 0.6)
 
   return (
     <div className="relative w-full max-w-md">
-      {/* Feedback Form */}
-      <div style={themeStyle} className="rounded-lg shadow-lg overflow-hidden">
-        <div className="p-4">
-          <h3 className="font-bold text-base sm:text-lg mb-4">Send us your feedback</h3>
+      {/* Feedback Card */}
+      <div
+        style={themeStyle}
+        className="rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden"
+      >
+        {/* Accent gradient bar */}
+        <div
+          className="h-1.5 w-full"
+          style={{
+            background: `linear-gradient(to right, ${accentColor}, ${lightenColor(accentColor, 30)})`,
+          }}
+        />
 
-          <form className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              {formValues.collect_info.name && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" placeholder="Enter your name" style={themeInputStyle} />
-                </div>
-              )}
+        <div className="p-5">
+          {/* Header */}
+          <div className="text-center mb-4">
+            <h3 className="font-semibold text-lg" style={{ color: formValues.text_color }}>
+              How was your experience?
+            </h3>
+            <p className="text-sm mt-0.5" style={{ color: secondaryColor }}>
+              We&apos;d love to hear from you
+            </p>
+          </div>
 
-              {formValues.collect_info.email && (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" style={themeInputStyle} />
-                </div>
-              )}
+          {/* Star Rating */}
+          <div className="flex flex-col items-center mb-5">
+            <div
+              className="flex items-center gap-1.5"
+              onMouseLeave={() => setHoveredStar(0)}
+            >
+              {[...Array(5)].map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="transition-transform duration-150 hover:scale-125 focus:outline-none cursor-pointer"
+                  onClick={() => setRating(index + 1)}
+                  onMouseEnter={() => setHoveredStar(index + 1)}
+                >
+                  <StarIcon
+                    className="h-8 w-8"
+                    filled={activeStar > index}
+                  />
+                </button>
+              ))}
             </div>
+            <span
+              className={`text-sm font-medium mt-1.5 h-5 transition-opacity duration-200 ${
+                activeStar > 0 ? "opacity-100" : "opacity-0"
+              }`}
+              style={{ color: accentColor }}
+            >
+              {activeStar > 0 ? RATING_LABELS[activeStar - 1] : ""}
+            </span>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="feedback">Feedback</Label>
+          {/* Form Fields */}
+          <div className="space-y-3">
+            {formValues.collect_info.name && (
+              <div className="space-y-1.5">
+                <Label htmlFor="preview-name" className="text-xs font-medium" style={{ color: secondaryColor }}>
+                  Name
+                </Label>
+                <Input
+                  id="preview-name"
+                  placeholder="Your name"
+                  className="rounded-lg h-10 text-sm"
+                  style={themeInputStyle}
+                  readOnly
+                />
+              </div>
+            )}
+            {formValues.collect_info.email && (
+              <div className="space-y-1.5">
+                <Label htmlFor="preview-email" className="text-xs font-medium" style={{ color: secondaryColor }}>
+                  Email
+                </Label>
+                <Input
+                  id="preview-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  className="rounded-lg h-10 text-sm"
+                  style={themeInputStyle}
+                  readOnly
+                />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="preview-feedback" className="text-xs font-medium" style={{ color: secondaryColor }}>
+                Feedback
+              </Label>
               <Textarea
-                id="feedback"
-                placeholder="Tell us what you think"
-                className="min-h-[100px]"
+                id="preview-feedback"
+                placeholder="Share your thoughts..."
+                className="rounded-lg min-h-[110px] text-sm resize-none"
                 style={themeInputStyle}
+                readOnly
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {[...Array(5)].map((_, index) => (
-                  <StarIcon
-                    key={index}
-                    className={`h-5 w-5 cursor-pointer ${
-                      rating > index ? "fill-[#FFD700]" : "fill-muted stroke-muted-foreground"
-                    }`}
-                    onClick={() => onSelectStar(index)}
-                  />
-                ))}
-              </div>
+            {/* Submit Button */}
+            <button
+              type="button"
+              className="w-full rounded-lg py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 hover:brightness-110 cursor-pointer"
+              style={{
+                background: `linear-gradient(135deg, ${accentColor}, ${lightenColor(accentColor, 20)})`,
+                color: accentTextColor,
+              }}
+            >
+              Submit Feedback
+            </button>
+          </div>
 
-              <Button
-                type="button"
-                style={{
-                  backgroundColor: lightenColor(formValues.bg_color, -20),
-                  color: formValues.text_color,
-                }}
-                className=" rounded"
-              >
-                Submit
-              </Button>
-            </div>
-          </form>
-
-          <div className="text-xs mt-4 opacity-70">
-            Powered by <span className="text-indigo-600 hover:underline">Feedlytics</span>
-            ⚡️
+          {/* Footer */}
+          <div className="text-center mt-4 pt-3 border-t" style={{ borderColor: lightenColor(formValues.bg_color, 40) }}>
+            <span className="text-[11px]" style={{ color: tertiaryColor }}>
+              Powered by{" "}
+              <span className="text-indigo-500 font-medium">Feedlytics</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Feedback Widget Button - Fixed at bottom right */}
+      {/* Floating Trigger Button */}
       <div className="absolute -bottom-16 right-0">
-        <Button className="rounded-full shadow-lg flex items-center gap-2" style={themeStyle}>
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer"
+          style={{
+            background: `linear-gradient(135deg, ${accentColor}, ${lightenColor(accentColor, 20)})`,
+            color: accentTextColor,
+          }}
+        >
           <MessageCircleIcon className="h-5 w-5" />
-          Feedback
-        </Button>
+          <span>Feedback</span>
+        </button>
       </div>
     </div>
   )
@@ -133,29 +207,30 @@ export default function FeedbackPreview({ formValues }: FeedbackPreviewProps) {
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   className?: string
+  filled?: boolean
 }
 
-function StarIcon(props: IconProps) {
+function StarIcon({ filled, className, ...props }: IconProps) {
   return (
     <svg
+      className={className}
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill="#FFD700"
-      stroke="currentColor"
-      strokeWidth="0"
+      fill={filled ? "#F59E0B" : "#E5E7EB"}
+      stroke={filled ? "#F59E0B" : "#D1D5DB"}
+      strokeWidth="1"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 }
 
-function MessageCircleIcon(props: IconProps) {
+function MessageCircleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -165,11 +240,10 @@ function MessageCircleIcon(props: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
       <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
     </svg>
   )

@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText, Workflow } from 'lucide-react';
+import { Home, BarChart2, HelpCircle, Settings, LogOut, ChevronRight, Menu, MessageCircle, FileText, Workflow } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -31,7 +31,6 @@ const Navbar = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Update active page whenever the pathname changes
     setActivePage(pathname.slice(1) || "dashboard");
   }, [pathname]);
 
@@ -50,7 +49,7 @@ const Navbar = () => {
           <SheetContent
             side="left"
             aria-labelledby="sheet-dialog-title"
-            className="w-60 custom-shadow flex flex-col h-full"
+            className="w-60 flex flex-col h-full border-r border-border bg-card"
           >
             <motion.aside
               className="w-full h-full flex flex-col"
@@ -59,61 +58,72 @@ const Navbar = () => {
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <div className="p-4 border-b border-gray-800">
-                <SheetTitle id="sheet-dialog-title" className="text-2xl font-bold text-primary">
-                  {activePage || "Dashboard"}
+              <div className="p-4 border-b border-border">
+                <SheetTitle id="sheet-dialog-title" className="text-xl font-bold text-primary">
+                  Feedlytics
                 </SheetTitle>
               </div>
-              <nav className="flex-1 pt-6">
+              <nav className="flex-1 pt-4 px-2 space-y-1">
                 {navItems.map((item) => (
                   <Link
                     key={item.key}
                     href={`/${item.key}`}
-                    className={`flex items-center px-6 py-3 rounded-2xl hover:text-primary transition-all duration-300 ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"
-                      }`}
+                    className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      activePage === item.key
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                    }`}
                     onClick={() => {
                       setActivePage(item.key);
                       toggleMenu();
                     }}
                   >
-                    <item.icon className="w-5 h-5 mr-3" />
+                    <item.icon className="w-4 h-4 mr-3" />
                     {item.label}
                   </Link>
                 ))}
               </nav>
-              <div className="p-4 border-t">
+              <div className="p-4 border-t border-border">
                 <UserMenu username={username} avatarUrl={userInfo.avatarUrl} />
               </div>
             </motion.aside>
           </SheetContent>
         </Sheet>
       </div>
-      {/* Desktop Navbar */}
+
+      {/* Desktop Sidebar */}
       <motion.aside
-        className="max-sm:hidden w-60 custom-shadow flex flex-col fixed h-full"
+        className="max-sm:hidden w-60 flex flex-col fixed h-full border-r border-border bg-card"
         initial={{ x: "-100%" }}
         animate={{ x: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="p-6 flex items-center justify-center border-b border-border">
-          <h2 className="text-2xl font-bold">
-            {navItems.find((item) => item.key === activePage)?.label || "Dashboard"}
-          </h2>
+        <div className="p-6 flex items-center gap-2 border-b border-border">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <BarChart2 className="w-4 h-4 text-primary" />
+          </div>
+          <h2 className="text-lg font-bold">Feedlytics</h2>
         </div>
-        <nav className="flex-1 pt-6 px-4 space-y-2">
+
+        <nav className="flex-1 pt-4 px-3 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.key}
               href={`/${item.key}`}
-              className={`flex items-center px-6 py-2 transition-all duration-300 hover:scale-100 rounded-2xl hover:custom-shadow ${activePage === item.key ? "scale-100 custom-shadow dark:text-primary" : "scale-95"}`}
+              className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                activePage === item.key
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+              }`}
               onClick={() => setActivePage(item.key)}
             >
-              <item.icon className={`w-5 h-5 mr-3 transition-colors`} />
-              <span className="text-lg">{item.label}</span>
+              <item.icon className="w-4 h-4 mr-3" />
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
-        <div className="p-6">
+
+        <div className="p-4 border-t border-border">
           <UserMenu username={username} avatarUrl={userInfo.avatarUrl} />
         </div>
       </motion.aside>
@@ -121,33 +131,32 @@ const Navbar = () => {
   );
 };
 
-const UserMenu = ({ username, avatarUrl }: { username: string, avatarUrl: string }) => (
+const UserMenu = ({ username, avatarUrl }: { username: string; avatarUrl: string }) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button
         variant="ghost"
-        className="w-full justify-start custom-shadow"
+        className="w-full justify-start rounded-lg hover:bg-primary/5"
       >
         <Avatar className="w-8 h-8 mr-2">
           <AvatarImage src={avatarUrl} alt="@user" />
           <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 truncate text-left">
-          <span className="font-medium truncate block">{username}</span>
+          <span className="text-sm font-medium truncate block">{username}</span>
         </div>
-        <ChevronRight className="w-4 h-4 flex-shrink-0" />
+        <ChevronRight className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
       </Button>
     </PopoverTrigger>
-    <PopoverContent className="w-56 bg-secondary border">
-      {/* Dialogue Title */}
-      <div className="border-b">
-        <h3 className="text-lg font-semibold text-center pb-2">Account Settings</h3>
+    <PopoverContent className="w-56 border border-border bg-card">
+      <div className="border-b border-border">
+        <h3 className="text-sm font-semibold text-center pb-2">Account</h3>
       </div>
       <div className="space-y-1 pt-2">
         <Button
           variant="ghost"
           disabled
-          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
+          className="w-full justify-start text-sm"
         >
           <Settings className="w-4 h-4 mr-2" />
           Settings
@@ -155,14 +164,14 @@ const UserMenu = ({ username, avatarUrl }: { username: string, avatarUrl: string
         <Button
           disabled
           variant="ghost"
-          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
+          className="w-full justify-start text-sm"
         >
           <HelpCircle className="w-4 h-4 mr-2" />
           Help
         </Button>
         <Button
           variant="ghost"
-          className="w-full justify-start scale-95 hover:scale-100 transition-transform"
+          className="w-full justify-start text-sm hover:text-destructive"
           onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <LogOut className="w-4 h-4 mr-2" />

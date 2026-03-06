@@ -30,30 +30,30 @@ export default function LandingPage() {
                 }}
                 className="container mx-auto items-center justify-center flex flex-col gap-6 text-center"
               >
-                <div className="mb-2 px-4 py-1.5 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm font-medium text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5 w-fit mx-auto lg:mx-0">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                <div className="mb-2 px-4 py-1.5 border border-border rounded-full text-sm font-medium text-muted-foreground flex items-center gap-1.5 w-fit mx-auto lg:mx-0">
+                  <span className="flex h-2 w-2 rounded-full bg-primary"></span>
                   FEEDLYTICS
                 </div>
 
-                <h1 className="text-5xl md:text-7xl py-4 font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
+                <h1 className="text-5xl md:text-7xl py-4 font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-muted-foreground">
                   AI-Powered Feedback <br />Intelligence Platform for SaaS Teams
                 </h1>
 
-                <p className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300">
+                <p className="text-lg md:text-xl text-muted-foreground">
                   Collect, analyze, and route user feedback in real-time with AI-powered insights.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-6 mx-auto lg:mx-0">
                   <Link
                     href="/login"
-                    className="px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-medium hover:scale-105 transition-all flex items-center gap-2 justify-center"
+                    className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:scale-105 hover:brightness-110 transition-all flex items-center gap-2 justify-center shadow-md"
                   >
                     Get Started Free
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     href="#workflows"
-                    className="px-6 py-3 rounded-full bg-transparent border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                    className="px-6 py-3 rounded-full bg-transparent border border-border text-foreground font-medium hover:bg-accent transition-all"
                   >
                     See Demo
                   </Link>
@@ -65,13 +65,13 @@ export default function LandingPage() {
         <LandingPageWorkFlow />
 
         {/* Features Overview */}
-        <section className="py-24 px-4 bg-gradient-to-b from-[#FAFAFA] dark:from-[#18181B] to-neutral-50 dark:to-neutral-900 ">
+        <section className="py-24 px-4 bg-gradient-to-b from-secondary to-background">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-neutral-100 dark:to-neutral-400">
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
                 Powerful Features
               </h2>
-              <p className="text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl mx-auto">
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Everything you need to collect, analyze, and act on user feedback
               </p>
             </div>

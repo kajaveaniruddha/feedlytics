@@ -73,7 +73,7 @@ function FAQItemComponent({ item, isOpen, onToggle }: FAQItemProps) {
         <Card className="mb-4 transition-all duration-200 hover:shadow-md">
             <CardContent className="p-0">
                 <button
-                    className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                    className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
                     onClick={onToggle}
                     aria-expanded={isOpen}
                 >
@@ -81,9 +81,9 @@ function FAQItemComponent({ item, isOpen, onToggle }: FAQItemProps) {
                         <h3 className="text-lg font-semibold pr-4">{item.question}</h3>
                         <div className="flex-shrink-0">
                             {isOpen ? (
-                                <ChevronUp className="h-5 w-5 text-gray-500" />
+                                <ChevronUp className="h-5 w-5 text-muted-foreground" />
                             ) : (
-                                <ChevronDown className="h-5 w-5 text-gray-500" />
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
                             )}
                         </div>
                     </div>
@@ -91,16 +91,15 @@ function FAQItemComponent({ item, isOpen, onToggle }: FAQItemProps) {
 
                 {isOpen && (
                     <div className="px-6 pb-6">
-                        <div className="pt-2 border-t border-gray-100">
-                            <div className="mt-4 leading-relaxed">
+                        <div className="pt-2 border-t border-border">
+                            <div className="mt-4 leading-relaxed text-muted-foreground">
                                 {item.answer.split("\n\n").map((paragraph, index) => {
                                     if (paragraph.startsWith("```html") && paragraph.endsWith("```")) {
-                                        // Extract code content
                                         const codeContent = paragraph.slice(7, -3).trim()
                                         return (
                                             <div key={index} className="my-4">
-                                                <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                                                    <pre className="text-sm text-gray-100">
+                                                <div className="bg-secondary rounded-lg p-4 overflow-x-auto border border-border">
+                                                    <pre className="text-sm text-foreground">
                                                         <code>{codeContent}</code>
                                                     </pre>
                                                 </div>
@@ -144,37 +143,34 @@ export default function FaqSection() {
     }
 
     return (
-        <section className="py-16 light:bg-gray-50" id="faq">
+        <section className="py-16 bg-background" id="faq">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">Frequently Asked Questions</h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                    <h2 className="text-3xl font-bold sm:text-4xl mb-4">Frequently Asked Questions</h2>
+                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         Everything you need to know about Feedlytics. Can&apos;t find the answer you&apos;re looking for?
-                        <a href="mailto:aakajave@gmail.com" className="text-blue-600 hover:text-blue-800 ml-1">
+                        <a href="mailto:aakajave@gmail.com" className="text-primary hover:text-primary/80 ml-1">
                             Contact our support team
                         </a>
                         .
                     </p>
                 </div>
 
-                {/* Controls */}
                 <div className="flex justify-center gap-4 mb-8">
                     <button
                         onClick={expandAll}
-                        className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                     >
                         Expand All
                     </button>
                     <button
                         onClick={collapseAll}
-                        className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-muted-foreground bg-secondary rounded-lg hover:bg-accent transition-colors"
                     >
                         Collapse All
                     </button>
                 </div>
 
-                {/* FAQ Items */}
                 <div className="space-y-2">
                     {faqData.map((item, index) => (
                         <FAQItemComponent
