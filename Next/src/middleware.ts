@@ -3,15 +3,35 @@ export { default } from "next-auth/middleware";
 import { getToken } from "next-auth/jwt";
 import { rateLimit } from "./config/rateLimiter";
 
-// This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-  // Rate limiting
   const response = NextResponse.next();
-  const rateLimitResult = await rateLimit({ request, response });
+  const url = request.nextUrl;
+
+  if (
+    url.pathname.startsWith("/login") ||
+    url.pathname.startsWith("/register") ||
+    url.pathname.startsWith("/api/auth/callback")
+  ) {
+    const authRateLimitResult = await rateLimit({
+      request,
+      response,
+      ipLimit: 3,
+      ipWindow: 10,
+    });
+    if (authRateLimitResult) return authRateLimitResult;
+  }
+
+  const rateLimitResult = await rateLimit({
+    request,
+    response,
+    sessionLimit: 30,
+    ipLimit: 30,
+    sessionWindow: 10,
+    ipWindow: 10,
+  });
   if (rateLimitResult) return rateLimitResult;
 
   const token = await getToken({ req: request });
-  const url = request.nextUrl;
   if (
     token &&
     (url.pathname.startsWith("/login") || url.pathname.startsWith("/register"))
@@ -32,11 +52,11 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// where all we want to run this middleware
 export const config = {
   matcher: [
     "/login",
     "/register",
+    "/api/auth/callback/:path*",
     "/dashboard/:path*",
     "/analytics/:path*",
     "/feedbacks/:path*",

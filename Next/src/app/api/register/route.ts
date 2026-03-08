@@ -4,8 +4,19 @@ import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { withMetrics } from "@/lib/metrics";
 import { PLAN_LIMITS } from "@/config/plans";
+import { rateLimit } from "@/config/rateLimiter";
+import { NextRequest, NextResponse } from "next/server";
 
-async function handlePOST(request: Request) {
+async function handlePOST(request: NextRequest) {
+  const response = new NextResponse();
+  const rateLimitResult = await rateLimit({
+    request,
+    response,
+    ipLimit: 3,
+    ipWindow: 10,
+  });
+  if (rateLimitResult) return rateLimitResult;
+
   try {
     const { name, username, email, password } = await request.json();
 

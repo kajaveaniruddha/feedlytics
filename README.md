@@ -108,6 +108,25 @@ See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORIN
 
 ---
 
+## Rate Limiting
+
+All rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via `Next/src/middleware.ts`.
+
+| Route | IP Limit | Window | Effective Rate | Purpose |
+|-------|----------|--------|---------------|---------|
+| `/login`, `/register`, `/api/auth/callback/*` | 3 requests | 10 sec | 0.3 req/sec | Brute-force login protection |
+| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse prevention |
+| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention |
+| All other dashboard routes | 30 requests | 10 sec | 3 req/sec | General API protection |
+
+- **Login protection** covers both the UI pages (`/login`, `/register`) and the backend auth callback (`/api/auth/callback/*`) so attackers can't bypass the UI and POST directly to the credential check API
+- **Registration** is rate limited both at the page level (middleware) and inside the `/api/register` handler to prevent direct API abuse
+- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT rate limited, so normal dashboard usage is unaffected
+- **Send message** applies its own rate limit inside the handler since it's the public-facing widget endpoint
+- Rate limiting uses IP-based tracking via `@daveyplate/next-rate-limit`
+
+---
+
 ## Project Structure
 
 ```
