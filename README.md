@@ -1,26 +1,6 @@
-<p align="center">
-  <a href="https://feedlytics.in"><img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge" /></a>
-</p>
+# FEEDLYTICS
 
-<h1 align="center">FEEDLYTICS</h1>
-
-<p align="center"><i>Transform Feedback into Actionable Insights Effortlessly</i></p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/BullMQ-FF0000?logo=redis&logoColor=white" />
-  <img src="https://img.shields.io/badge/Groq-000000?logo=groq&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwindcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
-  <img src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Stripe-008CDD?logo=stripe&logoColor=white" />
-  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" />
-</p>
+*Transform Feedback into Actionable Insights Effortlessly*
 
 ---
 
@@ -44,8 +24,32 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 - **AI-Powered Insights** — Auto-analysis with **Groq's LLM (LLaMA 3.1)** for sentiment detection and categorization (Bug, Request, Complaint, Suggestion, Question, Praise).
 - **Real-Time Alerts** — Trigger instant workflows via **Slack** or **Google Chat** when important feedback arrives.
 - **Smart Dashboard** — Filter, search, and sort through feedback with blazing-fast UI using **TanStack Tables** and **Next.js**.
-- **Built-in Payments** — Integrated with **Stripe** for secure checkouts and plan upgrades.
+- **Subscription Billing** — 3-tier plan system (Free, Pro, Business) with **Stripe Subscriptions**, monthly usage resets, and self-service billing portal.
+- **Data Retention** — Automated cleanup of old feedbacks based on plan tier (90 days free, 1 year pro, unlimited business).
 - **High-Traffic Ready** — Powered by Redis queues, rate limiting, and Bloom filters to handle scale.
+- **Observability** — Prometheus + Grafana monitoring with per-API latency tracking (p99/p95) and system metrics.
+
+---
+
+## Pricing Plans
+
+All plans include AI-powered sentiment analysis, categorization, and monthly usage resets.
+
+
+| Feature              | Free    | Pro ($19/mo) | Business ($79/mo) |
+| -------------------- | ------- | ------------ | ----------------- |
+| Feedbacks/month      | 200     | 2,000        | 20,000            |
+| Workflows            | 3       | 15           | Unlimited         |
+| Team members         | 1       | 5            | 25                |
+| Data retention       | 90 days | 1 year       | Unlimited         |
+| CSV export           | -       | Yes          | Yes               |
+| Feedback replies     | -       | Yes          | Yes               |
+| Webhook integrations | -       | Yes          | Yes               |
+| API access           | -       | -            | Yes               |
+| Remove branding      | -       | -            | Yes               |
+
+
+Plan limits are centrally configured in `Next/src/config/plans.ts` and `Services/src/config/plans.ts`.
 
 ---
 
@@ -77,21 +81,28 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
                   └───────────┘ └───────────────┘
 ```
 
-| Service | Port | Description |
-|---------|------|-------------|
-| **Next.js** | `3000` | Dashboard, auth, Stripe billing |
-| **Services** | `3001` | API, BullMQ workers, AI analysis |
-| **Widget** | `4173` | Embeddable feedback widget (Vite + React) |
-| **Redis** | `6379` | Job queues, rate limiting, caching |
-| **Prometheus** | `9090` | Metrics collection and storage |
-| **Grafana** | `3002` | Dashboards and visualization |
-| **node-exporter** | `9100` | Host CPU, RAM, disk metrics |
+
+| Service           | Port   | Description                                           |
+| ----------------- | ------ | ----------------------------------------------------- |
+| **Next.js**       | `3000` | Dashboard, auth, Stripe billing, API metrics          |
+| **Services**      | `3001` | API, BullMQ workers, AI analysis, data retention cron |
+| **Widget**        | `4173` | Embeddable feedback widget (Vite + React)             |
+| **Redis**         | `6379` | Job queues, rate limiting, caching                    |
+| **Prometheus**    | `9090` | Metrics collection and storage                        |
+| **Grafana**       | `3002` | Dashboards and visualization                          |
+| **node-exporter** | `9100` | Host CPU, RAM, disk metrics                           |
+
 
 ---
 
 ## Monitoring
 
-Feedlytics includes Prometheus + Grafana monitoring for VPS system metrics (CPU, RAM, disk) and API latency tracking (p99/p95/p90).
+Feedlytics includes Prometheus + Grafana monitoring with:
+
+- **Per-API latency** (p99, p95) for all Next.js API routes
+- **Overall latency** (p99, p50) across all routes
+- **System metrics** (CPU, RAM, disk) via node-exporter
+- All API routes instrumented via `withMetrics` wrapper using `globalThis` singleton pattern
 
 See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORING.md)**
 
@@ -102,23 +113,20 @@ See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORIN
 ```
 feedlytics/
 ├── Next/                   # Next.js dashboard — see Next/README.md
-├── Services/               # Express + BullMQ backend — see Services/README.md
-├── Widget/                 # Vite + React embeddable widget — see Widget/README.md
+│   ├── src/config/plans.ts # Centralized plan limits (Free/Pro/Business)
+│   ├── src/db/models/      # Drizzle ORM schemas (user, feedback, workflows)
+│   └── src/app/api/        # API routes (billing, checkout, webhook, etc.)
+├── Services/               # Express + BullMQ backend
+│   ├── src/config/plans.ts # Plan limits (mirrors Next)
+│   ├── src/jobs/           # Data retention cron, email, AI analysis
+│   └── src/workers/        # BullMQ workers (email, feedback, notifications)
+├── Widget/                 # Vite + React embeddable widget
 ├── monitoring/             # Prometheus, Grafana configs + MONITORING.md
 ├── Prod/                   # Production-only configs (Nginx, build script)
 ├── docker-compose.dev.yml  # Local development (uses Dockerfile.dev)
 ├── docker-compose.yml      # Production (image-only, no build context)
 └── .env.development.example # Environment variable template
 ```
-
-### Service Documentation
-
-| Service | README | Description |
-|---|---|---|
-| **Next.js** | [Next/README.md](Next/README.md) | Dashboard, auth, billing, API routes, metrics |
-| **Services** | [Services/README.md](Services/README.md) | BullMQ workers, AI analysis, email, Prometheus metrics |
-| **Widget** | [Widget/README.md](Widget/README.md) | Embeddable feedback widget (Shadow DOM) |
-| **Monitoring** | [monitoring/MONITORING.md](monitoring/MONITORING.md) | Prometheus + Grafana setup and queries |
 
 ---
 
@@ -130,6 +138,7 @@ feedlytics/
 - [Git](https://git-scm.com/)
 - A [Neon](https://neon.tech/) PostgreSQL database (free tier works)
 - A [Groq](https://console.groq.com/) API key (free tier works)
+- A [Stripe](https://dashboard.stripe.com/test/apikeys) account (test mode)
 
 ### Quick Start
 
@@ -147,22 +156,33 @@ cp .env.development.example .env.development
 ```
 
 Open `.env.development` and fill in your values. At minimum you need:
+
 - `DATABASE_URL` — your Neon Postgres connection string
 - `GROQ_API_KEY` — your Groq API key
 - `NEXTAUTH_SECRET` — any random string
+- `STRIPE_SECRET_KEY` — your Stripe test secret key
+- `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_YEARLY`, `STRIPE_PRICE_BUSINESS_MONTHLY`, `STRIPE_PRICE_BUSINESS_YEARLY` — create products/prices in your [Stripe Dashboard](https://dashboard.stripe.com/test/products) and copy the price IDs
 
-The rest can be filled in later as you enable OAuth, Stripe, or email features.
-
-**3. Start all services**
+**3. . Start all services**
 
 ```bash
 docker compose -f docker-compose.dev.yml up --build
 ```
 
 Once running, open:
-- **Dashboard:** http://localhost:3000
-- **Services API:** http://localhost:3001 (health check: http://localhost:3001/health)
-- **Widget:** http://localhost:4173
+
+- **Dashboard:** [http://localhost:3000](http://localhost:3000)
+- **Services API:** [http://localhost:3001](http://localhost:3001) (health check: [http://localhost:3001/health](http://localhost:3001/health))
+- **Widget:** [http://localhost:4173](http://localhost:4173)
+- **Grafana:** [http://localhost:3002](http://localhost:3002) (admin/admin)
+
+**4. Test Stripe webhooks locally (optional)**
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe-webhook
+```
+
+Update `STRIPE_WEBHOOK_SECRET` in `.env.development` with the temporary secret printed by the CLI.
 
 ### Stopping
 
@@ -180,13 +200,16 @@ docker compose -f docker-compose.dev.yml down -v
 
 ## Dev vs Production
 
-| | Development | Production |
-|---|---|---|
-| **Compose file** | `docker-compose.dev.yml` | `docker-compose.yml` / GH Actions |
-| **Dockerfiles** | `Dockerfile.dev` (per service) | `Dockerfile` (per service) |
-| **Source code** | Volume-mounted for hot reload | Copied into image at build time |
-| **Env file** | `.env.development` (local) | Secrets via GH Secrets / VPS `.env` |
-| **Build target** | Dev servers (`pnpm dev`) | Optimized builds (`pnpm build && pnpm start`) |
+
+|                     | Development                    | Production                                    |
+| ------------------- | ------------------------------ | --------------------------------------------- |
+| **Compose file**    | `docker-compose.dev.yml`       | `docker-compose.yml` / GH Actions             |
+| **Dockerfiles**     | `Dockerfile.dev` (per service) | `Dockerfile` (per service)                    |
+| **Source code**     | Volume-mounted for hot reload  | Copied into image at build time               |
+| **Env file**        | `.env.development` (local)     | Secrets via GH Secrets / VPS `.env`           |
+| **Build target**    | Dev servers (`pnpm dev`)       | Optimized builds (`pnpm build && pnpm start`) |
+| **Stripe webhooks** | Stripe CLI forwarding          | Configured webhook endpoint URL               |
+
 
 ---
 
@@ -196,59 +219,71 @@ Deployments are managed via the **Deploy Service** workflow (`Actions` tab > `De
 
 You get checkboxes to pick **any combination** of services to build and deploy in a single run:
 
-| Input | Type | Description |
-|---|---|---|
-| **Deploy Next.js** | Checkbox | Build and deploy the Next.js dashboard |
-| **Deploy Services** | Checkbox | Build and deploy the Express/BullMQ backend |
-| **Deploy Widget** | Checkbox | Build and deploy the Vite widget |
-| **Branch** | Text | Branch to build from (defaults to `master`) |
+
+| Input                          | Type     | Description                                                  |
+| ------------------------------ | -------- | ------------------------------------------------------------ |
+| **Deploy Next.js**             | Checkbox | Build and deploy the Next.js dashboard                       |
+| **Deploy Services**            | Checkbox | Build and deploy the Express/BullMQ backend                  |
+| **Deploy Widget**              | Checkbox | Build and deploy the Vite widget                             |
+| **Branch**                     | Text     | Branch to build from (defaults to `master`)                  |
 | **Deploy to VPS after build?** | Checkbox | Uncheck to only build + push to Docker Hub without deploying |
 
-The workflow builds the selected services, pushes images to Docker Hub, then SSHes into the VPS to do a zero-downtime restart of only those services. Unselected services remain untouched.
 
 **Required GitHub Secrets:**
 
-| Secret | Description |
-|---|---|
-| `DOCKERHUB_TOKEN` | Docker Hub access token |
-| `HOSTINGER_VPS_HOST` | VPS hostname/IP |
-| `HOSTINGER_VPS_USER` | VPS SSH username |
-| `HOSTINGER_VPS_PVT_KEY` | VPS SSH private key |
-| `DATABASE_URL` | Production Neon Postgres URL (for Next.js build args) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
-| `STRIPE_PRICE_ID` | Stripe price ID |
-| `STRIPE_SECRET_KEY` | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret |
+
+| Secret                               | Description                      |
+| ------------------------------------ | -------------------------------- |
+| `DOCKERHUB_TOKEN`                    | Docker Hub access token          |
+| `HOSTINGER_VPS_HOST`                 | VPS hostname/IP                  |
+| `HOSTINGER_VPS_USER`                 | VPS SSH username                 |
+| `HOSTINGER_VPS_PVT_KEY`              | VPS SSH private key              |
+| `DATABASE_URL`                       | Production Neon Postgres URL     |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key           |
+| `STRIPE_SECRET_KEY`                  | Stripe secret key                |
+| `STRIPE_WEBHOOK_SECRET`              | Stripe webhook secret            |
+| `STRIPE_PRICE_PRO_MONTHLY`           | Stripe Pro monthly price ID      |
+| `STRIPE_PRICE_PRO_YEARLY`            | Stripe Pro yearly price ID       |
+| `STRIPE_PRICE_BUSINESS_MONTHLY`      | Stripe Business monthly price ID |
+| `STRIPE_PRICE_BUSINESS_YEARLY`       | Stripe Business yearly price ID  |
+
 
 ---
 
 ## Environment Variables
 
-See [`.env.development.example`](.env.development.example) for the full list with descriptions. Key variables:
+See `[.env.development.example](.env.development.example)` for the full list with descriptions. Key variables:
 
-| Variable | Required | Description |
-|---|---|---|
-| `DATABASE_URL` | Yes | Neon Postgres connection string |
-| `REDIS_URL` | Auto | Pre-configured for Docker (`redis://default:redispass@redis:6379`) |
-| `GROQ_API_KEY` | Yes | Groq API key for AI analysis |
-| `NEXTAUTH_SECRET` | Yes | Random string for session encryption |
-| `NEXTAUTH_URL` | Yes | `http://localhost:3000` for dev |
-| `GITHUB_ID` / `GITHUB_SECRET` | Optional | GitHub OAuth app credentials |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Optional | Google OAuth app credentials |
-| `STRIPE_SECRET_KEY` | Optional | Stripe test secret key |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Optional | Stripe test publishable key |
-| `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts |
+
+| Variable                                   | Required | Description                                                        |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`                             | Yes      | Neon Postgres connection string                                    |
+| `REDIS_URL`                                | Auto     | Pre-configured for Docker (`redis://default:redispass@redis:6379`) |
+| `GROQ_API_KEY`                             | Yes      | Groq API key for AI analysis                                       |
+| `NEXTAUTH_SECRET`                          | Yes      | Random string for session encryption                               |
+| `NEXTAUTH_URL`                             | Yes      | `http://localhost:3000` for dev                                    |
+| `GITHUB_ID` / `GITHUB_SECRET`              | Optional | GitHub OAuth app credentials                                       |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`    | Optional | Google OAuth app credentials                                       |
+| `STRIPE_SECRET_KEY`                        | Yes      | Stripe test/live secret key                                        |
+| `STRIPE_WEBHOOK_SECRET`                    | Yes      | Stripe webhook signing secret                                      |
+| `STRIPE_PRICE_PRO_MONTHLY`                 | Yes      | Stripe price ID for Pro monthly plan                               |
+| `STRIPE_PRICE_PRO_YEARLY`                  | Yes      | Stripe price ID for Pro yearly plan                                |
+| `STRIPE_PRICE_BUSINESS_MONTHLY`            | Yes      | Stripe price ID for Business monthly plan                          |
+| `STRIPE_PRICE_BUSINESS_YEARLY`             | Yes      | Stripe price ID for Business yearly plan                           |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       | Optional | Stripe publishable key (for client-side)                           |
+| `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts                                        |
+
 
 ---
 
 ## Screenshots
 
-![feedlytics](https://github.com/user-attachments/assets/6c86d36d-1251-431b-a957-e8f6e24f5aea)
-![flowchart-0](https://github.com/user-attachments/assets/7e93f0e5-11b4-459d-ab53-697ccc42e74a)
-![image](https://github.com/user-attachments/assets/5d6db0af-1965-4444-a444-ff566610c596)
-![image](https://github.com/user-attachments/assets/9698e4b9-a736-400d-9e85-52dea7060af9)
-![image](https://github.com/user-attachments/assets/db8973ad-3909-4013-9c74-d83b9a04c2e8)
-![image](https://github.com/user-attachments/assets/5c3cae79-4c6a-4693-813f-72b8b1c43589)
+feedlytics
+flowchart-0
+image
+image
+image
+image
 
 ---
 

@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
 import { or, eq } from "drizzle-orm";
+import { PLAN_LIMITS } from "@/config/plans";
 
 interface ExtendedAuthOptions extends NextAuthOptions {
   trustHost?: boolean;
@@ -109,6 +110,12 @@ export const authOptions: ExtendedAuthOptions = {
                 username: uniqueUsername,
                 isVerified: true,
                 password: "",
+                userTier: "free",
+                messageCount: 0,
+                maxMessages: PLAN_LIMITS.free.maxFeedbacksPerMonth,
+                maxWorkflows: PLAN_LIMITS.free.maxWorkflows,
+                billingPeriodStart: new Date(),
+                billingPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               })
               .onConflictDoNothing();
           }

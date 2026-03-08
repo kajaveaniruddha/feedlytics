@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
+import Link from "next/link";
+import axios from "axios";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import {
   Card,
@@ -19,8 +22,6 @@ import {
 import { Button } from "../ui/button";
 import { useMessageContext } from "@/hooks/use-message-context";
 
-const chartData = [{ month: "january", total: 50, collected: 0 }];
-
 const chartConfig = {
   total: {
     label: "remaining",
@@ -36,21 +37,44 @@ interface props {
   username: string | undefined;
 }
 
-export default function Component({
-  username,
-}: props) {
-  const { messageCount, maxMessages, userInfo } =
-    useMessageContext();
-  chartData[0].collected = messageCount;
-  chartData[0].total = maxMessages - messageCount;
-  const totalVisitors = maxMessages - messageCount;
+export default function Component({ username }: props) {
+  const { maxMessages, userInfo } = useMessageContext();
+  const [periodCount, setPeriodCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPeriodCount = async () => {
+      try {
+        const res = await axios.get("/api/billing");
+        if (res.data?.periodFeedbackCount != null) {
+          setPeriodCount(res.data.periodFeedbackCount);
+        }
+      } catch {
+        // fallback: period count stays 0
+      }
+    };
+    fetchPeriodCount();
+  }, []);
+
+  const remaining = Math.max(0, maxMessages - periodCount);
+  const chartData = [{ month: "current", total: remaining, collected: periodCount }];
+
+  const formattedEnd = userInfo.billingPeriodEnd
+    ? new Date(userInfo.billingPeriodEnd).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
+  const tierLabel =
+    userInfo.userTier.charAt(0).toUpperCase() + userInfo.userTier.slice(1);
 
   return (
-    <Card className="flex flex-col w-full ">
+    <Card className="flex flex-col w-full">
       <CardHeader className="text-center space-y-1.5">
-        <CardTitle className="text-2xl font-bold">Total Feedbacks</CardTitle>
+        <CardTitle className="text-2xl font-bold">Monthly Feedbacks</CardTitle>
         <CardDescription className="text-secondary-foreground font-medium">
-          Current Plan: <span className=" font-bold tracking-wide">{userInfo.userTier.toUpperCase()}</span>
+          Current Plan:{" "}
+          <span className="font-bold tracking-wide">{tierLabel}</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 relative pt-4">
@@ -78,16 +102,16 @@ export default function Component({
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) - 20}
-                          className=" text-3xl font-bold fill-secondary-foreground"
+                          className="text-3xl font-bold fill-secondary-foreground"
                         >
-                          {totalVisitors.toLocaleString()}
+                          {remaining.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 8}
-                          className="fill-secondary-foreground"
+                          className="fill-secondary-foreground text-xs"
                         >
-                          Remaining Feedbacks
+                          remaining this month
                         </tspan>
                       </text>
                     );
@@ -100,7 +124,7 @@ export default function Component({
               stackId="a"
               cornerRadius={4}
               fill="hsl(var(--primary))"
-              className="stroke-transparent "
+              className="stroke-transparent"
             />
             <RadialBar
               dataKey="collected"
@@ -113,31 +137,31 @@ export default function Component({
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-center gap-4 pb-6">
-        {userInfo.userTier === "free" ? <form action="/api/checkout-sessions" method="POST" className="z-20">
-          <section>
-            <Button
-              variant="default"
-              size="lg"
-              type="submit"
-              role="link"
-            >
+        {userInfo.userTier !== "business" ? (
+          <Link href="/settings" className="z-20">
+            <Button variant="default" size="lg">
               <Crown className="w-5 h-5 mr-2" />
-              Upgrade to Premium
+              Upgrade Plan
             </Button>
-          </section>
-        </form> :
-          <Button
-            variant="default"
-            size="lg"
-          >
+          </Link>
+        ) : (
+          <Button variant="default" size="lg" disabled>
             <Crown className="w-5 h-5 mr-2" />
-            Premium User
-          </Button>}
-        <div className="text-sm">
-          Showing total feedbacks for{" "}
-          <span className=" font-medium">
-            {username || "user not found"}
+            {tierLabel} Plan
+          </Button>
+        )}
+        <div className="text-sm text-muted-foreground text-center">
+          <span>
+            {periodCount.toLocaleString()} of {maxMessages.toLocaleString()} used
+            {username && (
+              <> by <span className="font-medium text-foreground">{username}</span></>
+            )}
           </span>
+          {formattedEnd && (
+            <span className="block text-xs mt-0.5">
+              Resets on {formattedEnd}
+            </span>
+          )}
         </div>
       </CardFooter>
     </Card>

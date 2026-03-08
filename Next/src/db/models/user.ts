@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -34,19 +35,25 @@ export const usersTable = pgTable(
         sql`ARRAY['How much would you rate the product?', 'What did you like/dislike about the product?']::text[]`
       ),
     messageCount: integer("message_count").default(0),
-    maxMessages: integer("max_messages").default(50),
-    maxWorkflows: integer("max_workflows").default(5),
+    maxMessages: integer("max_messages").default(200),
+    maxWorkflows: integer("max_workflows").default(3),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     bgColor: varchar("bg_color", { length: 7 }).default("#000000"),
     textColor: varchar("text_color", { length: 7 }).default("#ffffff"),
     collectName: boolean("collect_name").notNull().default(false),
     collectEmail: boolean("collect_email").notNull().default(false),
     userTier: varchar("user_tier", { length: 50 }).default("free"),
+    stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+    stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+    billingPeriodStart: timestamp("billing_period_start"),
+    billingPeriodEnd: timestamp("billing_period_end"),
   },
   (table) => [
     {
       emailCheck: sql`CHECK (${table.email} ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')`,
     },
+    index("idx_users_email").on(table.email),
+    index("idx_users_stripe_customer").on(table.stripeCustomerId),
   ]
 );
 

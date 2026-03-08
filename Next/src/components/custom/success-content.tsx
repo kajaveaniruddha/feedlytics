@@ -34,7 +34,7 @@ export default function SuccessContent({ customerEmail }: SuccessContentProps) {
                     >
                         <CheckCircle className="w-16 h-16 text-green-500" />
                     </motion.div>
-                    <CardTitle className="text-center text-2xl font-bold">Payment Successful!</CardTitle>
+                    <CardTitle className="text-center text-2xl font-bold">Subscription Activated!</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
                     <motion.p
@@ -43,7 +43,7 @@ export default function SuccessContent({ customerEmail }: SuccessContentProps) {
                         transition={{ delay: 0.4 }}
                         className="text-muted-foreground"
                     >
-                        Thank you for your purchase! W&apos;ve sent a confirmation email to{" "}
+                        Thank you for subscribing! We&apos;ve sent a confirmation email to{" "}
                         <span className="font-medium text-foreground">{customerEmail}</span>
                     </motion.p>
                     <motion.div
@@ -53,7 +53,7 @@ export default function SuccessContent({ customerEmail }: SuccessContentProps) {
                         className="bg-muted p-4 rounded-lg text-sm"
                     >
                         <p>
-                            If you have any questions about your order, please email{" "}
+                            If you have any questions about your subscription, please email{" "}
                             <a href="mailto:aakajave@gmail.com" className="text-primary font-medium hover:underline">
                                 aakajave@gmail.com
                             </a>

@@ -14,23 +14,25 @@ export interface ApiResponse {
   messageCount?: number;
   maxMessages?: number;
   maxWorkflows?: number;
+  billingPeriodStart?: string;
+  billingPeriodEnd?: string;
   messages?: Array<Message>;
   totalPages?: number;
   messagesFound?: number;
   userDetails?: {
     name: string;
-    userTier: "free" | "premium";
+    userTier: "free" | "pro" | "business";
     avatar_url: string;
     bgColor: string;
-    collectEmail: boolean; // changed from string to boolean
-    collectName: boolean; // changed from string to boolean
+    collectEmail: boolean;
+    collectName: boolean;
     textColor: string;
   };
 }
 
 export interface userDetailsType {
   name: string;
-  userTier: "free" | "premium";
+  userTier: "free" | "pro" | "business";
   username: string;
   avatar_url: string;
   introduction: string;
@@ -39,6 +41,8 @@ export interface userDetailsType {
   textColor: string;
   collectName: boolean;
   collectEmail: boolean;
+  billingPeriodStart?: string;
+  billingPeriodEnd?: string;
 }
 
 export interface ApiResponseUserDetails {

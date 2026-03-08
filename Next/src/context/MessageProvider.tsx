@@ -21,12 +21,14 @@ interface MessageContextType {
   session: any;
   userInfo: {
     name: string;
-    userTier: "free" | "premium";
+    userTier: "free" | "pro" | "business";
     avatarUrl: string;
     bgColor: string;
     textColor: string;
     collectEmail: boolean;
     collectName: boolean;
+    billingPeriodStart: string;
+    billingPeriodEnd: string;
   };
 }
 
@@ -38,12 +40,14 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const [maxMessages, setMaxMessages] = useState<number>(50);
   const [userInfo, setUserInfo] = useState({
     name: "",
-    userTier: "free" as "free" | "premium",
+    userTier: "free" as "free" | "pro" | "business",
     avatarUrl: "",
     bgColor: "",
     textColor: "",
     collectEmail: false,
     collectName: false,
+    billingPeriodStart: "",
+    billingPeriodEnd: "",
   });
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -60,12 +64,14 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
       setMaxMessages(res.data?.maxMessages as number);
       setUserInfo({
         name: res.data?.userDetails?.name as string,
-        userTier: res.data?.userDetails?.userTier as "free" | "premium",
+        userTier: res.data?.userDetails?.userTier as "free" | "pro" | "business",
         avatarUrl: res.data?.userDetails?.avatar_url as string,
         bgColor: res.data?.userDetails?.bgColor as string,
         textColor: res.data?.userDetails?.textColor as string,
         collectEmail: res.data?.userDetails?.collectEmail as boolean,
         collectName: res.data?.userDetails?.collectName as boolean,
+        billingPeriodStart: (res.data?.billingPeriodStart as string) ?? "",
+        billingPeriodEnd: (res.data?.billingPeriodEnd as string) ?? "",
       });
       // console.log(res.data?.userDetails?.avatar_url);
     } catch (error) {

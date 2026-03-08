@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMessageContext } from "@/hooks/use-message-context";
 
 export const description = "A radial chart with text";
 
@@ -39,7 +40,15 @@ type Props = {
 };
 
 export default function PieChartMessageCount({ messageCount, maxMessages, isLoading }: Props) {
+  const { userInfo } = useMessageContext();
   const chartData = [{ collected: messageCount, fill: "hsl(var(--chart-2))" }];
+
+  const formattedResetDate = userInfo.billingPeriodEnd
+    ? new Date(userInfo.billingPeriodEnd).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : null;
 
   if (isLoading) {
     return (
@@ -123,6 +132,11 @@ export default function PieChartMessageCount({ messageCount, maxMessages, isLoad
         <div className="leading-none text-muted-foreground">
           Showing collected out of {maxMessages} available
         </div>
+        {formattedResetDate && (
+          <div className="leading-none text-muted-foreground">
+            Resets {formattedResetDate}
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

@@ -24,7 +24,8 @@ export async function middleware(request: NextRequest) {
       url.pathname.startsWith("/analytics") ||
       url.pathname.startsWith("/feedbacks") ||
       url.pathname.startsWith("/workflows") ||
-      url.pathname.startsWith("/metadata"))
+      url.pathname.startsWith("/metadata") ||
+      url.pathname.startsWith("/settings"))
   ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -42,5 +43,6 @@ export const config = {
     "/metadata/:path*",
     "/workflows/:path*",
     "/verify/:path*",
+    "/settings/:path*",
   ],
 };

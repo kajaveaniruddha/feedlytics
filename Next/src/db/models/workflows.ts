@@ -6,27 +6,34 @@ import {
   text,
   timestamp,
   boolean,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { usersTable } from "./user";
 
-export const userWorkFlowsTable = pgTable("workflows", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
-  provider: varchar("provider", { length: 20 })
-    .notNull()
-    .$type<"googlechat" | "slack">(),
-  groupName: varchar("group_name", { length: 50 }).notNull(),
-  webhookUrl: varchar("webhook_url", { length: 255 }).notNull(),
-  notifyCategories: text("notify_categories")
-    .array()
-    .notNull()
-    .default(sql`ARRAY['complaint']::text[]`),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export const userWorkFlowsTable = pgTable(
+  "workflows",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    provider: varchar("provider", { length: 20 })
+      .notNull()
+      .$type<"googlechat" | "slack">(),
+    groupName: varchar("group_name", { length: 50 }).notNull(),
+    webhookUrl: varchar("webhook_url", { length: 255 }).notNull(),
+    notifyCategories: text("notify_categories")
+      .array()
+      .notNull()
+      .default(sql`ARRAY['complaint']::text[]`),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("idx_workflows_user").on(table.userId),
+  ]
+);
 
 export type InsertChatGroup = typeof userWorkFlowsTable.$inferInsert;
 export type SelectChatGroup = typeof userWorkFlowsTable.$inferSelect;

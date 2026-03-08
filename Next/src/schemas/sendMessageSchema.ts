@@ -10,7 +10,8 @@ export const SendMessageSchema = z.object({
   email: z
     .string()
     .max(50, { message: "email can not exceed 50 characters" })
-    .trim(),
+    .trim()
+    .email({ message: "Invalid email address" }).optional().nullable(),
   stars: z.number(),
   content: z
     .string()

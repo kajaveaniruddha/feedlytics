@@ -7,6 +7,7 @@ import { User } from "next-auth";
 import { and, eq, sql } from "drizzle-orm";
 import { usersTable } from "@/db/models/user";
 import { withMetrics } from "@/lib/metrics";
+import { PLAN_LIMITS, PlanTier } from "@/config/plans";
 
 function trimValues(obj: any): any {
   if (typeof obj === "string") return obj.trim();
@@ -25,7 +26,9 @@ function trimValues(obj: any): any {
 }
 
 async function handleGET(req: Request) {
-  const user = (await getServerSideSession()) as User;
+  const sessionResult = await getServerSideSession();
+  if (sessionResult instanceof Response) return sessionResult;
+  const user = sessionResult as User;
 
   try {
     const workflows = await db
@@ -55,7 +58,9 @@ async function handleGET(req: Request) {
 }
 
 async function handlePOST(req: Request) {
-  const user = (await getServerSideSession()) as User;
+  const sessionResult = await getServerSideSession();
+  if (sessionResult instanceof Response) return sessionResult;
+  const user = sessionResult as User;
   let json = await req.json();
   json = trimValues(json);
   const data = workflowsSchema.parse(json);
@@ -65,7 +70,7 @@ async function handlePOST(req: Request) {
     // Get user's max_workflows limit and current workflow count
     const [userData, currentWorkflows] = await Promise.all([
       db
-        .select({ maxWorkflows: usersTable.maxWorkflows })
+        .select({ maxWorkflows: usersTable.maxWorkflows, userTier: usersTable.userTier })
         .from(usersTable)
         .where(eq(usersTable.id, userId))
         .limit(1),
@@ -82,7 +87,8 @@ async function handlePOST(req: Request) {
       );
     }
 
-    const maxWorkflows = userData[0].maxWorkflows ?? 5;
+    const tier = (userData[0].userTier || "free") as PlanTier;
+    const maxWorkflows = PLAN_LIMITS[tier]?.maxWorkflows ?? userData[0].maxWorkflows ?? 5;
     const currentCount = Number(currentWorkflows[0].count);
 
     if (currentCount >= maxWorkflows) {
@@ -117,7 +123,9 @@ async function handlePOST(req: Request) {
 }
 
 async function handlePATCH(req: Request) {
-  const user = (await getServerSideSession()) as User;
+  const sessionResult = await getServerSideSession();
+  if (sessionResult instanceof Response) return sessionResult;
+  const user = sessionResult as User;
   let json = await req.json();
   json = trimValues(json);
   const { id, provider, groupName, webhookUrl, notifyCategories, isActive } =
@@ -154,7 +162,9 @@ async function handlePATCH(req: Request) {
 }
 
 async function handleDELETE(req: Request) {
-  const user = (await getServerSideSession()) as User;
+  const sessionResult = await getServerSideSession();
+  if (sessionResult instanceof Response) return sessionResult;
+  const user = sessionResult as User;
   const json = await req.json();
   const { id } = json;
   if (id === undefined || id === null) {

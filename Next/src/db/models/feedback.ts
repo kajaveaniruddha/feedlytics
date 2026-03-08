@@ -5,6 +5,7 @@ import {
   integer,
   timestamp,
   text,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { usersTable } from "./user";
@@ -29,6 +30,7 @@ export const feedbacksTable = pgTable(
   },
   (table) => [
     { starsCheck: sql`CHECK (${table.stars} >= 0 AND ${table.stars} <= 5)` },
+    index("idx_feedbacks_user_created").on(table.userId, table.createdAt),
   ]
 );
 

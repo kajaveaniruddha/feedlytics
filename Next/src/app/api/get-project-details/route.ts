@@ -6,7 +6,9 @@ import { getServerSideSession } from "@/config/getServerSideSession";
 import { withMetrics } from "@/lib/metrics";
 
 async function handleGET(request: Request) {
-  const user = (await getServerSideSession()) as User;
+  const sessionResult = await getServerSideSession();
+  if (sessionResult instanceof Response) return sessionResult;
+  const user = sessionResult as User;
 
   try {
     const userDetails = await db
@@ -21,6 +23,8 @@ async function handleGET(request: Request) {
         bgColor: usersTable.bgColor,
         collectName: usersTable.collectName,
         collectEmail: usersTable.collectEmail,
+        billingPeriodStart: usersTable.billingPeriodStart,
+        billingPeriodEnd: usersTable.billingPeriodEnd,
       })
       .from(usersTable)
       .where(eq(usersTable.id, parseInt(user.id ?? "0")))
@@ -44,6 +48,8 @@ async function handleGET(request: Request) {
       collectEmail,
       collectName,
       textColor,
+      billingPeriodStart,
+      billingPeriodEnd,
     } = userDetails[0];
 
     return new Response(
@@ -52,6 +58,8 @@ async function handleGET(request: Request) {
         messageCount,
         maxMessages,
         maxWorkflows,
+        billingPeriodStart,
+        billingPeriodEnd,
         userDetails: {
           name,
           userTier,

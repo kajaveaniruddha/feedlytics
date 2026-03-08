@@ -43,7 +43,7 @@ const faqData: FAQItem[] = [
     {
         question: "What is the pricing model? Are there any hidden fees?",
         answer:
-            "Feedlytics offers two simple and transparent plans: Free and Premium. The Free plan includes up to 50 total feedbacks and 10 workflows, ideal for early-stage users. The Premium plan - paid once per account, allows 100 total feedbacks and 20 workflows, perfect for growing teams. There are no hidden fees, and you can not cancel once upgraded!",
+            "Feedlytics offers three transparent plans:\n\n**Free** — 200 feedbacks/month, 3 workflows, 1 team member. Perfect for indie hackers and early-stage products.\n\n**Pro ($19/month)** — 2,000 feedbacks/month, 15 workflows, 5 team members, CSV export, feedback replies, and webhook integrations.\n\n**Business ($79/month)** — 20,000 feedbacks/month, unlimited workflows, 25 team members, API access, and white-label (remove Feedlytics branding).\n\nAll plans include full AI-powered sentiment analysis and categorization. Annual billing saves you 2 months. Usage resets monthly.",
     },
     {
         question: "Do you offer a free trial or demo?",
@@ -106,9 +106,16 @@ function FAQItemComponent({ item, isOpen, onToggle }: FAQItemProps) {
                                             </div>
                                         )
                                     }
+                                    const parts = paragraph.split(/\*\*(.+?)\*\*/g)
                                     return (
                                         <p key={index} className="mb-4 last:mb-0">
-                                            {paragraph}
+                                            {parts.map((part, i) =>
+                                                i % 2 === 1 ? (
+                                                    <strong key={i} className="font-semibold text-foreground">{part}</strong>
+                                                ) : (
+                                                    <span key={i}>{part}</span>
+                                                )
+                                            )}
                                         </p>
                                     )
                                 })}

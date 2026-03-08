@@ -3,6 +3,7 @@ import { usersTable } from "@/db/models/user";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { withMetrics } from "@/lib/metrics";
+import { PLAN_LIMITS } from "@/config/plans";
 
 async function handlePOST(request: Request) {
   try {
@@ -59,6 +60,10 @@ async function handlePOST(request: Request) {
         verifyCodeExpiry: expiryDate,
         isVerified: false,
         messageCount: 0,
+        maxMessages: PLAN_LIMITS.free.maxFeedbacksPerMonth,
+        maxWorkflows: PLAN_LIMITS.free.maxWorkflows,
+        billingPeriodStart: new Date(),
+        billingPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
     }
 

@@ -20,7 +20,7 @@ async function handlePOST(request: NextRequest) {
   const { username, stars, content, email, name } = await request.json();
 
   try {
-    const [user] = await db
+    let [user] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.username, username))
@@ -51,6 +51,19 @@ async function handlePOST(request: NextRequest) {
         }
       );
     }
+    if (user.billingPeriodEnd && new Date() > new Date(user.billingPeriodEnd)) {
+      const now = new Date();
+      await db
+        .update(usersTable)
+        .set({
+          messageCount: 0,
+          billingPeriodStart: now,
+          billingPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+        })
+        .where(eq(usersTable.id, user.id));
+      user = { ...user, messageCount: 0 };
+    }
+
     if ((user?.messageCount as number) >= (user?.maxMessages as number)) {
       return new Response(
         JSON.stringify({
@@ -95,7 +108,6 @@ async function handlePOST(request: NextRequest) {
       .where(eq(usersTable.id, user.id));
 
     try {
-      console.log(process.env.SERVICES_URL);
       const queueResponse = await fetch(
         `${process.env.SERVICES_URL}/add-feedback`,
         {

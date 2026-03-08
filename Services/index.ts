@@ -158,3 +158,7 @@ app.listen(port, () => {
 import("./src/workers/emailWorker");
 import("./src/workers/feedbackWorker");
 import("./src/workers/workflowNotificationWorker");
+
+// Start the data retention cron
+import { startRetentionCron } from "./src/jobs/data-retention";
+startRetentionCron();
