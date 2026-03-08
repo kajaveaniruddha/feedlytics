@@ -108,6 +108,23 @@ See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORIN
 
 ---
 
+## Rate Limiting
+
+All rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via `Next/src/middleware.ts`.
+
+| Route | IP Limit | Window | Effective Rate | Purpose |
+|-------|----------|--------|---------------|---------|
+| `/api/auth/*` | 3 requests | 10 sec | 0.3 req/sec | Brute-force login protection |
+| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention |
+| All other dashboard routes | 30 requests | 10 sec | 3 req/sec | General API protection |
+
+- **Auth routes** (`/api/auth/*`) have the strictest limit to prevent credential stuffing
+- **Send message** applies its own rate limit inside the handler (not via middleware) since it's the public-facing widget endpoint
+- **Dashboard routes** (dashboard, analytics, feedbacks, workflows, metadata, settings) share a global limit via middleware
+- Rate limiting uses IP-based tracking via `@daveyplate/next-rate-limit`
+
+---
+
 ## Project Structure
 
 ```
