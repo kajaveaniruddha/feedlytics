@@ -114,15 +114,15 @@ All rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied 
 
 | Route | IP Limit | Window | Effective Rate | Purpose |
 |-------|----------|--------|---------------|---------|
-| `/login`, `/register`, `/api/auth/callback/*` | 3 requests | 10 sec | 0.3 req/sec | Brute-force login protection |
-| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse prevention |
-| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention |
-| All other dashboard routes | 30 requests | 10 sec | 3 req/sec | General API protection |
+| `/login`, `/register` | 3 requests | 10 sec | 0.3 req/sec | Brute-force login protection |
+| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse (handler-level) |
+| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention (handler-level) |
+| All `/api/*` routes + dashboard pages | 30 requests | 10 sec | 3 req/sec | General protection (middleware) |
 
-- **Login protection** covers both the UI pages (`/login`, `/register`) and the backend auth callback (`/api/auth/callback/*`) so attackers can't bypass the UI and POST directly to the credential check API
-- **Registration** is rate limited both at the page level (middleware) and inside the `/api/register` handler to prevent direct API abuse
-- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT rate limited, so normal dashboard usage is unaffected
-- **Send message** applies its own rate limit inside the handler since it's the public-facing widget endpoint
+- **Login/register pages** have a strict 3/10s limit before the global 30/10s applies
+- **All internal API routes** (`/api/get-analytics`, `/api/billing`, `/api/user-workflows`, `/api/check-username-unique`, `/api/stripe-webhook`, etc.) are covered by the 30/10s global middleware limit
+- **`/api/send-message`** and **`/api/register`** have additional handler-level limits (stricter than the global)
+- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT rate limited so dashboard navigation stays fast
 - Rate limiting uses IP-based tracking via `@daveyplate/next-rate-limit`
 
 ---

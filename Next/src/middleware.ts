@@ -7,11 +7,7 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const url = request.nextUrl;
 
-  if (
-    url.pathname.startsWith("/login") ||
-    url.pathname.startsWith("/register") ||
-    url.pathname.startsWith("/api/auth/callback")
-  ) {
+  if (url.pathname.startsWith("/login") || url.pathname.startsWith("/register")) {
     const authRateLimitResult = await rateLimit({
       request,
       response,
@@ -56,7 +52,6 @@ export const config = {
   matcher: [
     "/login",
     "/register",
-    "/api/auth/callback/:path*",
     "/dashboard/:path*",
     "/analytics/:path*",
     "/feedbacks/:path*",
@@ -64,5 +59,21 @@ export const config = {
     "/workflows/:path*",
     "/verify/:path*",
     "/settings/:path*",
+    "/api/get-analytics",
+    "/api/get-messages",
+    "/api/get-categories",
+    "/api/get-project-details",
+    "/api/get-user-details",
+    "/api/get-user-form-details/:path*",
+    "/api/get-widget-settings",
+    "/api/user-workflows",
+    "/api/billing",
+    "/api/checkout-sessions",
+    "/api/stripe-webhook",
+    "/api/accept-messages",
+    "/api/delete-messages",
+    "/api/update-user-data",
+    "/api/check-username-unique",
+    "/api/verify-code",
   ],
 };
