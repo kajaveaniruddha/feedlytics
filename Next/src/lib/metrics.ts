@@ -4,6 +4,7 @@ const globalForMetrics = globalThis as unknown as {
   __metricsRegistry: client.Registry;
   __httpRequestDuration: client.Histogram;
   __httpRequestTotal: client.Counter;
+  __rateLimitBlocked: client.Counter;
 };
 
 if (!globalForMetrics.__metricsRegistry) {
@@ -24,11 +25,22 @@ if (!globalForMetrics.__metricsRegistry) {
     labelNames: ["method", "route", "status_code"] as const,
     registers: [globalForMetrics.__metricsRegistry],
   });
+
+}
+
+if (!globalForMetrics.__rateLimitBlocked) {
+  globalForMetrics.__rateLimitBlocked = new client.Counter({
+    name: "rate_limit_blocked_total",
+    help: "Total number of requests blocked by rate limiter",
+    labelNames: ["path"] as const,
+    registers: [globalForMetrics.__metricsRegistry],
+  });
 }
 
 export const register = globalForMetrics.__metricsRegistry;
 export const httpRequestDuration = globalForMetrics.__httpRequestDuration;
 export const httpRequestTotal = globalForMetrics.__httpRequestTotal;
+export const rateLimitBlocked = globalForMetrics.__rateLimitBlocked;
 
 export function withMetrics(
   handler: (...args: any[]) => any,

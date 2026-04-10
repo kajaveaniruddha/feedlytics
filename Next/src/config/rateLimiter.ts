@@ -1,41 +1,18 @@
-import { RateLimiterRedis, RateLimiterMemory } from "rate-limiter-flexible";
-import Redis from "ioredis";
+import { RateLimiterMemory } from "rate-limiter-flexible";
 import { NextRequest, NextResponse } from "next/server";
 
-const limiters = new Map<string, RateLimiterRedis | RateLimiterMemory>();
-let redisClient: Redis | null = null;
-
-function getRedisClient(): Redis | null {
-  if (redisClient) return redisClient;
-  const url = process.env.REDIS_URL;
-  if (!url) return null;
-  redisClient = new Redis(url, { maxRetriesPerRequest: 1 });
-  return redisClient;
-}
+const limiters = new Map<string, RateLimiterMemory>();
 
 function getLimiter(ipLimit: number, ipWindow: number) {
   const key = `${ipLimit}:${ipWindow}`;
   const cached = limiters.get(key);
   if (cached) return cached;
 
-  const client = getRedisClient();
-  let limiter: RateLimiterRedis | RateLimiterMemory;
-
-  if (client) {
-    limiter = new RateLimiterRedis({
-      storeClient: client,
-      keyPrefix: `rl_${key}`,
-      points: ipLimit,
-      duration: ipWindow,
-    });
-  } else {
-    console.warn("REDIS_URL not set — falling back to in-memory rate limiter");
-    limiter = new RateLimiterMemory({
-      keyPrefix: `rl_${key}`,
-      points: ipLimit,
-      duration: ipWindow,
-    });
-  }
+  const limiter = new RateLimiterMemory({
+    keyPrefix: `rl_${key}`,
+    points: ipLimit,
+    duration: ipWindow,
+  });
 
   limiters.set(key, limiter);
   return limiter;
@@ -59,10 +36,20 @@ export async function rateLimit({
     "127.0.0.1";
 
   const limiter = getLimiter(ipLimit, ipWindow);
+  const path = request.nextUrl.pathname;
 
   try {
     await limiter.consume(ip);
   } catch {
+    console.warn(`[Rate Limit] 429 blocked — IP: ${ip} | Path: ${path}`);
+
+    const baseUrl = request.nextUrl.origin;
+    fetch(`${baseUrl}/api/rate-limit-inc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path }),
+    }).catch(() => {});
+
     return new NextResponse(
       JSON.stringify({ error: "Too Many Requests" }),
       {
