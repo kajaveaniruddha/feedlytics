@@ -9,7 +9,7 @@ export async function rateLimit({
   sessionWindow = 10,
   ipWindow = 10,
   upstash = {
-    enabled: !!process.env.UPSTASH_REDIS_URL,
+    enabled: !!(process.env.UPSTASH_REDIS_URL || process.env.REDIS_URL),
     url: process.env.UPSTASH_REDIS_URL || process.env.REDIS_URL,
     token: process.env.UPSTASH_REDIS_TOKEN || "",
     analytics: false,
