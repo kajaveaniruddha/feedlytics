@@ -4,14 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function rateLimit({
   request,
   response,
-  sessionLimit = 30, //Maximum number of requests allowed per session within the sessionWindow (default: 30 requests per 10 seconds).
+  sessionLimit = 30,
   ipLimit = 120,
-  sessionWindow = 10, //Time window in seconds for session-based rate limiting.
+  sessionWindow = 10,
   ipWindow = 10,
   upstash = {
-    enabled: false,
-    url: process.env.REDIS_URL,
-    token: "",
+    enabled: !!process.env.UPSTASH_REDIS_URL,
+    url: process.env.UPSTASH_REDIS_URL || process.env.REDIS_URL,
+    token: process.env.UPSTASH_REDIS_TOKEN || "",
     analytics: false,
   },
 }: {
@@ -39,8 +39,17 @@ export async function rateLimit({
   });
 
   if (result?.status === 429) {
-    return new NextResponse("Too Many Requests", { status: 429 });
+    return new NextResponse(
+      JSON.stringify({ error: "Too Many Requests" }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(ipWindow),
+        },
+      }
+    );
   }
-  // Allow request to continue
+
   return undefined;
 }

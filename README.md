@@ -110,19 +110,26 @@ See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORIN
 
 ## Rate Limiting
 
-All rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via `Next/src/middleware.ts`.
+Rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via `Next/src/middleware.ts`. Only auth pages and API routes are rate limited; dashboard page routes are not rate limited (they only need auth checks).
+
+**Middleware-level (IP-based):**
 
 | Route | IP Limit | Window | Effective Rate | Purpose |
 |-------|----------|--------|---------------|---------|
-| `/login`, `/register` | 3 requests | 10 sec | 0.3 req/sec | Brute-force login protection |
-| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse (handler-level) |
-| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention (handler-level) |
-| All `/api/*` routes + dashboard pages | 30 requests | 10 sec | 3 req/sec | General protection (middleware) |
+| `/login`, `/register` | 3 requests | 1 sec | 3 req/sec | Brute-force login protection |
+| All `/api/*` routes (in matcher) | 5 requests | 1 sec | 5 req/sec | Backend API protection |
 
-- **Login/register pages** have a strict 3/10s limit before the global 30/10s applies
-- **All internal API routes** (`/api/get-analytics`, `/api/billing`, `/api/user-workflows`, `/api/check-username-unique`, `/api/stripe-webhook`, etc.) are covered by the 30/10s global middleware limit
-- **`/api/send-message`** and **`/api/register`** have additional handler-level limits (stricter than the global)
-- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT rate limited so dashboard navigation stays fast
+**Handler-level (additional layer inside route handlers):**
+
+| Route | IP Limit | Window | Effective Rate | Purpose |
+|-------|----------|--------|---------------|---------|
+| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse |
+| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention |
+
+- **Page routes** (`/dashboard`, `/analytics`, `/feedbacks`, etc.) are NOT rate limited — middleware only performs auth checks for these
+- **`/api/stripe-webhook`** is excluded from the middleware matcher entirely (Stripe authenticates via HMAC signature)
+- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT in the matcher so dashboard navigation stays fast
+- **Redis-backed rate limiting** is auto-enabled when `UPSTASH_REDIS_URL` is set; falls back to in-memory otherwise
 - Rate limiting uses IP-based tracking via `@daveyplate/next-rate-limit`
 
 ---
@@ -291,6 +298,8 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 | `STRIPE_PRICE_BUSINESS_YEARLY`             | Yes      | Stripe price ID for Business yearly plan                           |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       | Optional | Stripe publishable key (for client-side)                           |
 | `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts                                        |
+| `UPSTASH_REDIS_URL`                        | Optional | Upstash Redis URL (enables Redis-backed rate limiting)             |
+| `UPSTASH_REDIS_TOKEN`                      | Optional | Upstash Redis token                                                |
 
 
 ---
