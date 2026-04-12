@@ -22,29 +22,40 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
-      - name: Copy Prod compose to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOSTINGER_VPS_HOST }}
-          username: ${{ secrets.HOSTINGER_VPS_USER }}
-          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
-          source: "Prod/docker-compose.yml"
-          target: "~/feedlytics/_tmp"
-          strip_components: 1
-
-      - name: Tear down, replace, and bring up
+      - name: Tear down all containers and images
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
-            cd ~/feedlytics/
+            cd feedlytics/
+            echo ">>> Current compose file:"
+            head -5 docker-compose.yml
             echo ">>> Stopping containers and removing images..."
             docker compose down --rmi all
-            echo ">>> Replacing docker-compose.yml..."
-            cp _tmp/docker-compose.yml docker-compose.yml
-            rm -rf _tmp
+            echo ">>> Tear down complete."
+
+      - name: Upload new compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          source: "Prod/docker-compose.yml"
+          target: "feedlytics"
+          strip_components: 1
+
+      - name: Pull fresh images and start
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            cd feedlytics/
+            echo ">>> Verifying files..."
+            ls -la docker-compose.yml .env
             echo ">>> Pulling fresh images and starting..."
             docker compose up -d
             echo ">>> Cleaning up dangling images..."

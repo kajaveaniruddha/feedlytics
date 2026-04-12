@@ -25,7 +25,7 @@ jobs:
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           source: "Prod/docker-compose.yml"
-          target: "~/feedlytics"
+          target: "feedlytics"
           strip_components: 1
 
       - name: Sync monitoring config to VPS
@@ -35,7 +35,7 @@ jobs:
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           source: "monitoring/"
-          target: "~/feedlytics"
+          target: "feedlytics"
 
       - name: Restart containers
         uses: appleboy/ssh-action@master
