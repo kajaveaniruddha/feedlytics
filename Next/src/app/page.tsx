@@ -7,7 +7,7 @@ import MotionDiv from "@/components/ui/motion-div"
 import { AuroraBackground } from "@/components/ui/aurora-background"
 import { motion } from "framer-motion"
 import FeatureCard from "@/components/custom/feature-card"
-import Image from "next/image"
+
 import LandingPageWorkFlow from "@/components/custom/landingpage-workflow"
 import Script from "next/script"
 import FaqSection from "@/components/custom/faq-section"

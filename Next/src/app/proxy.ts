@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { rateLimit } from "./config/rateLimiter";
+import { rateLimit } from "@/config/rateLimiter";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = NextResponse.next();
   const url = request.nextUrl;
 

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { stripe } from '../../lib/stripe'
 
-export default async function Return({ searchParams }: { searchParams: any }) {
+export default async function Return({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
     const { session_id } = await searchParams
 
     if (!session_id)

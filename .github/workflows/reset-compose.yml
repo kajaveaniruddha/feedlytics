@@ -1,4 +1,4 @@
-name: Sync Config to VPS
+name: Reset Docker Compose
 
 on:
   workflow_dispatch:
@@ -7,10 +7,14 @@ on:
         description: "Branch to sync from"
         required: true
         default: "master"
+      confirm:
+        description: "Type YES to confirm (this will cause downtime)"
+        required: true
 
 jobs:
-  sync:
+  reset:
     runs-on: ubuntu-latest
+    if: inputs.confirm == 'YES'
 
     steps:
       - name: Checkout code
@@ -18,32 +22,32 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
-      - name: Sync Prod compose file to VPS
+      - name: Copy Prod compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           source: "Prod/docker-compose.yml"
-          target: "~/feedlytics"
+          target: "~/feedlytics/_tmp"
           strip_components: 1
 
-      - name: Sync monitoring config to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOSTINGER_VPS_HOST }}
-          username: ${{ secrets.HOSTINGER_VPS_USER }}
-          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
-          source: "monitoring/"
-          target: "~/feedlytics"
-
-      - name: Restart containers
+      - name: Tear down, replace, and bring up
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
-            cd feedlytics/
-            docker compose up -d --force-recreate
+            cd ~/feedlytics/
+            echo ">>> Stopping containers and removing images..."
+            docker compose down --rmi all
+            echo ">>> Replacing docker-compose.yml..."
+            cp _tmp/docker-compose.yml docker-compose.yml
+            rm -rf _tmp
+            echo ">>> Pulling fresh images and starting..."
+            docker compose up -d
+            echo ">>> Cleaning up dangling images..."
             docker image prune -f
+            echo ">>> Done. Current status:"
+            docker compose ps

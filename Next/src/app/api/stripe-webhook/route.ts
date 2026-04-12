@@ -6,12 +6,6 @@ import { stripe } from "@/lib/stripe";
 import { withMetrics } from "@/lib/metrics";
 import { PLAN_LIMITS, getPlanForPrice, PlanTier } from "@/config/plans";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 async function handlePOST(request: Request) {
   const sig = request.headers.get("stripe-signature");
   let event;

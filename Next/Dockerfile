@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 RUN npm install -g pnpm
 
@@ -29,9 +29,13 @@ RUN pnpm build
 
 # --------------------------------
 
-FROM node:18-alpine AS runner
-RUN npm install -g pnpm
+FROM node:20-alpine AS runner
 WORKDIR /app
-COPY --from=builder /app ./
+ENV NODE_ENV=production
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
 EXPOSE 3000
-CMD ["pnpm", "run", "start"]
+CMD ["node", "server.js"]

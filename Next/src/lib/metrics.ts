@@ -5,6 +5,7 @@ const globalForMetrics = globalThis as unknown as {
   __httpRequestDuration: client.Histogram;
   __httpRequestTotal: client.Counter;
   __rateLimitBlocked: client.Counter;
+  __memoryGaugesRegistered: boolean;
 };
 
 if (!globalForMetrics.__metricsRegistry) {
@@ -26,6 +27,45 @@ if (!globalForMetrics.__metricsRegistry) {
     registers: [globalForMetrics.__metricsRegistry],
   });
 
+}
+
+if (!globalForMetrics.__memoryGaugesRegistered) {
+  globalForMetrics.__memoryGaugesRegistered = true;
+
+  new client.Gauge({
+    name: "nodejs_memory_rss_bytes",
+    help: "Resident Set Size in bytes",
+    registers: [globalForMetrics.__metricsRegistry],
+    collect() { this.set(process.memoryUsage().rss); },
+  });
+
+  new client.Gauge({
+    name: "nodejs_memory_heap_used_bytes",
+    help: "V8 heap used in bytes",
+    registers: [globalForMetrics.__metricsRegistry],
+    collect() { this.set(process.memoryUsage().heapUsed); },
+  });
+
+  new client.Gauge({
+    name: "nodejs_memory_heap_total_bytes",
+    help: "V8 heap total in bytes",
+    registers: [globalForMetrics.__metricsRegistry],
+    collect() { this.set(process.memoryUsage().heapTotal); },
+  });
+
+  new client.Gauge({
+    name: "nodejs_memory_external_bytes",
+    help: "Memory used by C++ objects bound to JS",
+    registers: [globalForMetrics.__metricsRegistry],
+    collect() { this.set(process.memoryUsage().external); },
+  });
+
+  new client.Gauge({
+    name: "nodejs_memory_arraybuffers_bytes",
+    help: "Memory for ArrayBuffers and SharedArrayBuffers",
+    registers: [globalForMetrics.__metricsRegistry],
+    collect() { this.set(process.memoryUsage().arrayBuffers); },
+  });
 }
 
 if (!globalForMetrics.__rateLimitBlocked) {
