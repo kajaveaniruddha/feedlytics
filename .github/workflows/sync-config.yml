@@ -18,24 +18,18 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
-      - name: Sync Prod compose file to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOSTINGER_VPS_HOST }}
-          username: ${{ secrets.HOSTINGER_VPS_USER }}
-          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
-          source: "Prod/docker-compose.yml"
-          target: "feedlytics"
-          strip_components: 1
+      - name: Prepare compose file
+        run: cp Prod/docker-compose.yml docker-compose.yml
 
-      - name: Sync monitoring config to VPS
+      - name: Sync config files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
-          source: "monitoring/"
+          source: "docker-compose.yml,monitoring/"
           target: "feedlytics"
+          overwrite: true
 
       - name: Restart containers
         uses: appleboy/ssh-action@master

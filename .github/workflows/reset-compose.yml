@@ -30,11 +30,12 @@ jobs:
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
             cd feedlytics/
-            echo ">>> Current compose file:"
-            head -5 docker-compose.yml
             echo ">>> Stopping containers and removing images..."
             docker compose down --rmi all
             echo ">>> Tear down complete."
+
+      - name: Prepare compose file
+        run: cp Prod/docker-compose.yml docker-compose.yml
 
       - name: Upload new compose file
         uses: appleboy/scp-action@v0.1.7
@@ -42,9 +43,9 @@ jobs:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
-          source: "Prod/docker-compose.yml"
+          source: "docker-compose.yml"
           target: "feedlytics"
-          strip_components: 1
+          overwrite: true
 
       - name: Pull fresh images and start
         uses: appleboy/ssh-action@master
