@@ -14,26 +14,28 @@ import {
 import { Button } from "./button";
 import { api } from "@/lib/api";
 import { useToast } from "./use-toast";
+import { useMessageContext } from "@/hooks/use-message-context";
 import { useState } from "react";
 
-interface DeleteTasksButtonProps {
-  table: any;
-  onDeleteSuccess: () => void;
+interface DeleteTasksButtonProps<TData> {
+  table: any; // Replace `any` with the appropriate table type from @tanstack/react-table
+  setData: React.Dispatch<React.SetStateAction<TData[]>>;
 }
 
-const DeleteTasksButton = ({
+const DeleteTasksButton = <TData extends { id: string }>({
   table,
-  onDeleteSuccess,
-}: DeleteTasksButtonProps) => {
+  setData,
+}: DeleteTasksButtonProps<TData>) => {
   const { toast } = useToast();
+  const { messageCount, setMessageCount } = useMessageContext();
   const [loading, setLoading] = useState<boolean>(false);
-
   const handleDelete = async (ids: string[]) => {
     try {
       setLoading(true);
       await api.deleteMessages(ids);
+      setData((prevData) => prevData.filter((item) => !ids.includes(item.id)));
+      setMessageCount(messageCount - ids.length);
       table.setRowSelection({});
-      onDeleteSuccess();
       toast({
         title: "Success",
         description: "Messages deleted successfully.",
@@ -49,7 +51,7 @@ const DeleteTasksButton = ({
     }
   };
 
-  const selectedIds = table.getSelectedRowModel().rows.map(
+  const selectedIds = table.getFilteredSelectedRowModel().rows.map(
     (row: any) => row.original.id
   );
 

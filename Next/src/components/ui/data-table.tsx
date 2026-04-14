@@ -4,73 +4,56 @@ import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
+    getSortedRowModel,
+    getPaginationRowModel,
+    getFilteredRowModel,
     useReactTable,
     SortingState,
+    PaginationState,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import DeleteTasksButton from "./delete-task-button";
 import TablePagination from "./table-pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTableToolbar } from "../custom/data-table-toolbar";
-import type { Filters } from "../custom/table-box";
+
 
 interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    pageCount: number;
-    currentPage: number;
-    totalCount: number;
-    onPageChange: (page: number) => void;
-    filters: Filters;
-    onFilterChange: (filters: Partial<Filters>) => void;
-    onSortChange: (column: string, direction: "asc" | "desc") => void;
-    onDeleteSuccess: () => void;
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
     columns,
-    data,
-    pageCount,
-    currentPage,
-    totalCount,
-    onPageChange,
-    filters,
-    onFilterChange,
-    onSortChange,
-    onDeleteSuccess,
+    data: initialData,
 }: DataTableProps<TData, TValue>) {
+
+    const [data, setData] = useState<TData[]>(initialData);
     const [rowSelection, setRowSelection] = useState({});
     const [sorting, setSorting] = useState<SortingState>([]);
-
-    const handleSortingChange = (updater: SortingState | ((prev: SortingState) => SortingState)) => {
-        const newSorting = typeof updater === "function" ? updater(sorting) : updater;
-        setSorting(newSorting);
-        if (newSorting.length > 0) {
-            const { id, desc } = newSorting[0];
-            onSortChange(id, desc ? "desc" : "asc");
-        }
-    };
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
     const table = useReactTable({
         data,
         columns,
         onRowSelectionChange: setRowSelection,
-        onSortingChange: handleSortingChange,
-        manualPagination: true,
-        manualSorting: true,
-        manualFiltering: true,
-        pageCount,
+        onSortingChange: setSorting,
+        onPaginationChange: setPagination,
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
         getCoreRowModel: getCoreRowModel(),
-        state: { sorting, rowSelection },
+        getPaginationRowModel: getPaginationRowModel(),
+        state: { sorting, pagination, rowSelection },
+        initialState: {
+            pagination: {
+                pageSize: 10,
+            },
+        },
     });
 
     return (
         <>
-            <DataTableToolbar
-                table={table}
-                filters={filters}
-                onFilterChange={onFilterChange}
-            />
+            <DataTableToolbar table={table} />
             <div className="rounded-md border w-full mx-auto">
                 <Table>
                     <TableHeader>
@@ -111,15 +94,11 @@ export function DataTable<TData extends { id: string }, TValue>({
                 <div className="flex flex-wrap items-center gap-2">
                     <DeleteTasksButton
                         table={table}
-                        onDeleteSuccess={onDeleteSuccess}
+                        setData={setData}
                     />
-                    {table.getSelectedRowModel().rows.length} of {data.length} row(s) selected.
+                    {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
                 </div>
-                <TablePagination
-                    currentPage={currentPage}
-                    totalPages={pageCount}
-                    onPageChange={onPageChange}
-                />
+                <TablePagination table={table} />
             </div>
         </>
     );
