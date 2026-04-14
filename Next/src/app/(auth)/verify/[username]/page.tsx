@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useParams, useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
+import { api } from "@/lib/api";
 import {
   Form,
   FormControl,
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ApiResponse } from "@/types";
 import {
   InputOTP,
   InputOTPGroup,
@@ -33,19 +32,17 @@ const Page = () => {
   });
   const onSubmit = async (data: z.infer<typeof verifySchema>) => {
     try {
-      const response = await axios.post(`/api/verify-code`, {
+      const response = await api.verifyCode({
         username: params.username,
         code: data.code,
       });
       toast({ title: "Success", description: response.data.message });
       router.replace("/login");
     } catch (error) {
-      console.error("Error signing up user", error);
-      const axiosError = error as AxiosError<ApiResponse>;
+      console.error("Error verifying code", error);
       toast({
-        title: "Sign up failed",
-        description:
-          axiosError.response?.data.message ?? "Error verifying code",
+        title: "Verification failed",
+        description: (error as Error).message || "Error verifying code",
         variant: "destructive",
       });
     }

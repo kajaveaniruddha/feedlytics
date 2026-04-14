@@ -3,10 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import axios, { AxiosError } from "axios";
-import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types";
+import { api } from "@/lib/api";
+import { userDetailsType } from "@/types";
 import {
     Form,
     FormControl,
@@ -26,30 +26,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
+import { useApiErrorToast } from "@/hooks/use-api-error-toast";
 
 const ClientPage = ({ username }: { username: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const { toast } = useToast();
 
-    const { data: userDetails, isLoading, isError, error, refetch } = useQuery<userDetailsType>({
+    const { data: userDetails, isLoading, isError, error } = useQuery<userDetailsType>({
         queryKey: ["user-form-details", username],
         queryFn: async () => {
-            const res = await axios.get<ApiResponseUserDetails>(`/api/get-user-form-details/${username}`);
+            const res = await api.getUserFormDetails(username);
             return res.data.userDetails;
         },
         staleTime: 5000,
         refetchOnWindowFocus: false,
     });
 
-    useEffect(() => {
-        if (isError) {
-            toast({
-                title: "Error",
-                description: (error as Error)?.message || "Failed to fetch user details",
-            });
-        }
-    }, [isError, error, toast]);
+    useApiErrorToast(isError, error as Error | null);
 
     const form = useForm({
         resolver: zodResolver(SendMessageSchema),
@@ -65,17 +59,15 @@ const ClientPage = ({ username }: { username: string }) => {
     const onSubmit = async (data: z.infer<typeof SendMessageSchema>) => {
         setIsSubmitting(true);
         try {
-            const response = await axios.post<ApiResponse>("/api/send-message", data);
+            const response = await api.sendMessage(data);
             toast({ title: "Success", description: response.data.message });
             setSubmitted(true);
         } catch (error) {
-            const axiosError = error as AxiosError<ApiResponse>;
             toast({
                 title: "Couldn't send message",
-                description: axiosError.response?.data?.message || "An error occurred",
+                description: (error as Error).message || "An error occurred",
                 variant: "destructive",
             });
-            console.log(axiosError.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

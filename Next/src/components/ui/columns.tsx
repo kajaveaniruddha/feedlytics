@@ -65,18 +65,7 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
         </div>
       );
     },
-    filterFn: (row, columnId, filterValues) => {
-      if (!filterValues || filterValues.length === 0) {
-        return true; // No filter applied
-      }
-
-      const rowStars = String(row.getValue(columnId));
-
-      // Check if the row's star rating matches any of the selected filter values
-      return filterValues.includes(rowStars);
-    },
     enableSorting: true,
-    enableColumnFilter: true,
   },
   {
     accessorKey: "sentiment",
@@ -97,9 +86,6 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
           )}
         </>
       )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
     },
   },
   {
@@ -131,16 +117,6 @@ export const columns: ColumnDef<ExtendedMessage, any>[] = [
           ))}
         </div>
       );
-    },
-    filterFn: (row, columnId, filterValues) => {
-      if (!filterValues || filterValues.length === 0) {
-        return true; // No filter applied
-      }
-
-      const rowCategories = row.getValue(columnId) as string[];
-
-      // Check if any filter value matches the row's categories
-      return rowCategories.some((category) => filterValues.includes(category));
     },
   },
   {

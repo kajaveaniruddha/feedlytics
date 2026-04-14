@@ -12,32 +12,28 @@ import {
   AlertDialogAction,
 } from "./alert-dialog";
 import { Button } from "./button";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { useToast } from "./use-toast";
-import { useMessageContext } from "@/hooks/use-message-context";
 import { useState } from "react";
 
-interface DeleteTasksButtonProps<TData> {
-  table: any; // Replace `any` with the appropriate table type from @tanstack/react-table
-  setData: React.Dispatch<React.SetStateAction<TData[]>>;
+interface DeleteTasksButtonProps {
+  table: any;
+  onDeleteSuccess: () => void;
 }
 
-const DeleteTasksButton = <TData extends { id: string }>({
+const DeleteTasksButton = ({
   table,
-  setData,
-}: DeleteTasksButtonProps<TData>) => {
+  onDeleteSuccess,
+}: DeleteTasksButtonProps) => {
   const { toast } = useToast();
-  const { messageCount, setMessageCount } = useMessageContext();
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
+
   const handleDelete = async (ids: string[]) => {
     try {
       setLoading(true);
-      await axios.delete(`/api/delete-messages`, {
-        data: { messageIds: ids },
-      });
-      setData((prevData) => prevData.filter((item) => !ids.includes(item.id)));
-      setMessageCount(messageCount - ids.length);
+      await api.deleteMessages(ids);
       table.setRowSelection({});
+      onDeleteSuccess();
       toast({
         title: "Success",
         description: "Messages deleted successfully.",
@@ -53,7 +49,7 @@ const DeleteTasksButton = <TData extends { id: string }>({
     }
   };
 
-  const selectedIds = table.getFilteredSelectedRowModel().rows.map(
+  const selectedIds = table.getSelectedRowModel().rows.map(
     (row: any) => row.original.id
   );
 

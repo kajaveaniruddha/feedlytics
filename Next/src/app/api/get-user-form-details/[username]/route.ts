@@ -1,51 +1,38 @@
-import { NextResponse } from "next/server";
-import { db } from "@/db/db";
-import { usersTable } from "@/db/models/user";
-import { eq } from "drizzle-orm";
 import { withMetrics } from "@/lib/metrics";
+import { createHandler } from "@/lib/route-handler";
+import { successResponse } from "@/lib/api-response";
+import { userRepository } from "@/repositories/user.repository";
+import { usersTable } from "@/db/models/user";
+import { ApiError } from "@/lib/api-error";
+import { db } from "@/db/db";
+import { eq } from "drizzle-orm";
 
-async function handleGET(
-  req: Request,
-  { params }: { params: Promise<{ username: string }> }
-) {
-  const { username } = await params;
+const handleGET = createHandler(
+  async (
+    req: Request,
+    { params }: { params: Promise<{ username: string }> }
+  ) => {
+    const { username } = await params;
 
-  try {
-    const user = await db
+    const [user] = await db
       .select({
         name: usersTable.name,
         introduction: usersTable.introduction,
         questions: usersTable.questions,
         avatar_url: usersTable.avatarUrl,
         collectName: usersTable.collectName,
-        collectEmail: usersTable.collectEmail
+        collectEmail: usersTable.collectEmail,
       })
       .from(usersTable)
       .where(eq(usersTable.username, username))
       .limit(1);
 
-    if (user.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "User not found." },
-        { status: 404 }
-      );
+    if (!user) {
+      throw ApiError.notFound("User not found.");
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "User Found.",
-        userDetails: user[0],
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { success: false, message: "Couldn't find user.", error },
-      { status: 500 }
-    );
+    return successResponse({ message: "User Found.", userDetails: user });
   }
-}
+);
 
 export const GET = withMetrics(handleGET, "/api/get-user-form-details");

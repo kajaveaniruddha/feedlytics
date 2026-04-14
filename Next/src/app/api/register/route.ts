@@ -1,118 +1,66 @@
-import { db } from "@/db/db";
-import { usersTable } from "@/db/models/user";
-import { eq, and } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 import { withMetrics } from "@/lib/metrics";
+import { createHandler } from "@/lib/route-handler";
+import { successResponse } from "@/lib/api-response";
+import { userRepository } from "@/repositories/user.repository";
+import { ApiError } from "@/lib/api-error";
 import { PLAN_LIMITS } from "@/config/plans";
-import { rateLimit } from "@/config/rateLimiter";
-import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
-async function handlePOST(request: NextRequest) {
-  const response = new NextResponse();
-  const rateLimitResult = await rateLimit({
-    request,
-    response,
-    ipLimit: 3,
-    ipWindow: 10,
-  });
-  if (rateLimitResult) return rateLimitResult;
+const handlePOST = createHandler(async (request: Request) => {
+  const { name, username, email, password } = await request.json();
 
-  try {
-    const { name, username, email, password } = await request.json();
+  const existingVerified = await userRepository.findVerifiedByUsername(username);
+  if (existingVerified) {
+    throw ApiError.badRequest("Username already taken.");
+  }
 
-    const existingUserVerifiedByUsername = await db
-      .select()
-      .from(usersTable)
-      .where(and(eq(usersTable.username, username), eq(usersTable.isVerified, true)))
-      .limit(1);
+  const existingByEmail = await userRepository.findByEmail(email);
+  const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiryDate = new Date(Date.now() + 3600000);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (existingUserVerifiedByUsername.length > 0) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Username already taken." }),
-        { status: 409 }
-      );
+  if (existingByEmail) {
+    if (existingByEmail.isVerified) {
+      throw ApiError.forbidden("User already exists with this email.");
     }
+    await userRepository.updateByEmail(email, {
+      password: hashedPassword,
+      verifyCode,
+      verifyCodeExpiry: expiryDate,
+    });
+  } else {
+    await userRepository.create({
+      name,
+      username,
+      email,
+      password: hashedPassword,
+      verifyCode,
+      verifyCodeExpiry: expiryDate,
+      isVerified: false,
+      messageCount: 0,
+      maxMessages: PLAN_LIMITS.free.maxFeedbacksPerMonth,
+      maxWorkflows: PLAN_LIMITS.free.maxWorkflows,
+      billingPeriodStart: new Date(),
+      billingPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+  }
 
-    const existingUserByEmail = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email))
-      .limit(1);
-    const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour from now
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    if (existingUserByEmail.length > 0) {
-      if (existingUserByEmail[0].isVerified) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "User already exists with this email.",
-          }),
-          { status: 403 }
-        );
-      } else {
-        await db
-          .update(usersTable)
-          .set({
-            password: hashedPassword,
-            verifyCode,
-            verifyCodeExpiry: expiryDate,
-          })
-          .where(eq(usersTable.email, email));
-      }
-    } else {
-      await db.insert(usersTable).values({
-        name,
-        username,
-        email,
-        password: hashedPassword,
-        verifyCode,
-        verifyCodeExpiry: expiryDate,
-        isVerified: false,
-        messageCount: 0,
-        maxMessages: PLAN_LIMITS.free.maxFeedbacksPerMonth,
-        maxWorkflows: PLAN_LIMITS.free.maxWorkflows,
-        billingPeriodStart: new Date(),
-        billingPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      });
-    }
-
-    // Add job to the Node.js queue
-    const queueResponse = await fetch(`${process.env.SERVICES_URL}/get-verification-email`, {
+  const queueResponse = await fetch(
+    `${process.env.SERVICES_URL}/get-verification-email`,
+    {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        data: {
-          email,
-          username,
-          verifyCode,
-          expiryDate,
-        },
+        data: { email, username, verifyCode, expiryDate },
       }),
-    });
-
-    if (!queueResponse.ok) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Failed to add job to the queue.",
-        }),
-        { status: 500 }
-      );
     }
+  );
 
-    return new Response(
-      JSON.stringify({ success: true, message: "User registered successfully." }),
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error registering user.", error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Error registering user." }),
-      { status: 500 }
-    );
+  if (!queueResponse.ok) {
+    throw ApiError.internal("Failed to add job to the queue.");
   }
-}
+
+  return successResponse({ message: "User registered successfully." }, 201);
+});
 
 export const POST = withMetrics(handlePOST, "/api/register");

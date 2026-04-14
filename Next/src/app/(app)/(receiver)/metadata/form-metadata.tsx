@@ -13,12 +13,12 @@ import {
 import { Loader2, RotateCcw } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import axios, { AxiosError } from "axios";
+import { api } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { updateUserData } from "@/schemas/updateUserData";
-import { ApiResponse, ApiResponseUserDetails, userDetailsType } from "@/types";
+import { userDetailsType } from "@/types";
 import { useDebounceCallback } from "usehooks-ts";
 import { z } from "zod";
 import { Switch } from "@/components/ui/switch";
@@ -27,6 +27,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import FeedbackPreview from "./feedback-preview";
+import { useCheckUsername } from "@/hooks/use-check-username";
 
 const MetadataPage = () => {
   const queryClient = useQueryClient();
@@ -51,21 +52,15 @@ const MetadataPage = () => {
 
   const { setValue, watch, formState: { isDirty } } = form;
 
-  const { data: userDetails, isLoading: isUserLoading, isError, error } = useQuery<userDetailsType>({
+  const { data: userDetails, isLoading: isUserLoading } = useQuery<userDetailsType>({
     queryKey: ["user-details-metadata"],
     queryFn: async () => {
-      const res = await axios.get<ApiResponseUserDetails>("/api/get-user-details");
+      const res = await api.getUserDetails();
       return res.data.userDetails;
     },
     staleTime: 5000,
     refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    if (isError) {
-      toast({ title: "Error", description: (error as Error)?.message || "Failed to fetch user details." });
-    }
-  }, [isError, error]);
 
   useEffect(() => {
     if (userDetails) {
@@ -84,10 +79,9 @@ const MetadataPage = () => {
     }
   }, [userDetails, setValue]);
 
-  const [username, setUsername] = useState(form.getValues("username") || "");
-  const [usernameMessage, setUsernameMessage] = useState("");
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const debounced = useDebounceCallback(setUsername, 500);
+  const { isCheckingUsername, usernameMessage, debouncedSetUsername } = useCheckUsername({
+    currentUsername: userDetails?.username,
+  });
 
   const currentIntroduction = watch("introduction");
   const currentQuestions = watch("questions");
@@ -111,30 +105,6 @@ const MetadataPage = () => {
     debouncedTextColorCallback(currentTextColor);
   }, [currentTextColor, debouncedTextColorCallback]);
 
-  // Username uniqueness check effect
-  useEffect(() => {
-    const checkUsernameUnique = async () => {
-      // Only check if username is non-empty and changed from original value
-      if (username && username !== userDetails?.username) {
-        setIsCheckingUsername(true);
-        setUsernameMessage("");
-        try {
-          const response = await axios.get(`/api/check-username-unique?username=${username}`);
-          setUsernameMessage(response.data.message);
-        } catch (error) {
-          const axiosError = error as AxiosError<ApiResponse>;
-          setUsernameMessage(axiosError.response?.data.message || "Error checking username");
-        } finally {
-          setIsCheckingUsername(false);
-        }
-      } else {
-        // When unchanged revert message (consider it valid)
-        setUsernameMessage("Username is available");
-      }
-    };
-    checkUsernameUnique();
-  }, [username, userDetails]);
-
   const isSameAsInitialValues = () => {
     return (
       userDetails?.introduction === currentIntroduction &&
@@ -152,14 +122,8 @@ const MetadataPage = () => {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateUserData>) => {
-      const response = await fetch("/api/update-user-data", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message);
-      return result;
+      const res = await api.updateUserData(data);
+      return res.data;
     },
     onSuccess: (result) => {
       toast({ title: "Success", description: result.message });
@@ -348,7 +312,7 @@ const MetadataPage = () => {
                                 placeholder="Enter your username"
                                 onChange={(e) => {
                                   field.onChange(e);
-                                  debounced(e.target.value);
+                                  debouncedSetUsername(e.target.value);
                                 }}
                               />
                             </FormControl>

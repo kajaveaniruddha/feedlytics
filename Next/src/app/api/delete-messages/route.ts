@@ -1,83 +1,30 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
-import { usersTable } from "@/db/models/user";
-import { feedbacksTable } from "@/db/models/feedback";
-import { db } from "@/db/db";
-import { eq, sql, inArray } from "drizzle-orm";
 import { withMetrics } from "@/lib/metrics";
+import { createHandler } from "@/lib/route-handler";
+import { validateBody } from "@/lib/validate";
+import { deleteMessagesSchema } from "@/schemas/deleteMessagesSchema";
+import { successResponse } from "@/lib/api-response";
+import { authService } from "@/services/auth.service";
+import { feedbackRepository } from "@/repositories/feedback.repository";
+import { userRepository } from "@/repositories/user.repository";
+import { ApiError } from "@/lib/api-error";
 
-async function handleDELETE(request: Request) {
-  const session = await getServerSession(authOptions);
+const handleDELETE = createHandler(async (request: Request) => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
 
-  if (!session || !session.user) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Not Authenticated." }),
-      { status: 401 }
-    );
+  const { messageIds } = await validateBody(request, deleteMessagesSchema);
+  const objectIds = messageIds.map((id) => parseInt(id, 10));
+
+  // SECURITY FIX: deleteByIdsForUser adds userId filter
+  const deleteResult = await feedbackRepository.deleteByIdsForUser(objectIds, userId);
+
+  if (deleteResult.rowCount === 0) {
+    throw ApiError.notFound("Messages not found.");
   }
 
-  try {
-    const { messageIds } = await request.json();
+  await userRepository.decrementMessageCount(userId, objectIds.length);
 
-    if (!Array.isArray(messageIds) || messageIds.length === 0) {
-      return new Response(
-        JSON.stringify({ success: false, message: "No messages specified." }),
-        { status: 400 }
-      );
-    }
-
-    const userId = parseInt(session.user.id as string, 10);
-    const objectIds = messageIds.map((id) => parseInt(id, 10));
-
-    console.log("Message IDs to delete:", objectIds);
-
-    // Step 1: Delete messages from feedbacks table
-    const deleteResult = await db
-      .delete(feedbacksTable)
-      .where(inArray( feedbacksTable.id,objectIds));
-
-    if (deleteResult.rowCount === 0) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Messages not found." }),
-        { status: 404 }
-      );
-    }
-
-    // Step 2: Update message count in users table
-    const updateResult = await db
-      .update(usersTable)
-      .set({
-        messageCount: sql`${usersTable.messageCount} - ${objectIds.length}`,
-      })
-      .where(eq(usersTable.id, userId));
-
-    if (!updateResult.rowCount) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Failed to update user message count.",
-        }),
-        { status: 500 }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Messages deleted successfully.",
-      }),
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error deleting messages:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Error deleting messages.",
-      }),
-      { status: 500 }
-    );
-  }
-}
+  return successResponse({ message: "Messages deleted successfully." });
+});
 
 export const DELETE = withMetrics(handleDELETE, "/api/delete-messages");

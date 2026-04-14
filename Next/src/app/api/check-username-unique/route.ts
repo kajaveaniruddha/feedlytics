@@ -1,9 +1,12 @@
-import { usersTable } from "@/db/models/user";
 import { z } from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 import { db } from "@/db/db";
+import { usersTable } from "@/db/models/user";
 import { and, eq } from "drizzle-orm";
 import { withMetrics } from "@/lib/metrics";
+import { createHandler } from "@/lib/route-handler";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { ApiError } from "@/lib/api-error";
 
 const UsernameQuerySchema = z.object({ username: usernameValidation });
 
@@ -44,11 +47,9 @@ class BloomFilter {
   }
 }
 
-// Singleton instance for the app lifetime
 const bloom = new BloomFilter(10000, 5);
-
-// Populate the Bloom filter on first request (simulate DB load)
 let bloomInitialized = false;
+
 async function ensureBloomPopulated() {
   if (!bloomInitialized) {
     const users = await db.select().from(usersTable).where(eq(usersTable.isVerified, true));
@@ -57,56 +58,36 @@ async function ensureBloomPopulated() {
   }
 }
 
-async function handleGET(request: Request) {
-  try {
-    await ensureBloomPopulated();
-    const { searchParams } = new URL(request.url);
-    const queryParam = { username: searchParams.get("username") };
+const handleGET = createHandler(async (request: Request) => {
+  await ensureBloomPopulated();
+  const { searchParams } = new URL(request.url);
+  const queryParam = { username: searchParams.get("username") };
 
-    const result = UsernameQuerySchema.safeParse(queryParam);
-    if (!result.success) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Invalid query parameter. username must be lowercase, contain only letters and numbers, and have no spaces or special characters." }),
-        { status: 400 }
-      );
-    }
-
-    const { username } = result.data;
-    const exists = bloom.contains(username);
-
-    if (exists) {
-      // Bloom filter says it may exist, check DB to confirm
-      const existingVerifiedUser = await db
-        .select()
-        .from(usersTable)
-        .where(and(eq(usersTable.username, username), eq(usersTable.isVerified, true)))
-        .limit(1);
-      if (existingVerifiedUser.length) {
-        return new Response(
-          JSON.stringify({ success: false, message: "Username is already taken." }),
-          { status: 200 }
-        );
-      }
-      // False positive in Bloom filter, username is actually unique
-      return new Response(
-        JSON.stringify({ success: true, message: "Username is unique (false positive in Bloom filter)" }),
-        { status: 200 }
-      );
-    }
-
-    // Bloom filter says definitely not present
-    return new Response(
-      JSON.stringify({ success: true, message: "Username is unique." }),
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error checking username", error);
-    return new Response(
-      JSON.stringify({ success: false, message: "Error checking username" }),
-      { status: 500 }
+  const result = UsernameQuerySchema.safeParse(queryParam);
+  if (!result.success) {
+    throw ApiError.badRequest(
+      "Invalid query parameter. username must be lowercase, contain only letters and numbers, and have no spaces or special characters."
     );
   }
-}
+
+  const { username } = result.data;
+  const exists = bloom.contains(username);
+
+  if (exists) {
+    const existingVerifiedUser = await db
+      .select()
+      .from(usersTable)
+      .where(and(eq(usersTable.username, username), eq(usersTable.isVerified, true)))
+      .limit(1);
+
+    if (existingVerifiedUser.length) {
+      return successResponse({ success: false, message: "Username is already taken." });
+    }
+
+    return successResponse({ message: "Username is unique (false positive in Bloom filter)" });
+  }
+
+  return successResponse({ message: "Username is unique." });
+});
 
 export const GET = withMetrics(handleGET, "/api/check-username-unique");
-

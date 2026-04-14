@@ -1,66 +1,35 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
-import { usersTable } from "@/db/models/user";
-import { db } from "@/db/db";
-import { eq } from "drizzle-orm";
 import { withMetrics } from "@/lib/metrics";
+import { createHandler } from "@/lib/route-handler";
+import { validateBody } from "@/lib/validate";
+import { updateUserData } from "@/schemas/updateUserData";
+import { successResponse } from "@/lib/api-response";
+import { authService } from "@/services/auth.service";
+import { userRepository } from "@/repositories/user.repository";
+import { ApiError } from "@/lib/api-error";
 
-async function handlePUT(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
-    return new Response(
-      JSON.stringify({ success: false, message: "Not Authenticated." }),
-      { status: 401 }
-    );
+const handlePUT = createHandler(async (request: Request) => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
+
+  const data = await validateBody(request, updateUserData);
+
+  const updateResult = await userRepository.updateById(userId, {
+    introduction: data.introduction,
+    questions: data.questions,
+    username: data.username,
+    name: data.name,
+    avatarUrl: data.avatar_url,
+    bgColor: data.bg_color,
+    textColor: data.text_color,
+    collectName: data.collect_info?.name,
+    collectEmail: data.collect_info?.email,
+  });
+
+  if (!updateResult.rowCount) {
+    throw ApiError.internal("Failed to update.");
   }
 
-  // Extract additional fields: username, name, avatarUrl, and new style fields
-  const { introduction, questions, username, name, avatar_url, bg_color, text_color, collect_info } =
-    await request.json();
-  try {
-    const updateResult = await db
-      .update(usersTable)
-      .set({
-        introduction,
-        questions,
-        username,
-        name,
-        avatarUrl: avatar_url,
-        bgColor: bg_color,
-        textColor: text_color,
-        collectName: collect_info?.name,
-        collectEmail: collect_info?.email,
-      })
-      .where(eq(usersTable.id, parseInt(session.user.id ?? "0")));
-
-    if (!updateResult.rowCount) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Failed to update.",
-        }),
-        { status: 500 }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Details updated successfully.",
-      }),
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Couldn't update user.",
-        error,
-      }),
-      { status: 500 }
-    );
-  }
-}
+  return successResponse({ message: "Details updated successfully." });
+});
 
 export const PUT = withMetrics(handlePUT, "/api/update-user-data");

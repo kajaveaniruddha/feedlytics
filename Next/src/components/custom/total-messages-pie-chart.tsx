@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import {
   Card,
@@ -44,7 +44,7 @@ export default function Component({ username }: props) {
   useEffect(() => {
     const fetchPeriodCount = async () => {
       try {
-        const res = await axios.get("/api/billing");
+        const res = await api.getBilling();
         if (res.data?.periodFeedbackCount != null) {
           setPeriodCount(res.data.periodFeedbackCount);
         }

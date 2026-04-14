@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Check, Crown, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchBilling = async () => {
       try {
-        const res = await axios.get("/api/billing");
+        const res = await api.getBilling();
         if (res.data?.workflowCount != null) {
           setWorkflowCount(res.data.workflowCount);
         }
@@ -67,7 +67,7 @@ export default function SettingsPage() {
   const handleManageSubscription = async () => {
     setBillingLoading(true);
     try {
-      const res = await axios.post("/api/billing");
+      const res = await api.createBillingPortal();
       window.location.href = res.data.url;
     } catch {
       setBillingLoading(false);
@@ -77,7 +77,7 @@ export default function SettingsPage() {
   const handleUpgrade = async (plan: "pro" | "business") => {
     setUpgradeLoading(plan);
     try {
-      const res = await axios.post("/api/checkout-sessions", { plan, interval });
+      const res = await api.createCheckoutSession({ plan, interval });
       window.location.href = res.data.url;
     } catch {
       setUpgradeLoading(null);

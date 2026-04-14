@@ -4,13 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useDebounceCallback } from "usehooks-ts";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { signUpSchema } from "@/schemas/signUpSchema";
-import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types";
+import { api } from "@/lib/api";
 import {
     Form,
     FormControl,
@@ -22,14 +20,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AtSign, Loader2, Lock, Mail, User } from "lucide-react";
+import { useCheckUsername } from "@/hooks/use-check-username";
 
 
 const FormSignup = () => {
-    const [username, setUsername] = useState("");
-    const [usernameMessage, setUsernameMessage] = useState("");
-    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const { isCheckingUsername, usernameMessage, debouncedSetUsername } = useCheckUsername();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const debounced = useDebounceCallback(setUsername, 300);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -44,45 +40,21 @@ const FormSignup = () => {
         },
     });
 
-    useEffect(() => {
-        const checkUsernameUnique = async () => {
-            if (username) {
-                setIsCheckingUsername(true);
-                setUsernameMessage("");
-                try {
-                    const response = await axios.get(`/api/check-username-unique?username=${username}`);
-                    let message = response.data.message;
-                    setUsernameMessage(message);
-                } catch (error) {
-                    const axiosError = error as AxiosError<ApiResponse>;
-                    setUsernameMessage(
-                        axiosError.response?.data.message ?? "Error checking username"
-                    );
-                } finally {
-                    setIsCheckingUsername(false);
-                }
-            }
-        };
-        checkUsernameUnique();
-    }, [username]);
-
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmitting(true);
         try {
-            // console.log(data);
-            const response = await axios.post<ApiResponse>("/api/register", data);
+            const response = await api.register(data);
             toast({ title: "Success", description: response.data.message });
             if (response.status === 201) {
-                router.replace(`/verify/${username}`);
+                router.replace(`/verify/${data.username}`);
             } else if (response.status === 403) {
                 router.replace(`/login`);
             }
         } catch (error) {
             console.error("Error signing up user", error);
-            const axiosError = error as AxiosError<ApiResponse>;
             toast({
                 title: "Sign up failed",
-                description: axiosError.response?.data.message,
+                description: (error as Error).message,
                 variant: "destructive",
             });
         } finally {
@@ -151,7 +123,7 @@ const FormSignup = () => {
                                     {...field}
                                     onChange={(e) => {
                                         field.onChange(e);
-                                        debounced(e.target.value);
+                                        debouncedSetUsername(e.target.value);
                                     }}
                                     className="placeholder:text-[hsl(var(--form-placeholder))]"
                                 />

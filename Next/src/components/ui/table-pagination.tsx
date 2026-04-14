@@ -1,48 +1,48 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "./button";
 
-interface PaginationProps<TData> {
-    table: any; // Replace `any` with the appropriate table type from @tanstack/react-table
+interface PaginationProps {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
 }
 
-const TablePagination = <TData extends { id: string }>({ table }: PaginationProps<TData>) => {
-    const totalPages = Math.ceil(table.getFilteredRowModel().rows.length / table.getState().pagination.pageSize);
-
+const TablePagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
     return (
         <div className="flex  items-center justify-end space-x-4">
             <span className="flex items-center justify-end text-sm ml-2">
-                Page {table.getState().pagination.pageIndex + 1} of {totalPages}
+                Page {currentPage} of {totalPages}
             </span>
             <div className="flex flex-wrap gap-2 items-center justify-end space-x-1">
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.setPageIndex(0)}
-                    disabled={!table.getCanPreviousPage()}
+                    onClick={() => onPageChange(1)}
+                    disabled={currentPage <= 1}
                 >
                     <ChevronsLeft size={18} />
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
                 >
                     <ChevronLeft size={18} />
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
                 >
                     <ChevronRight size={18} />
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                    disabled={!table.getCanNextPage()}
+                    onClick={() => onPageChange(totalPages)}
+                    disabled={currentPage >= totalPages}
                 >
                     <ChevronsRight size={18} />
                 </Button>

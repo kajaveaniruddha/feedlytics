@@ -3,7 +3,7 @@ import React from "react"
 import type { IWorkFlows, WorkflowsListProps } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
-import axios from "axios"
+import { api } from "@/lib/api"
 import WorkflowGroupItem from "@/components/custom/workflow-group-item"
 
 const WorkFlowList: React.FC<WorkflowsListProps> = ({
@@ -28,7 +28,7 @@ const WorkFlowList: React.FC<WorkflowsListProps> = ({
         }
         setTogglingId(workflow.id)
         try {
-            const res = await axios.patch("/api/user-workflows", {
+            const res = await api.updateWorkflow({
                 id: workflow.id,
                 provider: workflow.provider,
                 groupName: workflow.groupName,

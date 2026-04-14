@@ -1,7 +1,7 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import axios from "axios"
+import { api } from "@/lib/api"
 import WorkFlowList from "@/components/custom/workflow-list"
 import WorkflowForm from "@/components/custom/workflow-form"
 import GroupsListSkeleton from "@/components/custom/workflow-group-list-skeleton"
@@ -12,11 +12,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import type { IWorkFlows, ProviderConfig } from "@/types"
 import WebhookGuide from "@/components/custom/webhook-guide"
 import { useQuery } from "@tanstack/react-query"
-import { useToast } from "@/components/ui/use-toast"
+import { useApiErrorToast } from "@/hooks/use-api-error-toast"
 
 const Page = () => {
     const [selectedWorkflow, setSelectedWorkflow] = useState<IWorkFlows | null>(null)
-    const { toast } = useToast()
 
     const {
         data: workflowsData,
@@ -27,7 +26,7 @@ const Page = () => {
     } = useQuery<Record<string, any[]>>({
         queryKey: ["user-workflows"],
         queryFn: async () => {
-            const res = await axios.get("/api/user-workflows")
+            const res = await api.getWorkflows()
             if (!res.data.success) {
                 throw new Error(res.data.error || "Error loading workflows")
             }
@@ -37,14 +36,7 @@ const Page = () => {
         refetchOnWindowFocus: false,
     })
 
-    useEffect(() => {
-        if (isError) {
-            toast({
-                title: "Error",
-                description: (error as Error)?.message || "Error loading workflows",
-            })
-        }
-    }, [isError, error, toast])
+    useApiErrorToast(isError, error as Error | null)
 
     const providersConfig: ProviderConfig[] = [
         {
@@ -69,13 +61,11 @@ const Page = () => {
         refetch()
     }
 
-    // Global form submit handler clears selection and refreshes data.
     const handleFormSuccess = (updatedWorkflow?: any) => {
         refreshData()
         setSelectedWorkflow(null)
     }
 
-    // Global edit callback: when a list item is edited, update the global form.
     const handleEdit = (workflow: any) => {
         setSelectedWorkflow(workflow)
     }
@@ -145,11 +135,9 @@ const Page = () => {
                     ))
                 )}
             </div>
-            {/* Webhook Guides Section */}
             <WebhookGuide />
         </motion.section >
     )
 }
 
 export default Page
-

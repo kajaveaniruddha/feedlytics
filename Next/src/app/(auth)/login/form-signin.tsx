@@ -8,8 +8,6 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 
-import { AxiosError } from "axios";
-import { ApiResponse } from "@/types";
 import {
   Form,
   FormControl,
@@ -57,11 +55,10 @@ const FormSignIn = () => {
       }
       setIsSubmitting(false);
     } catch (error) {
-      console.error("Error signing up user", error);
-      const axiosError = error as AxiosError<ApiResponse>;
+      console.error("Error signing in user", error);
       toast({
         title: "Sign in failed",
-        description: axiosError.response?.data.message ?? "Error logging in.",
+        description: (error as Error).message || "Error logging in.",
         variant: "destructive",
       });
       setIsSubmitting(false);

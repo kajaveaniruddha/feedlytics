@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandItem, CommandList, CommandGroup, CommandInput } from "@/components/ui/command";
 import { Check } from "lucide-react";
@@ -65,9 +65,9 @@ const WorkflowForm: React.FC<IWorkFlowsProps> = ({ onSuccess, selectedWorkflow }
       let res;
       if (selectedWorkflow) {
         // Update existing workflow via PATCH.
-        res = await axios.patch("/api/user-workflows", { ...values, id: selectedWorkflow.id });
+        res = await api.updateWorkflow({ ...values, id: selectedWorkflow.id });
       } else {
-        res = await axios.post("/api/user-workflows", values);
+        res = await api.createWorkflow(values);
       }
 
       if (res.data.success) {
@@ -91,11 +91,7 @@ const WorkflowForm: React.FC<IWorkFlowsProps> = ({ onSuccess, selectedWorkflow }
         });
       }
     } catch (error: any) {
-      // Handle axios error responses
-      const errorMessage = error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Error submitting form";
+      const errorMessage = (error as Error).message || "Error submitting form";
 
       toast({
         title: "Error",
@@ -103,8 +99,7 @@ const WorkflowForm: React.FC<IWorkFlowsProps> = ({ onSuccess, selectedWorkflow }
         variant: "destructive"
       });
 
-      // If it's a workflow limit error, we might want to show an upgrade button
-      if (error.response?.status === 403 && errorMessage.includes("maximum workflow limit")) {
+      if (errorMessage.includes("maximum workflow limit")) {
         toast({
           title: "Upgrade Available",
           description: "Would you like to upgrade your plan to add more workflows?",

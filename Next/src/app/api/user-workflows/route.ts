@@ -1,195 +1,72 @@
-import { NextResponse } from "next/server";
-import { workflowsSchema } from "@/schemas/workFlowsSchema";
-import { userWorkFlowsTable } from "@/db/models/workflows";
-import { db } from "@/db/db";
-import { getServerSideSession } from "@/config/getServerSideSession";
-import { User } from "next-auth";
-import { and, eq, sql } from "drizzle-orm";
-import { usersTable } from "@/db/models/user";
 import { withMetrics } from "@/lib/metrics";
-import { PLAN_LIMITS, PlanTier } from "@/config/plans";
+import { createHandler } from "@/lib/route-handler";
+import { validateBody } from "@/lib/validate";
+import { workflowsSchema, type WorkflowsSchema } from "@/schemas/workFlowsSchema";
+import { successResponse } from "@/lib/api-response";
+import { authService } from "@/services/auth.service";
+import { workflowService } from "@/services/workflow.service";
+import { ApiError } from "@/lib/api-error";
 
-function trimValues(obj: any): any {
-  if (typeof obj === "string") return obj.trim();
-  if (obj && typeof obj === "object") {
-    for (const key in obj) {
-      if (typeof obj[key] === "string") {
-        obj[key] = obj[key].trim();
-      } else if (Array.isArray(obj[key])) {
-        obj[key] = obj[key].map((item: any) =>
-          typeof item === "string" ? item.trim() : item
-        );
-      }
-    }
-  }
-  return obj;
-}
+const handleGET = createHandler(async () => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
 
-async function handleGET(req: Request) {
-  const sessionResult = await getServerSideSession();
-  if (sessionResult instanceof Response) return sessionResult;
-  const user = sessionResult as User;
+  const workflows = await workflowService.getWorkflows(userId);
+  return successResponse({ workflows });
+});
 
-  try {
-    const workflows = await db
-      .select()
-      .from(userWorkFlowsTable)
-      .where(eq(userWorkFlowsTable.userId, parseInt(user.id ?? "0")));
+const handlePOST = createHandler(async (req: Request) => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
 
-    const workflowsByProvider = workflows.reduce((acc, wf) => {
-      acc[wf.provider] = acc[wf.provider] || [];
-      acc[wf.provider].push({
-        id: wf.id.toString(),
-        groupName: wf.groupName,
-        webhookUrl: wf.webhookUrl,
-        notifyCategories: wf.notifyCategories || [],
-        isActive: wf.isActive || false,
-      });
-      return acc;
-    }, {} as Record<string, { id: string; groupName: string; webhookUrl: string; notifyCategories: string[]; isActive: boolean }[]>);
+  const data = await validateBody<WorkflowsSchema>(req, workflowsSchema);
 
-    return NextResponse.json({ success: true, workflows: workflowsByProvider });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.toString() },
-      { status: 400 }
-    );
-  }
-}
+  const result = await workflowService.createWorkflow(userId, {
+    userId,
+    provider: data.provider,
+    groupName: data.groupName,
+    webhookUrl: data.webhookUrl,
+    notifyCategories: data.notifyCategories || [],
+    isActive: data.isActive,
+  });
 
-async function handlePOST(req: Request) {
-  const sessionResult = await getServerSideSession();
-  if (sessionResult instanceof Response) return sessionResult;
-  const user = sessionResult as User;
-  let json = await req.json();
-  json = trimValues(json);
-  const data = workflowsSchema.parse(json);
-  const userId = parseInt(user.id ?? "0");
+  return successResponse({ data: result, message: "Workflow created successfully" }, 201);
+});
 
-  try {
-    // Get user's max_workflows limit and current workflow count
-    const [userData, currentWorkflows] = await Promise.all([
-      db
-        .select({ maxWorkflows: usersTable.maxWorkflows, userTier: usersTable.userTier })
-        .from(usersTable)
-        .where(eq(usersTable.id, userId))
-        .limit(1),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(userWorkFlowsTable)
-        .where(eq(userWorkFlowsTable.userId, userId)),
-    ]);
+const handlePATCH = createHandler(async (req: Request) => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
 
-    if (!userData[0]) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    const tier = (userData[0].userTier || "free") as PlanTier;
-    const maxWorkflows = PLAN_LIMITS[tier]?.maxWorkflows ?? userData[0].maxWorkflows ?? 5;
-    const currentCount = Number(currentWorkflows[0].count);
-
-    if (currentCount >= maxWorkflows) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `You have reached your maximum workflow limit of ${maxWorkflows}. Please upgrade your plan to add more workflows.`,
-        },
-        { status: 403 }
-      );
-    }
-
-    const result = await db.insert(userWorkFlowsTable).values({
-      userId,
-      provider: data.provider,
-      groupName: data.groupName,
-      webhookUrl: data.webhookUrl,
-      notifyCategories: data.notifyCategories || [],
-      isActive: data.isActive,
-    });
-    return NextResponse.json({
-      success: true,
-      data: result,
-      message: "Workflow created successfully",
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.toString() },
-      { status: 400 }
-    );
-  }
-}
-
-async function handlePATCH(req: Request) {
-  const sessionResult = await getServerSideSession();
-  if (sessionResult instanceof Response) return sessionResult;
-  const user = sessionResult as User;
-  let json = await req.json();
-  json = trimValues(json);
   const { id, provider, groupName, webhookUrl, notifyCategories, isActive } =
-    json;
-  if (id === undefined || id === null) {
-    return NextResponse.json(
-      { success: false, error: "Missing workflow id" },
-      { status: 400 }
-    );
-  }
-  try {
-    const result = await db
-      .update(userWorkFlowsTable)
-      .set({
-        provider,
-        groupName,
-        webhookUrl,
-        notifyCategories: notifyCategories || [],
-        isActive,
-      })
-      .where(
-        and(
-          eq(userWorkFlowsTable.id, id),
-          eq(userWorkFlowsTable.userId, parseInt(user.id ?? "0"))
-        )
-      );
-    return NextResponse.json({ success: true, data: result });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.toString() },
-      { status: 400 }
-    );
-  }
-}
+    await req.json();
 
-async function handleDELETE(req: Request) {
-  const sessionResult = await getServerSideSession();
-  if (sessionResult instanceof Response) return sessionResult;
-  const user = sessionResult as User;
-  const json = await req.json();
-  const { id } = json;
   if (id === undefined || id === null) {
-    return NextResponse.json(
-      { success: false, error: "Missing workflow id" },
-      { status: 400 }
-    );
+    throw ApiError.badRequest("Missing workflow id");
   }
-  try {
-    await db
-      .delete(userWorkFlowsTable)
-      .where(
-        and(
-          eq(userWorkFlowsTable.id, id),
-          eq(userWorkFlowsTable.userId, parseInt(user.id ?? "0"))
-        )
-      );
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.toString() },
-      { status: 400 }
-    );
+
+  const result = await workflowService.updateWorkflow(id, userId, {
+    provider,
+    groupName,
+    webhookUrl,
+    notifyCategories: notifyCategories || [],
+    isActive,
+  });
+
+  return successResponse({ data: result });
+});
+
+const handleDELETE = createHandler(async (req: Request) => {
+  const user = await authService.requireAuth();
+  const userId = authService.parseUserId(user);
+
+  const { id } = await req.json();
+  if (id === undefined || id === null) {
+    throw ApiError.badRequest("Missing workflow id");
   }
-}
+
+  await workflowService.deleteWorkflow(id, userId);
+  return successResponse({});
+});
 
 export const GET = withMetrics(handleGET, "/api/user-workflows");
 export const POST = withMetrics(handlePOST, "/api/user-workflows");
