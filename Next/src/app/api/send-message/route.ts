@@ -1,206 +1,43 @@
-import { db } from "@/db/db";
-import { eq, sql } from "drizzle-orm";
-import { usersTable } from "@/db/models/user";
+import { createHandler } from "@/lib/route-handler";
+import { corsSuccessResponse, corsOptionsResponse } from "@/lib/api-response";
+import { messageService } from "@/services/message.service";
+import { withMetrics } from "@/lib/metrics";
 import { rateLimit } from "@/config/rateLimiter";
 import { NextRequest, NextResponse } from "next/server";
-import { withMetrics } from "@/lib/metrics";
+import { validateBody } from "@/lib/validate";
+import { SendMessageSchema } from "@/schemas/sendMessageSchema";
 
-async function handlePOST(request: NextRequest) {
-  // Custom rate limit: 5 requests per 10 seconds per IP
-  const response= new NextResponse();
-  const rateLimitResult = await rateLimit({
-    request,
-    response,
-    ipLimit: 5,
-    ipWindow: 10,
-  });
+const handlePOST = createHandler(
+  async (request: Request) => {
+    const rateLimitResult = await rateLimit({
+      request: request as NextRequest,
+      response: new NextResponse(),
+      ipLimit: 5,
+      ipWindow: 10,
+    });
+    if (rateLimitResult) return rateLimitResult;
 
-  if (rateLimitResult) return rateLimitResult;
+    const { username, stars, content, email, name } = await validateBody(request, SendMessageSchema);
 
-  const { username, stars, content, email, name } = await request.json();
+    const result = await messageService.sendFeedback({
+      username,
+      stars,
+      content,
+      email: email ?? undefined,
+      name,
+    });
 
-  try {
-    let [user] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.username, username))
-      .limit(1);
+    return corsSuccessResponse({
+      messageCount: result.messageCount,
+      message: "Feedback sent successfully.",
+    });
+  },
+  { cors: true }
+);
 
-    if (!user) {
-      return new Response(
-        JSON.stringify({ success: false, message: "User not found." }),
-        {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-    if (!user.isAcceptingMessage) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `${username} is not accepting feedbacks.`,
-        }),
-        {
-          status: 403,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-    if (user.billingPeriodEnd && new Date() > new Date(user.billingPeriodEnd)) {
-      const now = new Date();
-      await db
-        .update(usersTable)
-        .set({
-          messageCount: 0,
-          billingPeriodStart: now,
-          billingPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-        })
-        .where(eq(usersTable.id, user.id));
-      user = { ...user, messageCount: 0 };
-    }
-
-    if ((user?.messageCount as number) >= (user?.maxMessages as number)) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: `${username} has reached their feedback limit.`,
-        }),
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-    if (!content || content.length <= 10) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Message too small." }),
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-    if (content.length > 400) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Message too large." }),
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-
-    // Increment message count optimistically
-    await db
-      .update(usersTable)
-      .set({ messageCount: sql`${usersTable.messageCount} + 1` })
-      .where(eq(usersTable.id, user.id));
-
-    try {
-      const queueResponse = await fetch(
-        `${process.env.SERVICES_URL}/add-feedback`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            data: {
-              userId: user.id,
-              email,
-              name,
-              stars,
-              content,
-              createdAt: new Date(),
-            },
-          }),
-        }
-      );
-
-      if (!queueResponse.ok) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "Failed to add job to the queue.",
-          }),
-          {
-            status: 500,
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-            },
-          }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          messageCount: (user?.messageCount as number) + 1,
-          message: "Feedback sent successfully.",
-        }),
-        {
-          status: 200,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    } catch (error) {
-      // Rollback message count in case of failure
-      await db
-        .update(usersTable)
-        .set({ messageCount: sql`${usersTable.messageCount} - 1` })
-        .where(eq(usersTable.id, user.id));
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: error || "Failed to analyze sentiment.",
-        }),
-        {
-          status: 500,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
-  } catch (error) {
-    console.error("Error during request handling:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Internal server error.",
-        error,
-      }),
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-  }
-}
-
-function handleOPTIONS(request: Request) {
-  return new Response(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
-}
+const handleOPTIONS = createHandler(async () => {
+  return corsOptionsResponse();
+});
 
 export const POST = withMetrics(handlePOST, "/api/send-message");
 export const OPTIONS = withMetrics(handleOPTIONS, "/api/send-message");

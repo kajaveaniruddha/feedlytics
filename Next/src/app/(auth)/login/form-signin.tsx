@@ -7,9 +7,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-
-import { AxiosError } from "axios";
-import { ApiResponse } from "@/types";
 import {
   Form,
   FormControl,
@@ -19,10 +16,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, Lock, User } from "lucide-react";
+import { Lock, User } from "lucide-react";
 import { signInSchema } from "@/schemas/signInSchema";
 import { signIn } from "next-auth/react";
+import { SubmitButton } from "@/components/custom/submit-button";
 
 const FormSignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,11 +54,9 @@ const FormSignIn = () => {
       }
       setIsSubmitting(false);
     } catch (error) {
-      console.error("Error signing up user", error);
-      const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Sign in failed",
-        description: axiosError.response?.data.message ?? "Error logging in.",
+        description: (error as Error).message || "Error logging in.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -119,20 +114,9 @@ const FormSignIn = () => {
           />
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            variant="default"
-            disabled={isSubmitting}
-            className="w-full"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-              </>
-            ) : (
-              "Login"
-            )}
-          </Button>
+          <SubmitButton isLoading={isSubmitting} className="w-full">
+            Login
+          </SubmitButton>
         </form>
 
         {/* register Link */}

@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import { useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useApiErrorToast } from "@/hooks/use-api-error-toast";
 
 export const useAcceptMessages = () => {
   const { toast } = useToast();
@@ -15,25 +16,21 @@ export const useAcceptMessages = () => {
   } = useQuery<boolean>({
     queryKey: ["accept-messages-status"],
     queryFn: async () => {
-      const res = await axios.get(`/api/accept-messages`);
+      const res = await api.getAcceptMessagesStatus();
       return res.data?.isAcceptingMessages as boolean;
     },
     staleTime: 5000,
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    if (isError) {
-      toast({ title: "Error", description: (error as Error)?.message || "Failed to fetch status." });
-    }
-  }, [isError, error, toast]);
+  useApiErrorToast(isError, error as Error | null, "Error");
 
   const mutation = useMutation({
     mutationFn: async (newValue: boolean) => {
-      const res = await axios.put(`/api/accept-messages`, { acceptMessages: newValue });
+      const res = await api.updateAcceptMessagesStatus(newValue);
       return res.data;
     },
-    onSuccess: (data, newValue) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["accept-messages-status"] });
       toast({ title: data.message });
     },

@@ -1,13 +1,12 @@
 "use client"
 import { motion } from "framer-motion";
-import { useToast } from "@/components/ui/use-toast";
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import BarChartRatings from "./bar-ratings-chart";
 import PieChartMessageCount from "./pie-chart-message-count";
 import PieChartMessageSentimentAnalysis from "./pie-chart-message-sentiment-analysis";
 import RadarChartCategoriesCount from "./radar-chart-categories-count";
-import { useEffect } from "react";
+import { api } from "@/lib/api";
+import { useApiErrorToast } from "@/hooks/use-api-error-toast";
 
 type AnalyticsData = {
   userDetails: {
@@ -25,18 +24,15 @@ type AnalyticsData = {
 };
 
 const Page = () => {
-  const { toast } = useToast();
-
   const {
     data,
     isLoading,
     isError,
     error,
-    refetch,
   } = useQuery<AnalyticsData>({
     queryKey: ["analytics"],
     queryFn: async () => {
-      const response = await axios.get("/api/get-analytics");
+      const response = await api.getAnalytics();
       if (!response.data.success) {
         throw new Error("Failed to fetch analytics data");
       }
@@ -46,15 +42,7 @@ const Page = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Show toast on error
-  useEffect(() => {
-    if (isError) {
-      toast({
-        title: "Error",
-        description: (error as Error)?.message || "Failed to fetch analytics data",
-      });
-    }
-  }, [isError, error, toast]);
+  useApiErrorToast(isError, error as Error | null, "Error");
 
   return (
     <motion.section

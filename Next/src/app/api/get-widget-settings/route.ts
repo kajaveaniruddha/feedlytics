@@ -1,35 +1,21 @@
-import { NextResponse } from "next/server";
-import { db } from "@/db/db";
-import { usersTable } from "@/db/models/user";
-import { eq } from "drizzle-orm";
+import { createHandler } from "@/lib/route-handler";
+import { corsSuccessResponse, corsOptionsResponse } from "@/lib/api-response";
+import { userRepository } from "@/repositories/user.repository";
+import { ApiError } from "@/lib/api-error";
 import { withMetrics } from "@/lib/metrics";
 
-async function handleOPTIONS() {
-  return NextResponse.json({}, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
-}
+const handleOPTIONS = createHandler(async () => {
+  return corsOptionsResponse();
+});
 
-async function handlePOST(request: Request) {
-  try {
+const handlePOST = createHandler(
+  async (request: Request) => {
     const { username } = await request.json();
     if (!username) {
-      return NextResponse.json(
-        { error: "Username is required" },
-        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
-      );
+      throw ApiError.badRequest("Username is required.");
     }
 
-    const users = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.username, username));
-    const user = users[0];
+    const user = await userRepository.findByUsername(username);
 
     const response = {
       bg_color: user?.bgColor || "#ffffff",
@@ -40,25 +26,10 @@ async function handlePOST(request: Request) {
       },
     };
 
-    return NextResponse.json(response, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  } catch (error) {
-    console.error("Error in get-widget-settings:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-  }
-}
+    return corsSuccessResponse(response);
+  },
+  { cors: true }
+);
 
 export const OPTIONS = withMetrics(handleOPTIONS, "/api/get-widget-settings");
 export const POST = withMetrics(handlePOST, "/api/get-widget-settings");
