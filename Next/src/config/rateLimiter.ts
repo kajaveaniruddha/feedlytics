@@ -18,6 +18,29 @@ function getLimiter(ipLimit: number, ipWindow: number) {
   return limiter;
 }
 
+function getClientIp(request: NextRequest): string {
+  // CF-Connecting-IP is set by Cloudflare and is the most reliable
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp.trim();
+
+  // x-forwarded-for: first entry is the original client IP
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first && first !== "127.0.0.1" && first !== "::1") return first;
+  }
+
+  // x-real-ip set by nginx/reverse proxies
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp && realIp !== "127.0.0.1" && realIp !== "::1") return realIp.trim();
+
+  // Next.js sometimes exposes the IP via the request object
+  const nextIp = (request as any).ip;
+  if (nextIp) return nextIp;
+
+  return "unknown";
+}
+
 export async function rateLimit({
   request,
   ipLimit = 120,
@@ -30,10 +53,11 @@ export async function rateLimit({
   sessionWindow?: number;
   ipWindow?: number;
 }) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "127.0.0.1";
+  const ip = getClientIp(request);
+
+  // If we can't identify the client, skip rate limiting rather than
+  // blocking all traffic under a shared "unknown" bucket
+  if (ip === "unknown") return undefined;
 
   const limiter = getLimiter(ipLimit, ipWindow);
   const path = request.nextUrl.pathname;
@@ -51,7 +75,7 @@ export async function rateLimit({
     }).catch(() => {});
 
     return new NextResponse(
-      JSON.stringify({ error: "Too Many Requests" }),
+      JSON.stringify({ success: false, message: "Too many requests. Please try again later." }),
       {
         status: 429,
         headers: {
