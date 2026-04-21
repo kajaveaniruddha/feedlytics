@@ -8,9 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import { useSession } from "next-auth/react";
-import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { api } from "@/lib/api";
 
 interface MessageContextType {
   messageCount: number;
@@ -56,9 +55,7 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   const fetchMessageData = useCallback(async () => {
     if (!username) return;
     try {
-      const res = await axios.get<ApiResponse>(
-        `/api/get-project-details`
-      );
+      const res = await api.getProjectDetails();
       setMessageCount(res.data?.messageCount as number);
       setMaxWorkflows(res.data?.maxWorkflows as number);
       setMaxMessages(res.data?.maxMessages as number);
@@ -73,13 +70,11 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
         billingPeriodStart: (res.data?.billingPeriodStart as string) ?? "",
         billingPeriodEnd: (res.data?.billingPeriodEnd as string) ?? "",
       });
-      // console.log(res.data?.userDetails?.avatar_url);
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Error",
         description:
-          axiosError.response?.data.message || "Failed to load message data",
+          (error as Error).message || "Failed to load message data",
       });
     }
   }, [username, toast]);

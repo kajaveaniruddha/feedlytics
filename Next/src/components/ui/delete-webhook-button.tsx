@@ -1,6 +1,6 @@
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import {
     AlertDialog,
     AlertDialogTrigger,
@@ -28,10 +28,10 @@ const DeleteWebhookButton: React.FC<DeleteWebhookButtonProps> = ({ channelId, on
     const handleDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete("/api/user-workflows", { data: { id: channelId } });
+            await api.deleteWorkflow(channelId);
             toast({ title: "Deleted", description: "Webhook deleted successfully." });
             onDeleteSuccess();
-        } catch (error: any) {
+        } catch {
             toast({ variant: "destructive", title: "Error", description: "Failed to delete webhook." });
         } finally {
             setLoading(false);

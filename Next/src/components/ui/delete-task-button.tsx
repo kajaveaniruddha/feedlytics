@@ -1,4 +1,3 @@
-// DeleteTasksButton.tsx
 import { Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -12,7 +11,7 @@ import {
   AlertDialogAction,
 } from "./alert-dialog";
 import { Button } from "./button";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { useToast } from "./use-toast";
 import { useMessageContext } from "@/hooks/use-message-context";
 import { useState } from "react";
@@ -32,9 +31,7 @@ const DeleteTasksButton = <TData extends { id: string }>({
   const handleDelete = async (ids: string[]) => {
     try {
       setLoading(true);
-      await axios.delete(`/api/delete-messages`, {
-        data: { messageIds: ids },
-      });
+      await api.deleteMessages(ids);
       setData((prevData) => prevData.filter((item) => !ids.includes(item.id)));
       setMessageCount(messageCount - ids.length);
       table.setRowSelection({});
