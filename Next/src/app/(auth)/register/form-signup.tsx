@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { AtSign, Loader2, Lock, Mail, User } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCheckUsername } from "@/hooks/use-check-username";
-import { SubmitButton } from "@/components/custom/submit-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 
 const FormSignup = () => {

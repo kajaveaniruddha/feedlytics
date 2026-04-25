@@ -6,6 +6,7 @@ import { usersTable } from "@/db/models/user";
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { withMetrics } from "@/lib/metrics";
+import { mergeWithDefaults } from "@/lib/theme-utils";
 
 const handleGET = createHandler(
   async (
@@ -22,6 +23,9 @@ const handleGET = createHandler(
         avatar_url: usersTable.avatarUrl,
         collectName: usersTable.collectName,
         collectEmail: usersTable.collectEmail,
+        bgColor: usersTable.bgColor,
+        textColor: usersTable.textColor,
+        formTheme: usersTable.formTheme,
       })
       .from(usersTable)
       .where(eq(usersTable.username, username))
@@ -31,7 +35,18 @@ const handleGET = createHandler(
       throw ApiError.notFound("User not found.");
     }
 
-    return successResponse({ message: "User Found.", userDetails: user });
+    const rawTheme = (user.formTheme as Record<string, unknown>) || {};
+    if (!rawTheme.formBgColor && user.bgColor) {
+      rawTheme.formBgColor = user.bgColor;
+    }
+    if (!rawTheme.formTextColor && user.textColor) {
+      rawTheme.formTextColor = user.textColor;
+    }
+    const formTheme = mergeWithDefaults(rawTheme);
+
+    const { bgColor, textColor, formTheme: _raw, ...rest } = user;
+
+    return successResponse({ message: "User Found.", userDetails: { ...rest, formTheme } });
   }
 );
 

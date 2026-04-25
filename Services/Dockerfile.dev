@@ -1,24 +1,13 @@
-# Use the official Node.js 18 image
 FROM node:18-alpine
 
-# Install necessary system packages. psql and redis-cli are for the wait-for-deps.sh script.
 RUN apk add --no-cache postgresql-client redis bash git
-
-# Install pnpm globally
 RUN npm config set strict-ssl false && npm install -g pnpm
 
-# Set the working directory in the container
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml* tsconfig.json* .npmrc ./
-
-# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Add postgresql-client to get the psql command
-RUN apk add --no-cache postgresql-client
-
-# Expose the port the app runs on
 ENV NODE_ENV=development
 EXPOSE 3001
 

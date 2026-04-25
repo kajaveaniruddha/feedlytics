@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { stripe } from "@/lib/stripe"
-import SuccessContent from "@/components/custom/success-content"
+import SuccessContent from "@/app/success/_components/success-content"
 
 
 interface SuccessPageProps {

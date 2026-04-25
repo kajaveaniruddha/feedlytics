@@ -1,16 +1,16 @@
 "use client"
 import Link from "next/link"
 import { MessageSquare, BarChart3, Bell, Workflow, LayoutDashboard, ShieldCheck, ArrowRight, Zap, CheckCircle2 } from "lucide-react"
-import Footer from "@/components/custom/footer"
-import DashboardShowcase from "@/components/custom/dashboard-showcase"
+import Footer from "@/components/layout/footer"
+import DashboardShowcase from "@/app/(marketing)/_components/dashboard-showcase"
 import MotionDiv from "@/components/ui/motion-div"
-import { AuroraBackground } from "@/components/ui/aurora-background"
+import { AuroraBackground } from "@/app/(marketing)/_components/aurora-background"
 import { motion } from "framer-motion"
-import FeatureCard from "@/components/custom/feature-card"
+import FeatureCard from "@/app/(marketing)/_components/feature-card"
 
-import LandingPageWorkFlow from "@/components/custom/landingpage-workflow"
+import LandingPageWorkFlow from "@/app/(marketing)/_components/landing-workflow"
 import Script from "next/script"
-import FaqSection from "@/components/custom/faq-section"
+import FaqSection from "@/app/(marketing)/_components/faq-section"
 
 
 export default function LandingPage() {

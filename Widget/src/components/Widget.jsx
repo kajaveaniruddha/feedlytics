@@ -5,6 +5,14 @@ import { useState, useEffect, useRef } from "react";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
 import { DASHBOARD_BASE_URL, lightenColor, blendColor } from "@/lib/utils";
+import {
+  DEFAULT_FORM_THEME,
+  SHADOW_MAP,
+  PADDING_MAP,
+  FONT_MAP,
+  GOOGLE_FONT_URLS,
+  mergeWithDefaults,
+} from "@/lib/theme-constants";
 import root from "react-shadow";
 
 const RATING_LABELS = ["Terrible", "Bad", "Okay", "Good", "Excellent!"];
@@ -16,14 +24,28 @@ export const Widget = ({ username }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [widgetSettings, setWidgetSettings] = useState(null);
+  const [theme, setTheme] = useState(DEFAULT_FORM_THEME);
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
+  const [submittedName, setSubmittedName] = useState("");
 
   useEffect(() => {
     axios
       .post(`${DASHBOARD_BASE_URL}/api/get-widget-settings`, { username })
-      .then((response) => setWidgetSettings(response.data))
+      .then((response) => {
+        setWidgetSettings(response.data);
+        if (response.data.formTheme) {
+          setTheme(mergeWithDefaults(response.data.formTheme));
+        } else {
+          setTheme(
+            mergeWithDefaults({
+              formBgColor: response.data.bg_color || "#FFFFFF",
+              formTextColor: response.data.text_color || "#000000",
+            })
+          );
+        }
+      })
       .catch((error) =>
         console.error("Error fetching widget settings:", error)
       );
@@ -45,29 +67,15 @@ export const Widget = ({ username }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const themeStyle = widgetSettings
-    ? { backgroundColor: widgetSettings.bg_color, color: widgetSettings.text_color }
-    : {};
-  const themeInputStyle = widgetSettings
-    ? { backgroundColor: lightenColor(widgetSettings.bg_color, 60) }
-    : {};
-  const accentColor = widgetSettings
-    ? lightenColor(widgetSettings.bg_color, -20)
-    : "#4F46E5";
-  const accentTextColor = widgetSettings?.text_color || "#FFFFFF";
-
-  const bgColor = widgetSettings?.bg_color || "#FFFFFF";
-  const textColor = widgetSettings?.text_color || "#000000";
-  const secondaryColor = blendColor(textColor, bgColor, 0.4);
-  const tertiaryColor = blendColor(textColor, bgColor, 0.6);
-
   const activeStar = hoveredStar || rating;
+  const padding = PADDING_MAP[theme.cardPadding] || 24;
 
   const resetForm = () => {
     setSubmitted(false);
     setRating(0);
     setHoveredStar(0);
     setErrorMessage("");
+    setSubmittedName("");
   };
 
   const submit = async (e) => {
@@ -76,9 +84,12 @@ export const Widget = ({ username }) => {
     setErrorMessage("");
 
     const form = e.target;
+    const name = form.name?.value || "";
+    setSubmittedName(name);
+
     const data = {
       username,
-      name: form.name?.value || "",
+      name,
       email: form.email?.value || "",
       content: form.feedback.value,
       stars: rating,
@@ -97,38 +108,50 @@ export const Widget = ({ username }) => {
     }
   };
 
+  const fontUrl = GOOGLE_FONT_URLS[theme.fontFamily];
+  const fontImport = fontUrl ? `@import url('${fontUrl}');` : "";
+
+  const inputStyle = {
+    backgroundColor: theme.inputBgColor,
+    borderColor: theme.inputBorderColor,
+    color: theme.inputTextColor,
+    borderRadius: Math.max(theme.borderRadius - 4, 4),
+  };
+
   return (
     <root.div>
       <>
-        <style>{tailwindStyles}</style>
+        <style>{fontImport}{tailwindStyles}</style>
 
         {/* ─── Popup Card ─── */}
         {isOpen && (
           <div
             ref={popupRef}
-            style={themeStyle}
-            className="animate-slide-fade-in fixed bottom-20 right-3 sm:right-4 w-[360px] max-w-[calc(100vw-24px)] rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] widget z-50 overflow-hidden"
+            style={{
+              backgroundColor: theme.formBgColor,
+              color: theme.formTextColor,
+              borderRadius: theme.borderRadius,
+              boxShadow: SHADOW_MAP[theme.shadow],
+              fontFamily: FONT_MAP[theme.fontFamily] || FONT_MAP.System,
+            }}
+            className="animate-slide-fade-in fixed bottom-20 right-3 sm:right-4 w-[360px] max-w-[calc(100vw-24px)] widget z-50 overflow-hidden"
           >
-            <style>{tailwindStyles}</style>
+            <style>{fontImport}{tailwindStyles}</style>
 
             {/* Accent gradient bar */}
             <div
               className="h-1.5 w-full"
               style={{
-                background: widgetSettings
-                  ? `linear-gradient(to right, ${accentColor}, ${lightenColor(accentColor, 30)})`
-                  : "linear-gradient(to right, #4F46E5, #7C3AED)",
+                background: `linear-gradient(to right, ${theme.accentColor}, ${theme.accentColor}88)`,
               }}
             />
 
-            <div className="p-5">
+            <div style={{ padding }}>
               {submitted ? (
                 <ThankYouScreen
                   rating={rating}
-                  accentColor={accentColor}
-                  accentTextColor={accentTextColor}
-                  secondaryColor={secondaryColor}
-                  tertiaryColor={tertiaryColor}
+                  theme={theme}
+                  submittedName={submittedName}
                   onReset={resetForm}
                 />
               ) : (
@@ -136,10 +159,8 @@ export const Widget = ({ username }) => {
                   rating={rating}
                   activeStar={activeStar}
                   widgetSettings={widgetSettings}
-                  themeInputStyle={themeInputStyle}
-                  accentColor={accentColor}
-                  accentTextColor={accentTextColor}
-                  secondaryColor={secondaryColor}
+                  theme={theme}
+                  inputStyle={inputStyle}
                   isSubmitting={isSubmitting}
                   errorMessage={errorMessage}
                   onSelectStar={(i) => setRating(i + 1)}
@@ -152,15 +173,16 @@ export const Widget = ({ username }) => {
               {/* Footer */}
               <div
                 className="text-center mt-4 pt-3 border-t"
-                style={{ borderColor: lightenColor(bgColor, bgColor < "#888888" ? 20 : -10) }}
+                style={{ borderColor: theme.inputBorderColor }}
               >
-                <span className="text-[11px]" style={{ color: tertiaryColor }}>
+                <span className="text-[11px]" style={{ color: theme.secondaryTextColor }}>
                   Powered by{" "}
                   <a
                     href="https://feedlytics.in/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-indigo-500 hover:text-indigo-600 hover:underline font-medium"
+                    className="hover:underline font-medium"
+                    style={{ color: theme.accentColor }}
                   >
                     Feedlytics
                   </a>
@@ -173,14 +195,12 @@ export const Widget = ({ username }) => {
         {/* ─── Floating Trigger Button ─── */}
         <button
           ref={buttonRef}
-          className={`widget fixed bottom-4 right-4 z-50 flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer ${
+          className={`widget fixed bottom-4 right-4 z-50 flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer ${
             !isOpen ? "animate-pulse-ring" : ""
           }`}
           style={{
-            background: widgetSettings
-              ? `linear-gradient(135deg, ${accentColor}, ${lightenColor(accentColor, 20)})`
-              : "linear-gradient(135deg, #4F46E5, #7C3AED)",
-            color: accentTextColor,
+            backgroundColor: theme.accentColor,
+            color: theme.formBgColor,
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
@@ -203,10 +223,8 @@ function FeedbackForm({
   rating,
   activeStar,
   widgetSettings,
-  themeInputStyle,
-  accentColor,
-  accentTextColor,
-  secondaryColor,
+  theme,
+  inputStyle,
   isSubmitting,
   errorMessage,
   onSelectStar,
@@ -217,10 +235,10 @@ function FeedbackForm({
   return (
     <div>
       <div className="text-center mb-4">
-        <h3 className="font-semibold text-lg">
+        <h3 className="font-semibold text-lg" style={{ color: theme.formTextColor }}>
           How was your experience?
         </h3>
-        <p className="text-sm mt-0.5" style={{ color: secondaryColor }}>
+        <p className="text-sm mt-0.5" style={{ color: theme.secondaryTextColor }}>
           We'd love to hear from you
         </p>
       </div>
@@ -239,6 +257,7 @@ function FeedbackForm({
               <StarIcon
                 className="h-8 w-8"
                 filled={activeStar > index}
+                accentColor={theme.accentColor}
               />
             </button>
           ))}
@@ -247,7 +266,7 @@ function FeedbackForm({
           className={`text-sm font-medium mt-1.5 h-5 transition-opacity duration-200 ${
             activeStar > 0 ? "opacity-100" : "opacity-0"
           }`}
-          style={{ color: accentColor }}
+          style={{ color: theme.accentColor }}
         >
           {activeStar > 0 ? RATING_LABELS[activeStar - 1] : ""}
         </span>
@@ -265,50 +284,51 @@ function FeedbackForm({
       <form className="space-y-3" onSubmit={onSubmit}>
         {(!widgetSettings || widgetSettings.collect_info?.name) && (
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs font-medium" style={{ color: secondaryColor }}>
+            <Label htmlFor="name" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
               Name
             </Label>
             <Input
               id="name"
               placeholder="Your name"
-              className="rounded-lg h-10 text-sm"
-              style={themeInputStyle}
+              className="h-10 text-sm border"
+              style={inputStyle}
             />
           </div>
         )}
         {(!widgetSettings || widgetSettings.collect_info?.email) && (
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-medium" style={{ color: secondaryColor }}>
+            <Label htmlFor="email" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
               Email
             </Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="rounded-lg h-10 text-sm"
-              style={themeInputStyle}
+              className="h-10 text-sm border"
+              style={inputStyle}
             />
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="feedback" className="text-xs font-medium" style={{ color: secondaryColor }}>
+          <Label htmlFor="feedback" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
             Feedback
           </Label>
           <Textarea
             id="feedback"
             placeholder="Share your thoughts..."
-            className="rounded-lg min-h-[110px] text-sm resize-none"
-            style={themeInputStyle}
+            className="min-h-[110px] text-sm resize-none border"
+            style={inputStyle}
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-2.5 text-sm font-semibold transition-all duration-200 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
           style={{
-            background: `linear-gradient(135deg, ${accentColor}, ${lightenColor(accentColor, 20)})`,
-            color: accentTextColor,
+            backgroundColor: theme.accentColor,
+            color: theme.formBgColor,
+            borderRadius: Math.max(theme.borderRadius - 4, 4),
           }}
         >
           {isSubmitting ? (
@@ -320,7 +340,7 @@ function FeedbackForm({
               Sending...
             </>
           ) : (
-            "Submit Feedback"
+            theme.buttonText
           )}
         </button>
       </form>
@@ -329,54 +349,71 @@ function FeedbackForm({
 }
 
 /* ━━━ Thank You Screen ━━━ */
-function ThankYouScreen({ rating, accentColor, accentTextColor, secondaryColor, tertiaryColor, onReset }) {
+function ThankYouScreen({ rating, theme, submittedName, onReset }) {
+  const [seconds, setSeconds] = useState(3);
+
+  useEffect(() => {
+    if (!theme.successRedirectUrl) return;
+    const timer = setInterval(() => setSeconds((s) => s - 1), 1000);
+    const redirect = setTimeout(() => {
+      window.location.href = theme.successRedirectUrl;
+    }, 3000);
+    return () => { clearInterval(timer); clearTimeout(redirect); };
+  }, [theme.successRedirectUrl]);
+
   return (
     <div className="flex flex-col items-center py-4">
       {/* Confetti dots */}
-      <div className="relative mb-2">
-        {[
-          { top: "-8px", left: "-16px", bg: "#4F46E5", delay: "0s" },
-          { top: "-12px", right: "-10px", bg: "#F59E0B", delay: "0.1s" },
-          { bottom: "-4px", left: "-20px", bg: "#10B981", delay: "0.15s" },
-          { bottom: "-8px", right: "-16px", bg: "#7C3AED", delay: "0.2s" },
-          { top: "50%", left: "-24px", bg: "#F59E0B", delay: "0.25s" },
-          { top: "50%", right: "-22px", bg: "#4F46E5", delay: "0.08s" },
-        ].map((dot, i) => (
-          <span
-            key={i}
-            className="absolute w-2 h-2 rounded-full animate-confetti"
-            style={{
-              ...dot,
-              backgroundColor: dot.bg,
-              animationDelay: dot.delay,
-            }}
-          />
-        ))}
-
-        {/* Checkmark circle */}
-        <div className="animate-scale-in w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-          <svg
-            className="h-8 w-8 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="3"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4.5 12.75l6 6 9-13.5"
+      {theme.showConfetti && (
+        <div className="relative mb-2">
+          {[
+            { top: "-8px", left: "-16px", bg: theme.accentColor, delay: "0s" },
+            { top: "-12px", right: "-10px", bg: "#F59E0B", delay: "0.1s" },
+            { bottom: "-4px", left: "-20px", bg: "#10B981", delay: "0.15s" },
+            { bottom: "-8px", right: "-16px", bg: theme.accentColor, delay: "0.2s" },
+            { top: "50%", left: "-24px", bg: "#F59E0B", delay: "0.25s" },
+            { top: "50%", right: "-22px", bg: "#10B981", delay: "0.08s" },
+          ].map((dot, i) => (
+            <span
+              key={i}
+              className="absolute w-2 h-2 rounded-full animate-confetti"
+              style={{
+                ...dot,
+                backgroundColor: dot.bg,
+                animationDelay: dot.delay,
+              }}
             />
+          ))}
+
+          {/* Checkmark circle */}
+          <div
+            className="animate-scale-in w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+            style={{ backgroundColor: theme.accentColor }}
+          >
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke={theme.formBgColor}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {!theme.showConfetti && (
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-2"
+          style={{ backgroundColor: theme.accentColor }}
+        >
+          <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke={theme.formBgColor}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
           </svg>
         </div>
-      </div>
+      )}
 
-      <h3 className="animate-fade-in-up text-xl font-bold mt-3">
-        Thank you!
+      <h3 className="animate-fade-in-up text-xl font-bold mt-3" style={{ color: theme.formTextColor }}>
+        {theme.successMessage.replace(/\{\s*name\s*\}/g, submittedName || "there")}
       </h3>
       <p
         className="animate-fade-in-up text-sm mt-1 text-center"
-        style={{ color: secondaryColor, animationDelay: "0.1s" }}
+        style={{ color: theme.secondaryTextColor, animationDelay: "0.1s" }}
       >
         Your feedback helps us improve
       </p>
@@ -387,7 +424,7 @@ function ThankYouScreen({ rating, accentColor, accentTextColor, secondaryColor, 
           className="animate-fade-in-up flex flex-col items-center mt-4"
           style={{ animationDelay: "0.2s" }}
         >
-          <span className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: tertiaryColor }}>
+          <span className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: theme.secondaryTextColor }}>
             Your rating
           </span>
           <div className="flex items-center gap-1">
@@ -396,18 +433,41 @@ function ThankYouScreen({ rating, accentColor, accentTextColor, secondaryColor, 
                 key={index}
                 className="h-5 w-5"
                 filled={rating > index}
+                accentColor={theme.accentColor}
               />
             ))}
           </div>
         </div>
       )}
 
+      {theme.successCtaText && theme.successCtaUrl && (
+        <a
+          href={theme.successCtaUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="animate-fade-in-up mt-4 px-6 py-2 text-sm font-semibold rounded-lg inline-block transition-colors hover:brightness-110"
+          style={{
+            backgroundColor: theme.accentColor,
+            color: theme.formBgColor,
+            animationDelay: "0.25s",
+          }}
+        >
+          {theme.successCtaText}
+        </a>
+      )}
+
+      {theme.successRedirectUrl && (
+        <p className="text-xs mt-3" style={{ color: theme.secondaryTextColor }}>
+          Redirecting in {seconds}s...
+        </p>
+      )}
+
       <button
         onClick={onReset}
         className="animate-fade-in-up mt-5 rounded-lg border-2 px-6 py-2 text-sm font-semibold transition-colors duration-200 hover:opacity-80 cursor-pointer"
         style={{
-          borderColor: accentColor,
-          color: accentColor,
+          borderColor: theme.accentColor,
+          color: theme.accentColor,
           animationDelay: "0.3s",
         }}
       >
@@ -419,7 +479,7 @@ function ThankYouScreen({ rating, accentColor, accentTextColor, secondaryColor, 
 
 /* ━━━ Icons ━━━ */
 
-function StarIcon({ filled, className, ...props }) {
+function StarIcon({ filled, className, accentColor = "#F59E0B", ...props }) {
   return (
     <svg
       className={className}
@@ -428,8 +488,8 @@ function StarIcon({ filled, className, ...props }) {
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill={filled ? "#F59E0B" : "#E5E7EB"}
-      stroke={filled ? "#F59E0B" : "#D1D5DB"}
+      fill={filled ? accentColor : "#E5E7EB"}
+      stroke={filled ? accentColor : "#D1D5DB"}
       strokeWidth="1"
       strokeLinecap="round"
       strokeLinejoin="round"

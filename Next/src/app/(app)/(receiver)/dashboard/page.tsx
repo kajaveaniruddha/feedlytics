@@ -1,16 +1,16 @@
 "use client";
 
 import React from "react";
-import { WelcomeSection } from "@/components/custom/welcome-section";
-import { FeedbackSettings } from "@/components/custom/feedback-settings";
+import { WelcomeSection } from "./_components/welcome-section";
+import { FeedbackSettings } from "./_components/feedback-settings";
 import { useMessageContext } from "@/hooks/use-message-context";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import { FeedbackLink } from "@/components/custom/feedback-link";
+import { FeedbackLink } from "./_components/feedback-link";
 
-const TotalMessagesPieChart = dynamic(
-  () => import("@/components/custom/total-messages-pie-chart"),
+const MonthlyFeedbacksChart = dynamic(
+  () => import("./_components/monthly-feedbacks-chart"),
   { loading: () => <Skeleton className="w-full h-[300px] rounded-xl" /> }
 );
 
@@ -52,14 +52,12 @@ const Page = () => {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left column — wider */}
         <motion.div variants={fadeUp} className="lg:col-span-3">
           <FeedbackSettings username={username} />
         </motion.div>
 
-        {/* Right column */}
         <motion.div variants={fadeUp} className="lg:col-span-2 space-y-6">
-          <TotalMessagesPieChart username={username} />
+          <MonthlyFeedbacksChart username={username} />
           <FeedbackLink />
         </motion.div>
       </div>

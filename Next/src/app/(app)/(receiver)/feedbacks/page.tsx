@@ -1,9 +1,9 @@
-"use client"
-import React from 'react';
-import MessageTable from '@/components/custom/table-box';
-import { motion } from 'framer-motion';
+"use client";
 
-const Page = () => {
+import { motion } from "framer-motion";
+import MessageTable from "./_components/feedback-table";
+
+export default function FeedbacksPage() {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -35,8 +35,5 @@ const Page = () => {
         <MessageTable />
       </motion.div>
     </motion.div>
-  )
+  );
 }
-
-export default Page;
-

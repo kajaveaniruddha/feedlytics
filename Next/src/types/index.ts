@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import type { FormTheme } from "@/lib/theme-utils";
 export interface Message {
   stars: number;
   content: string;
@@ -43,6 +44,7 @@ export interface userDetailsType {
   collectEmail: boolean;
   billingPeriodStart?: string;
   billingPeriodEnd?: string;
+  formTheme?: FormTheme;
 }
 
 export interface ApiResponseUserDetails {

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Lock, User } from "lucide-react";
 import { signInSchema } from "@/schemas/signInSchema";
 import { signIn } from "next-auth/react";
-import { SubmitButton } from "@/components/custom/submit-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const FormSignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);

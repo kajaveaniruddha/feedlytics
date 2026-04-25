@@ -18,9 +18,10 @@ const handlePUT = createHandler(async (request: Request) => {
     bg_color,
     text_color,
     collect_info,
+    form_theme,
   } = await request.json();
 
-  const rowCount = await userRepository.updateById(userId, {
+  const updateData: Record<string, unknown> = {
     introduction,
     questions,
     username,
@@ -30,7 +31,15 @@ const handlePUT = createHandler(async (request: Request) => {
     textColor: text_color,
     collectName: collect_info?.name,
     collectEmail: collect_info?.email,
-  });
+  };
+
+  if (form_theme) {
+    const existingUser = await userRepository.findById(userId);
+    const existingTheme = (existingUser?.formTheme as Record<string, unknown>) || {};
+    updateData.formTheme = { ...existingTheme, ...form_theme };
+  }
+
+  const rowCount = await userRepository.updateById(userId, updateData);
 
   if (!rowCount) {
     throw ApiError.internal("Failed to update.");

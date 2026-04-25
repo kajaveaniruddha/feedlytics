@@ -12,10 +12,10 @@ import {
     PaginationState,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import DeleteTasksButton from "./delete-task-button";
+import DeleteTasksButton from "@/app/(app)/(receiver)/feedbacks/_components/delete-feedbacks-button";
 import TablePagination from "./table-pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataTableToolbar } from "../custom/data-table-toolbar";
+import { DataTableToolbar } from "@/app/(app)/(receiver)/feedbacks/_components/table-toolbar";
 
 
 interface DataTableProps<TData extends { id: string }, TValue> {

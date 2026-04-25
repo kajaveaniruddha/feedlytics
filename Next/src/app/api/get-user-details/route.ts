@@ -26,6 +26,7 @@ const handleGET = createHandler(async () => {
       bgColor: usersTable.bgColor,
       collectName: usersTable.collectName,
       collectEmail: usersTable.collectEmail,
+      formTheme: usersTable.formTheme,
     })
     .from(usersTable)
     .where(eq(usersTable.email, user.email))
