@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
-import Navbar from "@/components/custom/navbar";
+import Navbar from "@/components/layout/navbar";
 import { MessageProvider } from "@/context/MessageProvider";
 import Script from "next/script";
 import { TanstackProvider } from "@/context/tanstack-provider";

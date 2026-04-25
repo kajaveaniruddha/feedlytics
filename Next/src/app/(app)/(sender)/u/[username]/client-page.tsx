@@ -16,7 +16,7 @@ import {
 import { SendMessageSchema } from "@/schemas/sendMessageSchema";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import StarRating from "@/components/custom/star-rating";
+import StarRating from "@/components/ui/star-rating";
 import { AnimatePresence, motion } from "framer-motion";
 import Confetti from "react-confetti";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useApiErrorToast } from "@/hooks/use-api-error-toast";
-import { SubmitButton } from "@/components/custom/submit-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const ClientPage = ({ username }: { username: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,7 +89,7 @@ const ClientPage = ({ username }: { username: string }) => {
                             )}
                         </h1>
                     </CardHeader>
-                    <CardContent className="w-full max-w-md">
+                    <CardContent className="w-full max-w-md min-w-[27rem]">
                         {submitted ? (
                             <div className="w-full h-full">
                                 <Confetti width={window.innerWidth} height={window.innerHeight} />

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Lato, Space_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/custom/theme-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { ModeToggle } from "@/components/custom/mode-toggle";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" });
