@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { formThemeSchema } from "./formTheme";
 
 export const updateUserData = z.object({
   name: z.string().min(1, "Name is required").max(50),
@@ -16,4 +17,5 @@ export const updateUserData = z.object({
     name: z.boolean(),
     email: z.boolean(),
   }),
+  form_theme: formThemeSchema.optional(),
 });

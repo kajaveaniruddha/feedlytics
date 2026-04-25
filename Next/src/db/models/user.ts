@@ -7,6 +7,7 @@ import {
   integer,
   timestamp,
   index,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -42,6 +43,7 @@ export const usersTable = pgTable(
     textColor: varchar("text_color", { length: 7 }).default("#ffffff"),
     collectName: boolean("collect_name").notNull().default(false),
     collectEmail: boolean("collect_email").notNull().default(false),
+    formTheme: jsonb("form_theme").$type<Record<string, unknown>>().default({}),
     userTier: varchar("user_tier", { length: 50 }).default("free"),
     stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
     stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),

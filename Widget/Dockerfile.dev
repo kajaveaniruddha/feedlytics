@@ -1,27 +1,14 @@
-# Use the official Node.js 18 image
 FROM node:18-alpine
 
-# Install necessary system packages
 RUN apk add --no-cache bash git
-
-# Install pnpm globally
 RUN npm config set strict-ssl false && npm install -g pnpm
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy only the files needed to install dependencies to leverage Docker's build cache.
 COPY package.json pnpm-lock.yaml* .npmrc ./
-
-# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Expose the port the app runs on
 ENV PORT=4173
 EXPOSE 4173
 
-# The source code is NOT copied into the image.
-# It will be mounted at runtime by the 'develop.watch' feature in docker-compose.yml.
-
-# The default command to start the dev server.
 CMD ["pnpm", "run", "dev"]

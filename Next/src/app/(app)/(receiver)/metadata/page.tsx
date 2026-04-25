@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import MetadataPage from "./form-metadata";
+import FormEditor from "./_components/form-editor";
 import { motion } from "framer-motion";
 
 const Page = () => {
@@ -18,7 +18,7 @@ const Page = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        Metadata Management
+        Form Editor
       </motion.h1>
       <motion.p
         className="text-secondary-foreground mb-8"
@@ -26,14 +26,14 @@ const Page = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
       >
-        Update your feedback collection form metadata below.
+        Customize how your feedback form looks and feels.
       </motion.p>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.5 }}
       >
-        <MetadataPage />
+        <FormEditor />
       </motion.div>
     </motion.section>
   );
