@@ -17,7 +17,7 @@ export const emailWorker = new Worker(
         logger.warn({ jobName: job.name }, "Unknown email job type");
     }
   },
-  { connection: emailQueue.opts.connection }
+  { connection: emailQueue.opts.connection, concurrency: 5 },
 );
 
 emailWorker.on("completed", (job: Job) => {
@@ -25,5 +25,8 @@ emailWorker.on("completed", (job: Job) => {
 });
 
 emailWorker.on("failed", (job, err) => {
-  logger.error({ jobId: job?.id, jobName: job?.name, error: err.message }, "Email job failed");
+  logger.error(
+    { jobId: job?.id, jobName: job?.name, error: err.message },
+    "Email job failed",
+  );
 });

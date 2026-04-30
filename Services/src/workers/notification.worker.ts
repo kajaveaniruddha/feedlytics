@@ -10,7 +10,7 @@ export const notificationWorker = new Worker(
     const { webhookUrl, message } = job.data;
     await notificationService.send(webhookUrl, message);
   },
-  { connection: notificationQueue.opts.connection }
+  { connection: notificationQueue.opts.connection, concurrency: 5 }
 );
 
 notificationWorker.on("completed", (job: Job) => {

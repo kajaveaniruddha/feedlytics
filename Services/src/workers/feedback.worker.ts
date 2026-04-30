@@ -8,7 +8,11 @@ export const feedbackWorker = new Worker(
   async (job: Job) => {
     await feedbackService.processFeedback(job.data);
   },
-  { connection: feedbackQueue.opts.connection }
+  {
+    connection: feedbackQueue.opts.connection,
+    concurrency: 5,
+    limiter: { max: 10, duration: 1000 },
+  },
 );
 
 feedbackWorker.on("completed", (job: Job) => {
