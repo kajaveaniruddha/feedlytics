@@ -43,7 +43,7 @@ const faqData: FAQItem[] = [
     {
         question: "What is the pricing model? Are there any hidden fees?",
         answer:
-            "Feedlytics offers three transparent plans:\n\n**Free** — 200 feedbacks/month, 3 workflows, 1 team member. Perfect for indie hackers and early-stage products.\n\n**Pro ($19/month)** — 2,000 feedbacks/month, 15 workflows, 5 team members, CSV export, feedback replies, and webhook integrations.\n\n**Business ($79/month)** — 20,000 feedbacks/month, unlimited workflows, 25 team members, API access, and white-label (remove Feedlytics branding).\n\nAll plans include full AI-powered sentiment analysis and categorization. Annual billing saves you 2 months. Usage resets monthly.",
+            "Feedlytics offers three transparent plans:\n\n**Free** — 200 feedbacks/month, 3 workflows, 1 team member, 3 custom feedback categories per workspace. Perfect for indie hackers and early-stage products.\n\n**Pro ($19/month)** — 2,000 feedbacks/month, 15 workflows, 5 team members, 6 custom feedback categories per workspace, CSV export, feedback replies, and webhook integrations.\n\n**Business ($79/month)** — 20,000 feedbacks/month, unlimited workflows, 25 team members, 10 custom feedback categories per workspace, API access, and white-label (remove Feedlytics branding).\n\nAll plans include full AI-powered sentiment analysis and categorization. Annual billing saves you 2 months. Usage resets monthly.",
     },
     {
         question: "Do you offer a free trial or demo?",

@@ -6,6 +6,8 @@ export const PLAN_LIMITS: Record<PlanTier, {
   maxWorkflows: number;
   maxTeamMembers: number;
   maxProjects: number;
+  /** Custom feedback categories per workspace (align with Kotlin PlanLimits). */
+  maxFeedbackCategoriesPerWorkspace: number;
   dataRetentionDays: number;
   features: {
     csvExport: boolean;
@@ -20,6 +22,7 @@ export const PLAN_LIMITS: Record<PlanTier, {
     maxWorkflows: 3,
     maxTeamMembers: 1,
     maxProjects: 1,
+    maxFeedbackCategoriesPerWorkspace: 3,
     dataRetentionDays: 90,
     features: {
       csvExport: false,
@@ -34,6 +37,7 @@ export const PLAN_LIMITS: Record<PlanTier, {
     maxWorkflows: 15,
     maxTeamMembers: 5,
     maxProjects: 3,
+    maxFeedbackCategoriesPerWorkspace: 6,
     dataRetentionDays: 365,
     features: {
       csvExport: true,
@@ -48,6 +52,7 @@ export const PLAN_LIMITS: Record<PlanTier, {
     maxWorkflows: Infinity,
     maxTeamMembers: 25,
     maxProjects: Infinity,
+    maxFeedbackCategoriesPerWorkspace: 10,
     dataRetentionDays: Infinity,
     features: {
       csvExport: true,

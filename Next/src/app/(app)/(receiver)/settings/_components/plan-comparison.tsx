@@ -121,6 +121,14 @@ export default function PlanComparison({
                       {limits.maxTeamMembers} team member{limits.maxTeamMembers > 1 ? "s" : ""}
                     </span>
                   </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 mt-0.5 text-primary shrink-0" />
+                    <span>
+                      {limits.maxFeedbackCategoriesPerWorkspace} custom feedback{" "}
+                      {limits.maxFeedbackCategoriesPerWorkspace === 1 ? "category" : "categories"} per
+                      workspace
+                    </span>
+                  </li>
                   {PLAN_FEATURES[tier].map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 mt-0.5 text-primary shrink-0" />

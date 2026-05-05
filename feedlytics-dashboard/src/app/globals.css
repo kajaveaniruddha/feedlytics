@@ -1,0 +1,362 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* -----------------------------------------------------------------------------
+ * Font CSS variables
+ *
+ * `next/font/google` in `app/layout.tsx` redefines `--font-dm-sans` and
+ * `--font-plus-jakarta` on `<html>` at runtime with the real subset family names.
+ *
+ * Storybook does not mount `RootLayout`, so without these defaults the first
+ * entry in `--font-sans` is `var(--font-dm-sans)` with no substitution — that can
+ * invalidate the entire `font-family` and browsers fall back to Times New Roman.
+ * --------------------------------------------------------------------------- */
+:root {
+  --font-dm-sans: "DM Sans", system-ui, sans-serif;
+  --font-plus-jakarta: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+
+  /* Brand (primary purple) */
+  --brand-100: #e9e3ff;
+  --brand-200: #422afb;
+  --brand-300: #422afb;
+  --brand-400: #7551ff;
+  --brand-500: #422afb;
+  --brand-600: #3311db;
+  --brand-700: #02044a;
+  --brand-800: #190793;
+  --brand-900: #11047a;
+
+  /* Brand scheme (checkbox/switch colorScheme) */
+  --brand-scheme-100: #e9e3ff;
+  --brand-scheme-200: #7551ff;
+  --brand-scheme-300: #7551ff;
+  --brand-scheme-400: #7551ff;
+  --brand-scheme-500: #422afb;
+  --brand-scheme-600: #3311db;
+  --brand-scheme-700: #02044a;
+  --brand-scheme-800: #190793;
+  --brand-scheme-900: #02044a;
+
+  /* Secondary gray */
+  --secondary-gray-100: #e0e5f2;
+  --secondary-gray-200: #e1e9f8;
+  --secondary-gray-300: #f4f7fe;
+  --secondary-gray-400: #e9edf7;
+  --secondary-gray-500: #8f9bba;
+  --secondary-gray-600: #a3aed0;
+  --secondary-gray-700: #707eae;
+  --secondary-gray-800: #707eae;
+  --secondary-gray-900: #1b2559;
+
+  /* Navy */
+  --navy-50: #d0dcfb;
+  --navy-100: #aac0fe;
+  --navy-200: #a3b9f8;
+  --navy-300: #728fea;
+  --navy-400: #3652ba;
+  --navy-500: #1b3bbb;
+  --navy-600: #24388a;
+  --navy-700: #1b254b;
+  --navy-800: #111c44;
+  --navy-900: #0b1437;
+
+  /* Status */
+  --red-100: #feefee;
+  --red-500: #ee5d50;
+  --red-600: #e31a1a;
+  --blue-50: #eff4fb;
+  --blue-500: #3965ff;
+  --orange-100: #fff6da;
+  --orange-500: #ffb547;
+  --green-100: #e6faf5;
+  --green-500: #01b574;
+
+  /* Neutral */
+  --gray-100: #fafcfe;
+  --gray-200: #edf2f7;
+  --gray-400: #a0aec0;
+  --gray-700: #2d3748;
+
+  /* Hard-coded helpers pulled from Horizon's component files */
+  --brand-lavender: #f2efff; /* lightBrand button bg */
+  --white-alpha-100: rgba(255, 255, 255, 0.06);
+  --white-alpha-200: rgba(255, 255, 255, 0.12);
+  --white-alpha-300: rgba(255, 255, 255, 0.18);
+  --auth-input-border-dark: rgba(135, 140, 189, 0.3);
+
+  /* ---------------------------------------------------------------------------
+   * Semantic tokens — atoms consume these, not the raw palette above.
+   * ------------------------------------------------------------------------- */
+  --color-bg: var(--secondary-gray-300);
+  --color-surface: #ffffff;
+  --color-text: var(--navy-700);
+  --color-text-muted: var(--secondary-gray-600);
+  --color-text-subtle: var(--gray-400);
+  --color-border: var(--secondary-gray-100);
+  --color-primary: var(--brand-500);
+  --color-primary-hover: var(--brand-600);
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: var(--brand-lavender);
+  --color-ring: var(--brand-500);
+  --color-destructive: var(--red-500);
+  --color-destructive-foreground: #ffffff;
+
+  /* Component tokens (borders / radii / shadows) */
+  --radius-input: 16px;
+  --radius-button: 16px;
+  --radius-pill: 50px;
+  --radius-card: 20px;
+  --shadow-card: 14px 17px 40px 4px rgba(112, 144, 176, 0.08);
+  --shadow-button: 45px 76px 113px 7px rgba(112, 144, 176, 0.08);
+  /* Landing / boilerplate “Get started now” CTA — Horizon UI marketing */
+  --shadow-cta-hover: 0px 11px 24px -13px rgba(10, 8, 38, 0.5);
+  --shadow-cta-active: 0px 21px 34px -13px rgba(10, 8, 38, 0.5);
+
+  /* shadcn legacy vars kept for any base-nova atom that still references them;
+   * we override them to Horizon values so unmigrated utilities look correct. */
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-primary-foreground);
+  --secondary: var(--secondary-gray-300);
+  --secondary-foreground: var(--navy-700);
+  --muted: var(--secondary-gray-300);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--brand-lavender);
+  --accent-foreground: var(--color-primary);
+  --destructive: var(--color-destructive);
+  --destructive-foreground: var(--color-destructive-foreground);
+  --border: var(--color-border);
+  --input: var(--color-border);
+  --ring: var(--color-ring);
+  --radius: 0.625rem;
+}
+
+.dark {
+  --color-bg: var(--navy-900);
+  --color-surface: var(--navy-800);
+  --color-text: #ffffff;
+  --color-text-muted: var(--secondary-gray-600);
+  --color-text-subtle: var(--gray-400);
+  --color-border: var(--white-alpha-100);
+  --color-primary: var(--brand-400);
+  --color-primary-hover: var(--brand-400);
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: var(--white-alpha-100);
+  --color-ring: var(--brand-400);
+  --color-destructive: var(--red-500);
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-primary-foreground);
+  --secondary: var(--white-alpha-100);
+  --secondary-foreground: #ffffff;
+  --muted: var(--white-alpha-100);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--white-alpha-100);
+  --accent-foreground: #ffffff;
+  --destructive: var(--color-destructive);
+  --border: var(--color-border);
+  --input: var(--white-alpha-200);
+  --ring: var(--color-ring);
+}
+
+/* -----------------------------------------------------------------------------
+ * Tailwind v4 — expose every token as a utility.
+ * So `bg-brand-500`, `text-navy-700`, `shadow-card`, `bg-surface`, etc. all work.
+ * --------------------------------------------------------------------------- */
+@theme inline {
+  /* Body / UI: DM Sans (Horizon UI Chakra dashboard). Headings: Plus Jakarta
+     (Horizon marketing site) with DM Sans as fallback if the variable is unset. */
+  --font-sans: var(--font-dm-sans), "DM Sans", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-heading: var(--font-plus-jakarta), "Plus Jakarta Sans",
+    var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Semantic */
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-subtle: var(--color-text-subtle);
+  --color-border: var(--color-border);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-ring: var(--color-ring);
+  --color-destructive: var(--color-destructive);
+  --color-destructive-foreground: var(--color-destructive-foreground);
+
+  /* Shadcn legacy bridges (so unmigrated utilities render correct colors) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-input: var(--input);
+
+  /* Brand scale */
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-lavender: var(--brand-lavender);
+
+  /* Brand scheme (checkbox) */
+  --color-brand-scheme-400: var(--brand-scheme-400);
+  --color-brand-scheme-500: var(--brand-scheme-500);
+  --color-brand-scheme-600: var(--brand-scheme-600);
+
+  /* Secondary gray */
+  --color-secondary-gray-100: var(--secondary-gray-100);
+  --color-secondary-gray-200: var(--secondary-gray-200);
+  --color-secondary-gray-300: var(--secondary-gray-300);
+  --color-secondary-gray-400: var(--secondary-gray-400);
+  --color-secondary-gray-500: var(--secondary-gray-500);
+  --color-secondary-gray-600: var(--secondary-gray-600);
+  --color-secondary-gray-700: var(--secondary-gray-700);
+  --color-secondary-gray-800: var(--secondary-gray-800);
+  --color-secondary-gray-900: var(--secondary-gray-900);
+
+  /* Navy */
+  --color-navy-50: var(--navy-50);
+  --color-navy-100: var(--navy-100);
+  --color-navy-200: var(--navy-200);
+  --color-navy-300: var(--navy-300);
+  --color-navy-400: var(--navy-400);
+  --color-navy-500: var(--navy-500);
+  --color-navy-600: var(--navy-600);
+  --color-navy-700: var(--navy-700);
+  --color-navy-800: var(--navy-800);
+  --color-navy-900: var(--navy-900);
+
+  /* Status */
+  --color-red-100: var(--red-100);
+  --color-red-500: var(--red-500);
+  --color-red-600: var(--red-600);
+  --color-blue-50: var(--blue-50);
+  --color-blue-500: var(--blue-500);
+  --color-orange-100: var(--orange-100);
+  --color-orange-500: var(--orange-500);
+  --color-green-100: var(--green-100);
+  --color-green-500: var(--green-500);
+
+  /* Neutral */
+  --color-horizon-gray-100: var(--gray-100);
+  --color-horizon-gray-200: var(--gray-200);
+  --color-horizon-gray-400: var(--gray-400);
+  --color-horizon-gray-700: var(--gray-700);
+
+  /* White alpha (on dark surfaces) */
+  --color-white-alpha-100: var(--white-alpha-100);
+  --color-white-alpha-200: var(--white-alpha-200);
+  --color-white-alpha-300: var(--white-alpha-300);
+
+  /* Border radii */
+  --radius-input: var(--radius-input);
+  --radius-button: var(--radius-button);
+  --radius-pill: var(--radius-pill);
+  --radius-card: var(--radius-card);
+
+  /* Shadow */
+  --shadow-card: var(--shadow-card);
+  --shadow-button: var(--shadow-button);
+}
+
+/* Horizon body: DM Sans. Marketing-style headings: Plus Jakarta Sans. */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+    letter-spacing: -0.5px;
+  }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    overflow-x: hidden;
+  }
+  /* Form label asterisk for required fields — matches Horizon's auth view */
+  .required-asterisk {
+    color: var(--color-primary);
+    margin-left: 2px;
+  }
+}
+
+/**
+ * Auth illustration column — PRO-style mesh (coral / magenta / indigo + right glow).
+ * Stacked gradients; first layer paints on top. Same in light and dark (marketing panel).
+ */
+@layer utilities {
+  .auth-illustration-mesh {
+    background-color: #5b21b6;
+    background-image:
+      radial-gradient(
+        ellipse 105% 92% at 108% 36%,
+        rgb(255 140 127 / 0.82) 0%,
+        rgb(255 140 127 / 0.22) 26%,
+        transparent 54%
+      ),
+      radial-gradient(
+        ellipse 90% 72% at 96% 92%,
+        rgb(217 70 239 / 0.5) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 70% 58% at -6% 102%,
+        rgb(74 0 224 / 0.92) 0%,
+        rgb(74 0 224 / 0.28) 36%,
+        transparent 66%
+      ),
+      radial-gradient(
+        ellipse 52% 46% at -10% -8%,
+        rgb(255 77 109 / 0.98) 0%,
+        transparent 52%
+      ),
+      radial-gradient(
+        ellipse 50% 44% at 104% -6%,
+        rgb(157 80 187 / 0.9) 0%,
+        transparent 50%
+      ),
+      linear-gradient(
+        142deg,
+        #ff4d6d 0%,
+        #e879f9 24%,
+        #9d50bb 46%,
+        #5b21b6 66%,
+        #4a00e0 84%,
+        #6e48aa 100%
+      );
+    background-repeat: no-repeat;
+    background-size: cover;
+
+  }
+}

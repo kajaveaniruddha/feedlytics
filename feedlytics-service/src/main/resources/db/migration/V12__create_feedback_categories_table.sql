@@ -1,0 +1,7 @@
+CREATE TABLE feedbacks_categories (
+    id BIGSERIAL PRIMARY KEY,
+    workspace_id BIGINT NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

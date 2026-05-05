@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package com.feedlytics.queue.feedback.v1;
+
+option java_multiple_files = true;
+option java_package = "com.feedlytics.queue.feedback.v1";
+
+// Queue service ingests jobs from feedlytics-service over gRPC.
+service FeedbackAnalysisQueue {
+  rpc EnqueueFeedbackAnalysis (EnqueueFeedbackAnalysisRequest) returns (EnqueueFeedbackAnalysisResponse);
+}
+
+message NotificationWebhook {
+  string webhook_url = 1;
+}
+
+message EnqueueFeedbackAnalysisRequest {
+  int64 feedback_id = 1;
+  string content = 2;
+  repeated string workspace_category_name = 3;
+  string callback_base_url = 4;
+  string internal_auth_token = 5;
+  repeated NotificationWebhook notification_webhooks = 6;
+  int32 rating = 7;
+  int64 submitted_at_epoch_ms = 8;
+}
+
+message EnqueueFeedbackAnalysisResponse {
+  bool accepted = 1;
+}
