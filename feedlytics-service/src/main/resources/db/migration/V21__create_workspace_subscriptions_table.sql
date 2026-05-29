@@ -1,4 +1,4 @@
-CREATE TABLE workspace_subscriptions (
+CREATE TABLE IF NOT EXISTS workspace_subscriptions (
     id                      BIGSERIAL PRIMARY KEY,
     workspace_id            BIGINT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
     stripe_customer_id      VARCHAR(255) NOT NULL,
@@ -14,5 +14,5 @@ CREATE TABLE workspace_subscriptions (
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_ws_sub_workspace ON workspace_subscriptions(workspace_id);
-CREATE INDEX idx_ws_sub_customer  ON workspace_subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_ws_sub_workspace ON workspace_subscriptions(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_ws_sub_customer  ON workspace_subscriptions(stripe_customer_id);

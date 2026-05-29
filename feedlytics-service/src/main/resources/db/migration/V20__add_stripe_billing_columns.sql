@@ -1,5 +1,5 @@
 ALTER TABLE workspaces
-  ADD COLUMN stripe_customer_id     VARCHAR(255),
-  ADD COLUMN stripe_subscription_id VARCHAR(255),
-  ADD COLUMN stripe_price_id        VARCHAR(255),
-  ADD COLUMN billing_interval       VARCHAR(10);
+  ADD COLUMN IF NOT EXISTS stripe_customer_id     VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS stripe_price_id        VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS billing_interval       VARCHAR(10);
