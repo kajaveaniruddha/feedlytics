@@ -92,13 +92,13 @@ jobs:
             ./feedlytics-widget
           docker push $DOCKER_USERNAME/feedlytics-widget:latest
 
-  deploy:
-    if: inputs.deploy && (inputs.dashboard || inputs.service || inputs.queue || inputs.widget)
+  deploy-queue:
+    if: inputs.deploy && inputs.queue
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Hostinger VPS
+      - name: Deploy feedlytics-queue-service
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
@@ -107,30 +107,78 @@ jobs:
           script: |
             set -euo pipefail
             cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-queue-service
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-queue-service
+            docker compose --env-file prod/.env ps feedlytics-queue-service
+            docker image prune -f
 
-            if [ ! -f prod/.env ]; then
-              echo "Missing prod/.env on VPS" >&2
+  deploy-service:
+    if: inputs.deploy && inputs.service
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy feedlytics-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-service
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-service
+            docker compose --env-file prod/.env ps feedlytics-service
+            echo "Waiting for feedlytics-service health..."
+            sleep 45
+            docker compose --env-file prod/.env logs --tail=80 feedlytics-service || true
+            curl -sf http://127.0.0.1:8081/actuator/health || {
+              echo "feedlytics-service health check failed on localhost:8081" >&2
               exit 1
-            fi
+            }
+            docker image prune -f
 
-            SERVICES=""
-            if [ "${{ inputs.dashboard }}" = "true" ]; then SERVICES="$SERVICES feedlytics-dashboard"; fi
-            if [ "${{ inputs.service }}" = "true" ]; then SERVICES="$SERVICES feedlytics-service"; fi
-            if [ "${{ inputs.queue }}" = "true" ]; then SERVICES="$SERVICES feedlytics-queue-service"; fi
-            if [ "${{ inputs.widget }}" = "true" ]; then SERVICES="$SERVICES feedlytics-widget"; fi
+  deploy-dashboard:
+    if: inputs.deploy && inputs.dashboard
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-            docker compose --env-file prod/.env pull $SERVICES
-            docker compose --env-file prod/.env up -d --force-recreate $SERVICES
-            docker compose --env-file prod/.env ps $SERVICES
+    steps:
+      - name: Deploy feedlytics-dashboard
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-dashboard
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-dashboard
+            docker compose --env-file prod/.env ps feedlytics-dashboard
+            docker image prune -f
 
-            if [ "${{ inputs.service }}" = "true" ]; then
-              echo "Waiting for feedlytics-service health..."
-              sleep 45
-              docker compose --env-file prod/.env logs --tail=80 feedlytics-service || true
-              curl -sf http://127.0.0.1:8081/actuator/health || {
-                echo "feedlytics-service health check failed on localhost:8081" >&2
-                exit 1
-              }
-            fi
+  deploy-widget:
+    if: inputs.deploy && inputs.widget
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Deploy feedlytics-widget
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-widget
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-widget
+            docker compose --env-file prod/.env ps feedlytics-widget
             docker image prune -f
