@@ -31,9 +31,6 @@ services:
     volumes:
       - ./feedlytics-queue-service:/app
       - queue_node_modules:/app/node_modules
-    depends_on:
-      redis:
-        condition: service_healthy
     networks:
       - app-network
 
@@ -50,9 +47,6 @@ services:
       FEEDLYTICS_QUEUE_CALLBACK_BASE_URL: http://feedlytics-service:8081
     ports:
       - "8081:8081"
-    depends_on:
-      - redis
-      - feedlytics-queue-service
     networks:
       - app-network
 
@@ -70,8 +64,6 @@ services:
     volumes:
       - ./feedlytics-dashboard:/app
       - dashboard_node_modules:/app/node_modules
-    depends_on:
-      - feedlytics-service
     networks:
       - app-network
 

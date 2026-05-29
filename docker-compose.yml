@@ -21,8 +21,6 @@ services:
     restart: always
     env_file:
       - prod/.env
-    depends_on:
-      - redis
     networks:
       - app-network
     deploy:
@@ -42,9 +40,6 @@ services:
       - prod/.env
     ports:
       - "127.0.0.1:8081:8081"
-    depends_on:
-      - redis
-      - feedlytics-queue-service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 30s
@@ -76,9 +71,6 @@ services:
       NODE_ENV: production
     ports:
       - "127.0.0.1:3000:3000"
-    depends_on:
-      feedlytics-service:
-        condition: service_healthy
     networks:
       - app-network
     deploy:
@@ -137,8 +129,6 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-    depends_on:
-      - prometheus
     networks:
       - app-network
     deploy:
