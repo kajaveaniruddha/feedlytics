@@ -1,3 +1,4 @@
+# Debian JDK required for protobuf/grpc protoc plugins (Alpine/musl breaks them).
 FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /app
