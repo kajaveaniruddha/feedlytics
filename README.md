@@ -148,7 +148,9 @@ feedlytics/
 │   └── src/workers/        # BullMQ workers (email, feedback, notifications)
 ├── Widget/                 # Vite + React embeddable widget
 ├── monitoring/             # Prometheus, Grafana configs + MONITORING.md
-├── Prod/                   # Production-only configs (Nginx, build script)
+├── prod/                   # VPS: prod/.env only. Template: prod/.env.example
+│   └── nginx/              # local only (gitignored) — copy to /etc/nginx on VPS
+├── scripts/                # build-and-push.sh (local / CI, not on VPS)
 ├── docker-compose.dev.yml  # Local development (uses Dockerfile.dev)
 ├── docker-compose.yml      # Production (image-only, no build context)
 └── .env.development.example # Environment variable template

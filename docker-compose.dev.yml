@@ -3,8 +3,6 @@ services:
     image: redis:7-alpine
     container_name: feedlytics-redis-dev
     command: ["redis-server", "--requirepass", "redispass"]
-    environment:
-      - REDIS_PASSWORD=redispass
     ports:
       - "6379:6379"
     volumes:
@@ -17,165 +15,78 @@ services:
     networks:
       - app-network
 
-  services:
+  feedlytics-queue-service:
     build:
-      context: ./Services
+      context: ./feedlytics-queue-service
       dockerfile: Dockerfile.dev
-    container_name: feedlytics-services-dev
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    container_name: feedlytics-queue-service-dev
     env_file:
       - .env.development
     environment:
+      REDIS_URL: redis://default:redispass@redis:6379
       NODE_ENV: development
-      NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      CHOKIDAR_USEPOLLING: "true"
-      WATCHPACK_POLLING: "true"
-    develop:
-      watch:
-        - action: sync
-          path: ./Services/src
-          target: /app/src
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: ./Services/package.json
-        - action: rebuild
-          path: ./Services/pnpm-lock.yaml
     ports:
       - "3001:3001"
+      - "9090:9090"
     volumes:
-      - ./Services:/app
-      - services_node_modules:/app/node_modules
-    command:
-      [
-        "sh",
-        "-c",
-        "sh ./scripts/wait-for-deps.sh pnpm run db:push && pnpm run dev",
-      ]
+      - ./feedlytics-queue-service:/app
+      - queue_node_modules:/app/node_modules
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - app-network
 
-  nextjs:
+  feedlytics-service:
     build:
-      context: ./Next
+      context: ./feedlytics-service
       dockerfile: Dockerfile.dev
-    container_name: feedlytics-next-dev
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    container_name: feedlytics-service-dev
+    env_file:
+      - .env.development
+    environment:
+      REDIS_URL: redis://default:redispass@redis:6379
+      GRPC_CLIENT_FEEDLYTICSQUEUE_ADDRESS: static://feedlytics-queue-service:9090
+      FEEDLYTICS_QUEUE_CALLBACK_BASE_URL: http://feedlytics-service:8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+      - feedlytics-queue-service
+    networks:
+      - app-network
+
+  feedlytics-dashboard:
+    build:
+      context: ./feedlytics-dashboard
+      dockerfile: Dockerfile.dev
+    container_name: feedlytics-dashboard-dev
     env_file:
       - .env.development
     environment:
       NODE_ENV: development
-      NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      CHOKIDAR_USEPOLLING: "true"
-      WATCHPACK_POLLING: "true"
-    develop:
-      watch:
-        - action: sync
-          path: ./Next/src
-          target: /app/src
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: ./Next/package.json
-        - action: rebuild
-          path: ./Next/pnpm-lock.yaml
     ports:
       - "3000:3000"
     volumes:
-      - ./Next:/app
-      - next_node_modules:/app/node_modules
-    command: ["pnpm", "dev"]
+      - ./feedlytics-dashboard:/app
+      - dashboard_node_modules:/app/node_modules
     depends_on:
-      - services
+      - feedlytics-service
     networks:
       - app-network
 
-  widget:
+  feedlytics-widget:
     build:
-      context: ./Widget
+      context: ./feedlytics-widget
       dockerfile: Dockerfile.dev
     container_name: feedlytics-widget-dev
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     env_file:
       - .env.development
-    environment:
-      NODE_ENV: development
-      CHOKIDAR_USEPOLLING: "true"
-      WATCHPACK_POLLING: "true"
-    develop:
-      watch:
-        - action: sync
-          path: ./Widget/src
-          target: /app/src
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: ./Widget/package.json
-        - action: rebuild
-          path: ./Widget/pnpm-lock.yaml
     ports:
       - "4173:4173"
     volumes:
-      - ./Widget:/app
+      - ./feedlytics-widget:/app
       - widget_node_modules:/app/node_modules
-    command: ["pnpm", "run", "dev"]
-    networks:
-      - app-network
-
-  prometheus:
-    image: prom/prometheus
-    container_name: feedlytics-prometheus-dev
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=30d"
-      - "--storage.tsdb.retention.size=1GB"
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml
-      - prometheusdata:/prometheus
-    networks:
-      - app-network
-
-  grafana:
-    image: grafana/grafana
-    container_name: feedlytics-grafana-dev
-    ports:
-      - "3002:3000"
-    volumes:
-      - grafanadata:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
-    depends_on:
-      - prometheus
-    networks:
-      - app-network
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: feedlytics-node-exporter-dev
-    ports:
-      - "9100:9100"
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - "--path.rootfs=/rootfs"
-      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
     networks:
       - app-network
 
@@ -185,8 +96,6 @@ networks:
 
 volumes:
   redisdata:
-  prometheusdata:
-  grafanadata:
-  next_node_modules:
-  services_node_modules:
+  queue_node_modules:
+  dashboard_node_modules:
   widget_node_modules:

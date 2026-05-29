@@ -3,7 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-dotenv.config({ path: path.join(repoRoot, ".env.development") });
+const envDevelopmentPath = path.join(repoRoot, ".env.development");
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config({ path: envDevelopmentPath });
+}
 import { env } from "./src/config/env";
 import { createApp } from "./src/app";
 import { logger } from "./src/lib/logger";

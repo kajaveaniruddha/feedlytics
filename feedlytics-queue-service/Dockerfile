@@ -18,8 +18,8 @@ RUN pnpm install --frozen-lockfile
 # Copy the rest of the application code
 COPY . .
 
-# Expose the service port (e.g., 3001)
-EXPOSE 3001
+# Expose HTTP + gRPC (internal Docker network only in production)
+EXPOSE 3001 9090
 
 # Start the service
 CMD ["pnpm", "run", "start"]

@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN "max_workflows" integer DEFAULT 5;
