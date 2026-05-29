@@ -35,6 +35,18 @@ jobs:
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
+            set -euo pipefail
             cd feedlytics/
-            docker compose --env-file prod/.env up -d --force-recreate
+
+            ENV_FILE="prod/.env"
+            if [ ! -f "$ENV_FILE" ] && [ -f ".env" ]; then
+              echo "prod/.env missing; falling back to .env"
+              ENV_FILE=".env"
+            fi
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "Missing env file: expected prod/.env or .env" >&2
+              exit 1
+            fi
+
+            docker compose --env-file "$ENV_FILE" up -d --force-recreate
             docker image prune -f
