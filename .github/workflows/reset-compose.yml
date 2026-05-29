@@ -6,7 +6,7 @@ on:
       branch:
         description: "Branch to sync from"
         required: true
-        default: "master"
+        default: "revamp"
       confirm:
         description: "Type YES to confirm (this will cause downtime)"
         required: true

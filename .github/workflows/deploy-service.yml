@@ -22,7 +22,7 @@ on:
       branch:
         description: "Branch to build from"
         required: true
-        default: "master"
+        default: "revamp"
       deploy:
         description: "Deploy to VPS after build?"
         type: boolean
@@ -108,13 +108,8 @@ jobs:
             set -euo pipefail
             cd feedlytics/
 
-            ENV_FILE="prod/.env"
-            if [ ! -f "$ENV_FILE" ] && [ -f ".env" ]; then
-              echo "prod/.env missing; falling back to .env"
-              ENV_FILE=".env"
-            fi
-            if [ ! -f "$ENV_FILE" ]; then
-              echo "Missing env file: expected prod/.env or .env" >&2
+            if [ ! -f prod/.env ]; then
+              echo "Missing prod/.env on VPS" >&2
               exit 1
             fi
 
@@ -124,7 +119,18 @@ jobs:
             if [ "${{ inputs.queue }}" = "true" ]; then SERVICES="$SERVICES feedlytics-queue-service"; fi
             if [ "${{ inputs.widget }}" = "true" ]; then SERVICES="$SERVICES feedlytics-widget"; fi
 
-            docker compose --env-file "$ENV_FILE" pull $SERVICES
-            docker compose --env-file "$ENV_FILE" up -d --force-recreate $SERVICES
-            docker compose --env-file "$ENV_FILE" ps $SERVICES
+            docker compose --env-file prod/.env pull $SERVICES
+            docker compose --env-file prod/.env up -d --force-recreate $SERVICES
+            docker compose --env-file prod/.env ps $SERVICES
+
+            if [ "${{ inputs.service }}" = "true" ]; then
+              echo "Waiting for feedlytics-service health..."
+              sleep 45
+              docker compose --env-file prod/.env logs --tail=80 feedlytics-service || true
+              curl -sf http://127.0.0.1:8081/actuator/health || {
+                echo "feedlytics-service health check failed on localhost:8081" >&2
+                exit 1
+              }
+            fi
+
             docker image prune -f

@@ -6,7 +6,7 @@ on:
       branch:
         description: "Branch to sync from"
         required: true
-        default: "master"
+        default: "revamp"
 
 jobs:
   sync:
@@ -38,15 +38,10 @@ jobs:
             set -euo pipefail
             cd feedlytics/
 
-            ENV_FILE="prod/.env"
-            if [ ! -f "$ENV_FILE" ] && [ -f ".env" ]; then
-              echo "prod/.env missing; falling back to .env"
-              ENV_FILE=".env"
-            fi
-            if [ ! -f "$ENV_FILE" ]; then
-              echo "Missing env file: expected prod/.env or .env" >&2
+            if [ ! -f prod/.env ]; then
+              echo "Missing prod/.env on VPS" >&2
               exit 1
             fi
 
-            docker compose --env-file "$ENV_FILE" up -d --force-recreate
+            docker compose --env-file prod/.env up -d --force-recreate
             docker image prune -f
