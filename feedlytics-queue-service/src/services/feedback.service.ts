@@ -77,6 +77,32 @@ export const feedbackService = {
       }
     }
 
-    logger.info({ feedbackId, sentiment: analysis.overall_sentiment }, "Feedback analysis queued for batch callback");
+    if (
+      categoriesForCallback.length === 0 &&
+      workspaceCategoryNames.length > 0 &&
+      analysis.categories.some((c) => c.name.trim().toLowerCase() !== "other")
+    ) {
+      logger.warn(
+        {
+          feedbackId,
+          llmCategories: analysis.categories.map((c) => c.name),
+          workspaceCategoryNames,
+        },
+        "LLM returned category labels that did not match workspace categories; batch callback will send empty categories",
+      );
+    }
+
+    logger.info(
+      {
+        feedbackId,
+        sentiment: analysis.overall_sentiment,
+        overallConfidence: analysis.sentiment_confidence,
+        categories: categoriesForCallback.map((c) => ({
+          categoryName: c.categoryName,
+          confidence: c.confidence,
+        })),
+      },
+      "Feedback analysis queued for batch callback",
+    );
   },
 };

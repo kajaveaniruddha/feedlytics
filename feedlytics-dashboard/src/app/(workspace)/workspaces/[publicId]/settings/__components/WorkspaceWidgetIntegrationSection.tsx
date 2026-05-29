@@ -5,9 +5,9 @@ import { GlobeIcon, MonitorIcon, ShieldIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import {
+  CopyableCodeSnippet,
   IntegrationCredentialSection,
   IntegrationCurlCredentialsRow,
-  CopyableShellCommand,
   IntegrationHighlightItem,
   IntegrationHighlightRow,
 } from "@/components/integration/integration-doc-kit";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useWorkspaceIntegration } from "@/features/workspace/hooks/useWorkspaceIntegration";
-import { buildSendFeedbackCurlWidget } from "@/features/workspace/lib/workspace-send-feedback-curl";
+import { buildWidgetEmbedHtmlSnippet } from "@/features/workspace/lib/workspace-widget-embed-snippet";
 import { ApiError } from "@/services/api/errors/ApiError";
 
 export type WorkspaceWidgetIntegrationSectionProps = {
@@ -40,8 +40,8 @@ export function WorkspaceWidgetIntegrationSection({
 
   const forbidden = isError && error instanceof ApiError && error.status === 403;
 
-  const curlCommand = React.useMemo(
-    () => buildSendFeedbackCurlWidget(workspacePublicId),
+  const embedSnippet = React.useMemo(
+    () => buildWidgetEmbedHtmlSnippet(workspacePublicId),
     [workspacePublicId],
   );
 
@@ -89,12 +89,11 @@ export function WorkspaceWidgetIntegrationSection({
     <article aria-label="Widget integration" className="flex w-full max-w-6xl flex-col gap-6">
       <header className="space-y-4">
         <p className="text-base leading-relaxed text-navy-700 dark:text-white/85">
-          Use the widget flow when feedback is sent from a{" "}
-          <strong className="font-semibold text-navy-900 dark:text-white">browser page</strong> (JavaScript on the
-          client). You send the same JSON as the API, but authenticate with{" "}
-          <code className="font-mono text-[13px]">X-Feedlytics-Widget-Secret</code> and an{" "}
-          <strong className="font-semibold text-navy-900 dark:text-white">Origin</strong> that you have allowed in{" "}
-          <strong className="font-semibold text-navy-900 dark:text-white">Settings</strong>.
+          Add the embed snippet below to your site so visitors can send feedback from the browser. Simply replace{" "}
+          <code className="font-mono text-[13px]">YOUR-WIDGET-SECRET</code> with your widget secret from the panel.
+          Submissions use <code className="font-mono text-[13px]">X-Feedlytics-Widget-Secret</code> and the page&apos;s{" "}
+          <strong className="font-semibold text-navy-900 dark:text-white">Origin</strong> must be listed under{" "}
+          <strong className="font-semibold text-navy-900 dark:text-white">Allowed origins</strong> in <a href={`/workspaces/${workspacePublicId}/settings`} className="text-blue-500 hover:underline">Settings</a>.
         </p>
         <IntegrationHighlightRow>
           <IntegrationHighlightItem
@@ -119,16 +118,18 @@ export function WorkspaceWidgetIntegrationSection({
 
       <IntegrationCurlCredentialsRow
         curlSlot={
-          <CopyableShellCommand
-            title="Example browser-style request (cURL)"
+          <CopyableCodeSnippet
+            title="Embed widget"
             description={
               <>
-                Copy and run locally. Replace <code className="font-mono text-[13px]">YOUR_WIDGET_SECRET</code> and the{" "}
-                <code className="font-mono text-[13px]">Origin</code> header using the secret from the panel on the
-                right. The origin must match <strong className="font-semibold">Allowed origins</strong> in Settings.
+                Paste before the closing <code className="font-mono text-[13px]">&lt;/body&gt;</code> tag (or anywhere
+                scripts are allowed). Replace <code className="font-mono text-[13px]">YOUR-WIDGET-SECRET</code> with the
+                secret from the panel. The API base URL is configured in the widget bundle served from the CDN.
               </>
             }
-            command={curlCommand}
+            code={embedSnippet}
+            copyLabel="Copy embed code"
+            copiedToast="Embed code copied"
           />
         }
         credentialsSlot={

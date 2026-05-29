@@ -7,6 +7,10 @@ import {
   workspaceListAtFreeLimitFixture,
   workspaceListFixture,
 } from "@/mocks/fixtures/workspace.fixture";
+import {
+  workspacePlanUsageArchivedFixture,
+  workspacePlanUsageFixture,
+} from "@/mocks/fixtures/workspace-plan-usage.fixture";
 
 const url = (path: string) => `${env.apiBaseUrl}${path}`;
 
@@ -14,6 +18,12 @@ export const workspaceHappyPathHandlers = [
   http.get(url(endpoints.workspace.root), () =>
     HttpResponse.json({ success: true, workspaces: workspaceListFixture }),
   ),
+  http.get(url(endpoints.workspace.byId(":publicId")), ({ params }) => {
+    const selected =
+      workspaceListFixture.find((workspace) => workspace.publicId === params.publicId) ??
+      workspaceListFixture[0];
+    return HttpResponse.json({ success: true, workspace: selected });
+  }),
   http.post(url(endpoints.workspace.root), async ({ request }) => {
     const body = (await request.json()) as { name?: string; description?: string };
     return HttpResponse.json(
@@ -29,6 +39,9 @@ export const workspaceHappyPathHandlers = [
       { status: 200 },
     );
   }),
+  http.get(url(endpoints.workspace.planUsage(":publicId")), () =>
+    HttpResponse.json(workspacePlanUsageFixture),
+  ),
 ];
 
 export const workspaceListEmptyHandlers = [
@@ -62,5 +75,23 @@ export const workspaceListErrorHandlers = [
       { success: false, error: { code: "INTERNAL_ERROR", message: "Something went wrong" } },
       { status: 500 },
     ),
+  ),
+];
+
+export const workspacePlanUsageErrorHandlers = [
+  http.get(url(endpoints.workspace.planUsage(":publicId")), () =>
+    HttpResponse.json(
+      {
+        success: false,
+        error: { code: "INTERNAL_ERROR", message: "Could not load plan usage" },
+      },
+      { status: 500 },
+    ),
+  ),
+];
+
+export const workspacePlanUsageArchivedHandlers = [
+  http.get(url(endpoints.workspace.planUsage(":publicId")), () =>
+    HttpResponse.json(workspacePlanUsageArchivedFixture),
   ),
 ];

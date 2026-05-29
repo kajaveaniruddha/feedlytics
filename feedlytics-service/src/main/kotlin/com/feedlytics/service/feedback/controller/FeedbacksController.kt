@@ -2,7 +2,6 @@ package com.feedlytics.service.feedback.controller
 
 import com.feedlytics.service.common.security.AuthenticatedUser
 import com.feedlytics.service.feedback.dto.response.FeedbackOverviewAnalyticsResponse
-import com.feedlytics.service.feedback.dto.response.FeedbacksCountAndAvgRatingsResponse
 import com.feedlytics.service.feedback.dto.response.FeedbacksListResponse
 import com.feedlytics.service.feedback.service.FeedbacksService
 import org.springframework.http.HttpStatus
@@ -10,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -25,18 +25,10 @@ class FeedbacksController(
     fun listFeedbacks(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable workspaceId: UUID,
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "size", defaultValue = "10") size: Int,
     ): FeedbacksListResponse {
-        return FeedbacksListResponse(
-            feedbacks = feedbacksService.listFeedbacksForMember(workspaceId, user.id),
-        )
-    }
-
-    @GetMapping("/metrics")
-    fun getMetrics(
-        @AuthenticationPrincipal user: AuthenticatedUser,
-        @PathVariable workspaceId: UUID,
-    ): FeedbacksCountAndAvgRatingsResponse {
-        return feedbacksService.getMetricsForMember(workspaceId, user.id)
+        return feedbacksService.listFeedbacksForMember(workspaceId, user.id, page, size)
     }
 
     @GetMapping("/analytics/overview")

@@ -1,3 +1,6 @@
+/**
+ * @deprecated Legacy embed API. Use feedlytics-service `POST /api/v1/workspaces/{workspacePublicId}/send-feedback` with `X-Feedlytics-Widget-Secret` instead.
+ */
 import { createHandler } from "@/lib/route-handler";
 import { corsSuccessResponse, corsOptionsResponse } from "@/lib/api-response";
 import { messageService } from "@/services/message.service";

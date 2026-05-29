@@ -26,27 +26,78 @@ A lightweight, embeddable React widget that end users add to their websites to c
 
 ## How It Works
 
-1. Users embed the widget on their site by adding a script tag or importing the component
-2. The widget calls `POST /api/get-widget-settings` on the dashboard to fetch branding (colors, fields)
-3. Users fill in the feedback form with optional name/email, a text message, and a star rating
-4. On submit, the widget calls `POST /api/send-message` on the dashboard which queues it for AI processing
+1. Host sites embed the widget (script bundle or web component).
+2. On load, the widget calls **`GET {FEEDLYTICS_API_BASE_URL}/api/v1/workspaces/{workspacePublicId}/widget`** on the Feedlytics API. The browser sends an **`Origin`** header; that origin must be listed in the workspace’s allowed widget origins (dashboard **Settings**).
+3. Users submit feedback; the widget calls **`POST …/send-feedback`** with header **`X-Feedlytics-Widget-Secret`**, JSON body `content`, `rating` (1–5), `sourceType: "WIDGET"`, and optional `submitterName` / `submitterEmail` when the workspace widget collects them. The API records IP, user agent, referrer, and accept-language server-side.
+
+## API base URL (build-time)
+
+The API origin is **not** passed at runtime. It comes from [`src/lib/utils.js`](src/lib/utils.js) (`FEEDLYTICS_API_BASE_URL`), normally populated from **`VITE_FEEDLYTICS_API_BASE_URL`** when you build the bundle. For a one-off embed, you can set a literal default in that file next to `rawFeedlyticsApiBase`.
+
+## Configuration
+
+`main.jsx` runs **before** React mounts. Putting IDs only inside `App.jsx` does not run early enough—use one of the options below.
+
+### Script embed (recommended): `data-*` on the widget script
+
+```html
+<script
+  src="/feedlytics_widget.js"
+  data-workspace-public-id="00000000-0000-0000-0000-000000000000"
+  data-widget-secret="your-widget-secret"
+></script>
+```
+
+### Script embed: `window.feedlytics_widget` **before** the bundle
+
+The inline script must run **above** the widget script so the global exists when the bundle executes:
+
+```html
+<script>
+  window.feedlytics_widget = {
+    workspacePublicId: "00000000-0000-0000-0000-000000000000",
+    widgetSecret: "your-widget-secret",
+  };
+</script>
+<script src="/feedlytics_widget.js"></script>
+```
+
+- **`workspacePublicId`**: Workspace public UUID (same as in the dashboard URL).
+- **`widgetSecret`**: From dashboard **Widget integration** (browser-visible, like any client-side secret).
+
+If the page URL’s last path segment is a UUID, it is used as `workspacePublicId` when that field is omitted (dev convenience only).
+
+### Web component
+
+```html
+<feedlytics-widget
+  workspace-public-id="00000000-0000-0000-0000-000000000000"
+  widget-secret="your-widget-secret"
+></feedlytics-widget>
+```
+
+### Local dev (`pnpm dev`)
+
+Use **`data-workspace-public-id`** and **`data-widget-secret`** on the same `<script type="module" src="/src/main.jsx">` tag as in [`index.html`](index.html) (this works because `main.jsx` resolves the script tag when `document.currentScript` is unset for modules).
+
+You can still set `window.feedlytics_widget` in an inline script **before** that tag; non-empty `data-*` values take precedence when both are present.
 
 ## Environment Variables
 
 | Variable | Description |
 |---|---|
-| `VITE_DASHBOARD_BASE_URL` | Dashboard URL for API calls (`http://localhost:3000` in dev, `https://feedlytics.in` in prod) |
+| `VITE_FEEDLYTICS_API_BASE_URL` | Feedlytics API origin baked into the bundle (e.g. `http://localhost:8080`). Required unless you hardcode a default in `src/lib/utils.js`. |
 
 ## Key Directories
 
 ```
-Widget/
+feedlytics-widget/
 ├── src/
 │   ├── components/
 │   │   ├── Widget.jsx      # Main widget component
 │   │   └── ui/             # shadcn/ui primitives
 │   ├── lib/
-│   │   └── utils.js        # DASHBOARD_BASE_URL, color helpers
+│   │   └── utils.js        # FEEDLYTICS_API_BASE_URL (API origin)
 │   ├── App.jsx             # Root component
 │   ├── main.jsx            # Entry point
 │   └── web-component.jsx   # Web Component wrapper

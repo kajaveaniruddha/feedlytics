@@ -1,3 +1,6 @@
+/**
+ * @deprecated Legacy embed API. Use feedlytics-service `GET /api/v1/workspaces/{workspacePublicId}/widget` from the host page instead.
+ */
 import { createHandler } from "@/lib/route-handler";
 import { corsSuccessResponse, corsOptionsResponse } from "@/lib/api-response";
 import { userRepository } from "@/repositories/user.repository";

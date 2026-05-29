@@ -131,6 +131,21 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+function withDefaultDialogButtonSize(children: React.ReactNode): React.ReactNode {
+  return React.Children.map(children, (child) => {
+    if (!React.isValidElement<{ size?: string }>(child)) {
+      return child
+    }
+    if (child.type !== Button) {
+      return child
+    }
+    if (child.props.size != null) {
+      return child
+    }
+    return React.cloneElement(child, { size: "sm" })
+  })
+}
+
 function DialogFooter({
   className,
   showCloseButton = false,
@@ -143,14 +158,14 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-3 sm:flex-row sm:justify-end sm:gap-2",
         className
       )}
       {...props}
     >
-      {children}
+      {withDefaultDialogButtonSize(children)}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
+        <DialogPrimitive.Close render={<Button variant="outline" size="sm" />}>
           Close
         </DialogPrimitive.Close>
       )}

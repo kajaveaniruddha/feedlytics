@@ -64,6 +64,28 @@ Services/
 └── Dockerfile.dev          # Development image (hot reload)
 ```
 
+## Redis (required)
+
+BullMQ uses **`REDIS_URL`** (validated in `src/config/env.ts`). Example for Redis on your machine with the usual local Docker command:
+
+```bash
+docker run -d --name feedlytics-redis -p 6379:6379 redis:7-alpine redis-server --requirepass redispass
+```
+
+Set in `.env` (see **`.env.example`**):
+
+```env
+REDIS_URL=redis://default:redispass@127.0.0.1:6379
+```
+
+If the client does not accept the `default` username, use:
+
+```env
+REDIS_URL=redis://:redispass@127.0.0.1:6379
+```
+
+When the queue service runs **inside Docker Compose**, use the Redis service hostname (e.g. `redis`) instead of `127.0.0.1`.
+
 ## Startup (Dev)
 
 In Docker dev, the service runs:

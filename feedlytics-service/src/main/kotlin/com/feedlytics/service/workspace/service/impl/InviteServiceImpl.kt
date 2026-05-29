@@ -1,12 +1,13 @@
 package com.feedlytics.service.workspace.service.impl
 
+import com.feedlytics.service.common.entity.User
 import com.feedlytics.service.common.exception.BadRequestException
 import com.feedlytics.service.common.exception.ConflictException
 import com.feedlytics.service.common.exception.ForbiddenException
 import com.feedlytics.service.common.exception.LimitExceededException
 import com.feedlytics.service.common.exception.NotFoundException
 import com.feedlytics.service.common.repository.UserRepository
-import com.feedlytics.service.workspace.config.PlanLimits
+import com.feedlytics.service.workspace.planlimits.PlanLimitStrategyFactory
 import com.feedlytics.service.workspace.dto.request.InviteMemberRequest
 import com.feedlytics.service.workspace.dto.response.AcceptInviteResult
 import com.feedlytics.service.workspace.dto.response.InviteData
@@ -22,9 +23,14 @@ import com.feedlytics.service.workspace.repository.InviteRepository
 import com.feedlytics.service.workspace.repository.WorkspaceMembersRepository
 import com.feedlytics.service.workspace.repository.WorkspaceRepository
 import com.feedlytics.service.workspace.service.InviteService
+import com.feedlytics.service.common.notification.Notification
+import com.feedlytics.service.common.notification.NotificationChannelType
+import com.feedlytics.service.common.notification.NotificationService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.security.SecureRandom
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -36,7 +42,9 @@ class InviteServiceImpl(
     private val inviteRepository: InviteRepository,
     private val workspaceRepository: WorkspaceRepository,
     private val workspaceMemberRepository: WorkspaceMembersRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val notificationService: NotificationService,
+    private val planLimitStrategyFactory: PlanLimitStrategyFactory,
 ) : InviteService {
 
     private val logger = LoggerFactory.getLogger(InviteServiceImpl::class.java)
@@ -90,7 +98,7 @@ class InviteServiceImpl(
         }
 
         // Check member limit
-        val planLimits = PlanLimits.forPlan(workspace.plan)
+        val planLimits = planLimitStrategyFactory.getStrategy(workspace.plan).toPlanLimit()
         val currentMemberCount = workspaceMemberRepository.countByWorkspaceId(workspace.id)
         val pendingInviteCount = inviteRepository.findAllByWorkspaceIdAndStatus(workspace.id, InviteStatusEnum.PENDING)
             .count { !it.isExpired() }
@@ -116,7 +124,17 @@ class InviteServiceImpl(
         logger.info("Invite created for {} to workspace {} with role {}. Token: {}", 
             request.email, workspace.id, request.role, token)
 
-        // TODO: Send invite email with token
+        val inviterName = userRepository.findById(inviterId)
+            .map(User::name)
+            .orElse("A teammate")
+        scheduleInvitationEmailAfterCommit(
+            email = savedInvite.email,
+            workspaceName = workspace.name,
+            inviterName = inviterName,
+            role = savedInvite.role.name,
+            inviteToken = token,
+            expiresAtEpochMs = savedInvite.expiresAt.toEpochMilli(),
+        )
 
         return savedInvite.toInviteData(includeToken = true, token = token)
     }
@@ -132,26 +150,58 @@ class InviteServiceImpl(
     override fun acceptInvite(token: String, userId: Long): AcceptInviteResult {
         val invite = inviteRepository.findByToken(token)
             ?: throw NotFoundException("INVITE_NOT_FOUND", "Invite not found or invalid")
+        assertInvitePendingAndNotExpired(invite)
+        val user = loadUser(userId)
+        assertInviteEmailMatchesUser(invite, user)
+        return finalizeAcceptInvite(invite, user)
+    }
 
+    @Transactional
+    override fun acceptPendingInviteById(inviteId: UUID, userId: Long): AcceptInviteResult {
+        val invite = inviteRepository.findById(inviteId)
+            .orElseThrow { NotFoundException("INVITE_NOT_FOUND", "Invite not found or invalid") }
+        assertInvitePendingAndNotExpired(invite)
+        val user = loadUser(userId)
+        assertInviteEmailMatchesUser(invite, user)
+        return finalizeAcceptInvite(invite, user)
+    }
+
+    @Transactional
+    override fun rejectPendingInviteById(inviteId: UUID, userId: Long) {
+        val invite = inviteRepository.findById(inviteId)
+            .orElseThrow { NotFoundException("INVITE_NOT_FOUND", "Invite not found or invalid") }
+        assertInvitePendingAndNotExpired(invite)
+        val user = loadUser(userId)
+        assertInviteEmailMatchesUser(invite, user)
+        invite.status = InviteStatusEnum.REJECTED
+        inviteRepository.save(invite)
+        logger.info("User {} rejected invite {}", userId, inviteId)
+    }
+
+    private fun loadUser(userId: Long): User {
+        return userRepository.findById(userId)
+            .orElseThrow { NotFoundException("USER_NOT_FOUND", "User not found") }
+    }
+
+    private fun assertInvitePendingAndNotExpired(invite: InviteEntity) {
         if (invite.status != InviteStatusEnum.PENDING) {
             throw BadRequestException("INVITE_NOT_PENDING", "Invite has already been ${invite.status.name.lowercase()}")
         }
-
         if (invite.isExpired()) {
             invite.status = InviteStatusEnum.EXPIRED
             inviteRepository.save(invite)
             throw BadRequestException("INVITE_EXPIRED", "Invite has expired")
         }
+    }
 
-        val user = userRepository.findById(userId)
-            .orElseThrow { NotFoundException("USER_NOT_FOUND", "User not found") }
-
-        // Verify email matches
+    private fun assertInviteEmailMatchesUser(invite: InviteEntity, user: User) {
         if (!user.email.equals(invite.email, ignoreCase = true)) {
             throw ForbiddenException("EMAIL_MISMATCH", "This invite was sent to a different email address")
         }
+    }
 
-        // Check if already a member
+    private fun finalizeAcceptInvite(invite: InviteEntity, user: User): AcceptInviteResult {
+        val userId = user.id
         if (workspaceMemberRepository.existsByUserIdAndWorkspaceId(userId, invite.workspaceId)) {
             invite.status = InviteStatusEnum.ACCEPTED
             inviteRepository.save(invite)
@@ -161,7 +211,6 @@ class InviteServiceImpl(
         val workspace = workspaceRepository.findById(invite.workspaceId)
             .orElseThrow { NotFoundException("WORKSPACE_NOT_FOUND", "Workspace not found") }
 
-        // Create membership
         val member = WorkspaceMembersEntity(
             workspaceId = invite.workspaceId,
             userId = userId,
@@ -170,7 +219,6 @@ class InviteServiceImpl(
         )
         workspaceMemberRepository.save(member)
 
-        // Mark invite as accepted
         invite.status = InviteStatusEnum.ACCEPTED
         inviteRepository.save(invite)
 
@@ -246,7 +294,17 @@ class InviteServiceImpl(
 
         logger.info("Invite resent to {} for workspace {}. New token: {}", invite.email, workspace.id, newToken)
 
-        // TODO: Send invite email with new token
+        val requesterName = userRepository.findById(requesterId)
+            .map(User::name)
+            .orElse("A teammate")
+        scheduleInvitationEmailAfterCommit(
+            email = savedInvite.email,
+            workspaceName = workspace.name,
+            inviterName = requesterName,
+            role = savedInvite.role.name,
+            inviteToken = newToken,
+            expiresAtEpochMs = savedInvite.expiresAt.toEpochMilli(),
+        )
 
         return savedInvite.toInviteData(includeToken = true, token = newToken)
     }
@@ -346,6 +404,42 @@ class InviteServiceImpl(
         }
     }
 
+    private fun scheduleInvitationEmailAfterCommit(
+        email: String,
+        workspaceName: String,
+        inviterName: String,
+        role: String,
+        inviteToken: String,
+        expiresAtEpochMs: Long,
+    ) {
+        TransactionSynchronizationManager.registerSynchronization(
+            object : TransactionSynchronization {
+                override fun afterCommit() {
+                    try {
+                        notificationService.notify(
+                            NotificationChannelType.EMAIL,
+                            Notification.WorkspaceInvitation(
+                                email = email,
+                                workspaceName = workspaceName,
+                                inviterName = inviterName,
+                                role = role,
+                                inviteToken = inviteToken,
+                                expiresAtEpochMs = expiresAtEpochMs,
+                            ),
+                        )
+                    } catch (err: Exception) {
+                        logger.warn(
+                            "Failed to enqueue invitation email for email={} workspace={}: {}",
+                            email,
+                            workspaceName,
+                            err.message,
+                        )
+                    }
+                }
+            },
+        )
+    }
+
     private fun findWorkspaceByPublicId(publicId: UUID): WorkspacesEntity {
         return workspaceRepository.findByPublicId(publicId)
             ?: throw NotFoundException("WORKSPACE_NOT_FOUND", "Workspace not found")
@@ -358,7 +452,7 @@ class InviteServiceImpl(
     }
 
     private fun checkWorkspaceAccessible(workspace: WorkspacesEntity) {
-        if (!PlanLimits.isAccessible(workspace.plan)) {
+        if (!planLimitStrategyFactory.getStrategy(workspace.plan).isAccessible()) {
             throw ForbiddenException("WORKSPACE_ARCHIVED", "This workspace has been archived")
         }
     }

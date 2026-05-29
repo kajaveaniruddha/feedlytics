@@ -14,6 +14,9 @@ export const routes = {
   workspaceSettings: (publicId: string) => `/workspaces/${publicId}/settings`,
   workspaceWidget: (publicId: string) => `/workspaces/${publicId}/widget`,
   workspaceApiSettings: (publicId: string) => `/workspaces/${publicId}/api-settings`,
+  workspaceFeedbacks: (publicId: string) => `/workspaces/${publicId}/feedbacks`,
+  workspaceTeam: (publicId: string) => `/workspaces/${publicId}/team`,
+  workspaceBilling: (publicId: string) => `/workspaces/${publicId}/billing`,
 } as const;
 
 /** URL path prefixes that require an authenticated session (client gate). */

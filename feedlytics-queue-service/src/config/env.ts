@@ -9,6 +9,7 @@ const envSchema = z.object({
   GOOGLE_APP_PASSWORD: z.string().min(1),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   LOG_LEVEL: z.string().default("info"),
+  DASHBOARD_BASE_URL: z.string().url().default("http://localhost:3000"),
   AI_CALLBACK_BATCH_MS: z.coerce.number().optional(),
   AI_CALLBACK_MAX_BATCH: z.coerce.number().optional(),
 });

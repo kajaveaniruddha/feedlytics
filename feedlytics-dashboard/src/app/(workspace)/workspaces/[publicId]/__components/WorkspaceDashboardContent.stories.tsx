@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
+import { expect, waitFor, within } from "storybook/test";
 
 import { withAuthSession } from "@/mocks/decorators/withAuthSession";
 import {
+  feedbackWorkspaceListHandlers,
   feedbackWorkspaceOverviewErrorHandlers,
   feedbackWorkspaceOverviewHandlers,
 } from "@/mocks/handlers/feedbackWorkspace.handlers";
@@ -21,6 +23,7 @@ const meta: Meta<typeof WorkspaceDashboardContent> = {
         ...userHappyPathHandlers,
         ...workspaceHappyPathHandlers,
         ...feedbackWorkspaceOverviewHandlers,
+        ...feedbackWorkspaceListHandlers,
       ],
     },
     nextjs: {
@@ -42,7 +45,19 @@ export default meta;
 
 type Story = StoryObj<typeof WorkspaceDashboardContent>;
 
-export const HappyPath: Story = {};
+export const HappyPath: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() => expect(canvas.getByRole("heading", { name: /dashboard/i })).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText(/this month feedbacks/i)).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText(/recent feedbacks/i)).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText(/love the new dashboard redesign/i)).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByRole("link", { name: /view all/i })).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText(/ada lovelace/i)).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText("Workspaces")).toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText("Owned")).toBeInTheDocument());
+  },
+};
 
 export const OverviewError: Story = {
   parameters: {

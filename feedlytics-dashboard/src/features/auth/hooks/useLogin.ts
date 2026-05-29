@@ -38,10 +38,21 @@ export function useLogin() {
       });
       router.push(routes.workspaces);
     },
-    onError: (err) => {
-      if (!err.isValidationError()) {
-        toast.error(resolveErrorMessage(err.code, err.message));
+    onError: (err, variables) => {
+      if (err.isValidationError()) return;
+
+      if (err.code === "EMAIL_NOT_VERIFIED") {
+        toast.info(resolveErrorMessage(err.code, err.message));
+        const qs = new URLSearchParams({
+          email: variables.email.trim(),
+          resend: "1",
+          nonce: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        });
+        router.push(`${routes.verifyEmail}?${qs.toString()}`);
+        return;
       }
+
+      toast.error(resolveErrorMessage(err.code, err.message));
     },
   });
 }

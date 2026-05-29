@@ -8,3 +8,12 @@ export interface VerificationEmailData {
 export interface PaymentEmailData {
   email: string;
 }
+
+export interface InvitationEmailData {
+  email: string;
+  workspaceName: string;
+  inviterName: string;
+  role: string;
+  inviteToken: string;
+  expiresAtEpochMs: number;
+}

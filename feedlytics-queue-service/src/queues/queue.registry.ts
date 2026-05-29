@@ -15,3 +15,8 @@ export const notificationQueue = new Queue("notificationQueue", {
   connection: redisConnection,
   defaultJobOptions,
 });
+
+export const invitationEmailQueue = new Queue("invitationEmailQueue", {
+  connection: redisConnection,
+  defaultJobOptions,
+});

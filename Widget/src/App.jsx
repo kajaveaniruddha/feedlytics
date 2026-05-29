@@ -1,11 +1,9 @@
 import { Widget } from "./components/Widget";
 
 function App() {
-
+  const cfg = window.feedlytics_widget || {};
   return (
-    <>
-      <Widget username={window.feedlytics_widget.username} />
-    </>
+    <Widget workspacePublicId={cfg.workspacePublicId} widgetSecret={cfg.widgetSecret} />
   );
 }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.feedlytics.service.common.exception.BadRequestException
 import com.feedlytics.service.common.exception.ForbiddenException
 import com.feedlytics.service.common.exception.NotFoundException
-import com.feedlytics.service.workspace.config.PlanLimits
+import com.feedlytics.service.workspace.planlimits.PlanLimitStrategyFactory
 import com.feedlytics.service.workspace.dto.request.UpdateWidgetOriginsRequest
 import com.feedlytics.service.workspace.dto.response.RotateApiKeyResponse
 import com.feedlytics.service.workspace.dto.response.RotateWidgetSecretResponse
@@ -29,6 +29,7 @@ class WorkspaceIntegrationServiceImpl(
     private val workspaceRepository: WorkspaceRepository,
     private val workspaceMemberRepository: WorkspaceMembersRepository,
     private val passwordEncoder: PasswordEncoder,
+    private val planLimitStrategyFactory: PlanLimitStrategyFactory,
 ) : WorkspaceIntegrationService {
 
     private val logger = LoggerFactory.getLogger(WorkspaceIntegrationServiceImpl::class.java)
@@ -143,7 +144,7 @@ class WorkspaceIntegrationServiceImpl(
     }
 
     private fun checkWorkspaceAccessible(workspace: WorkspacesEntity) {
-        if (!PlanLimits.isAccessible(workspace.plan)) {
+        if (!planLimitStrategyFactory.getStrategy(workspace.plan).isAccessible()) {
             throw ForbiddenException(
                 "WORKSPACE_ARCHIVED",
                 "This workspace has been archived due to plan limits. Upgrade to PRO or BUSINESS to restore access.",

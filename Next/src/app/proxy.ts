@@ -53,6 +53,7 @@ export const config = {
     "/api/get-project-details",
     "/api/get-user-details",
     "/api/get-user-form-details/:path*",
+    // Deprecated: legacy widget bootstrap; prefer direct calls to feedlytics-service widget APIs.
     "/api/get-widget-settings",
     "/api/user-workflows",
     "/api/billing",

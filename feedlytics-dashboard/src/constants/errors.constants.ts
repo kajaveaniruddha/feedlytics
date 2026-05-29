@@ -7,7 +7,7 @@ export const errorMessages: Record<string, string> = {
   INVALID_CREDENTIALS: "That email and password combination is not correct.",
   EMAIL_EXISTS: "An account with this email already exists.",
   EMAIL_NOT_VERIFIED:
-    "Please verify your email before signing in. We just sent you a code.",
+    "Please verify your email before signing in. A new verification code will be sent to your inbox.",
   USER_NOT_FOUND: "We couldn't find an account for that email.",
   ALREADY_VERIFIED: "This email is already verified — just log in.",
   VALIDATION_ERROR: "Please fix the highlighted fields and try again.",

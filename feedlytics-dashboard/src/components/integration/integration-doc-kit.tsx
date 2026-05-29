@@ -100,6 +100,57 @@ export function CopyableShellCommand({
   );
 }
 
+export type CopyableCodeSnippetProps = {
+  title: string;
+  description?: React.ReactNode;
+  code: string;
+  copyLabel?: string;
+  copiedToast?: string;
+};
+
+export function CopyableCodeSnippet({
+  title,
+  description,
+  code,
+  copyLabel = "Copy snippet",
+  copiedToast = "Snippet copied",
+}: CopyableCodeSnippetProps) {
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(copiedToast);
+    } catch {
+      toast.error("Could not copy");
+    }
+  }
+
+  return (
+    <section aria-label={title} className="overflow-hidden rounded-[20px] border border-border bg-surface shadow-card">
+      <div className="flex flex-col gap-2 border-b border-border px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-navy-900 dark:text-white">{title}</h3>
+          {description ? (
+            <div className="mt-1 text-sm leading-relaxed text-navy-700 dark:text-white/80">{description}</div>
+          ) : null}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-1.5 self-start"
+          onClick={() => void copy()}
+        >
+          <CopyIcon className="size-3.5" aria-hidden />
+          {copyLabel}
+        </Button>
+      </div>
+      <pre className="max-h-[min(420px,55vh)] overflow-auto whitespace-pre-wrap break-all bg-navy-900 px-4 py-3 font-mono text-[12px] leading-relaxed text-white dark:bg-navy-950">
+        {code}
+      </pre>
+    </section>
+  );
+}
+
 /**
  * Docs layout: example cURL (primary, left) + credential controls (sidebar, right).
  * Stacks on small screens; sticky sidebar from `lg` when scrolling long commands.
@@ -172,7 +223,8 @@ export type ChipCollectionEditorProps = {
   inputValue: string;
   onInputChange: (value: string) => void;
   onAdd: () => void;
-  onRemove: (item: string) => void;
+  /** When omitted, chips are display-only (no remove control). */
+  onRemove?: (item: string) => void;
   disabled?: boolean;
   chipTextClassName?: string;
   footer?: React.ReactNode;
@@ -211,17 +263,19 @@ export function ChipCollectionEditor({
               className="inline-flex max-w-full items-center gap-1 rounded-full border border-secondary-gray-200 bg-surface px-2.5 py-1 text-xs font-medium text-navy-700 shadow-sm dark:border-white/10 dark:bg-navy-800 dark:text-white"
             >
               <span className={cn("truncate", chipTextClassName)}>{item}</span>
-              <IconButton
-                type="button"
-                label={`Remove ${item}`}
-                size="icon-sm"
-                variant="ghost"
-                className="shrink-0"
-                onClick={() => onRemove(item)}
-                disabled={disabled}
-              >
-                <XIcon className="size-3.5" />
-              </IconButton>
+              {onRemove ? (
+                <IconButton
+                  type="button"
+                  label={`Remove ${item}`}
+                  size="icon-sm"
+                  variant="ghost"
+                  className="shrink-0"
+                  onClick={() => onRemove(item)}
+                  disabled={disabled}
+                >
+                  <XIcon className="size-3.5" />
+                </IconButton>
+              ) : null}
             </span>
           ))
         )}

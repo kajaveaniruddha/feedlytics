@@ -1,5 +1,3 @@
-import { PromptTemplate } from "@langchain/core/prompts";
-import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
 import Groq from "groq-sdk";
 import type { SentimentAnalysisResult } from "../types/feedback.types";
@@ -7,99 +5,210 @@ import { logger } from "../lib/logger";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-function buildParser() {
-  return StructuredOutputParser.fromZodSchema(
-    z.object({
-      overall_sentiment: z
-        .enum(["positive", "neutral", "negative"])
-        .describe("The overall sentiment of the feedback text."),
-      sentiment_confidence: z
-        .number()
-        .min(0)
-        .max(1)
-        .describe("Confidence score between 0 and 1 for the sentiment."),
-      categories: z
-        .array(
-          z.object({
-            name: z.string().describe("Category name from the allowed list or exactly 'other'."),
-            confidence: z
-              .number()
-              .min(0)
-              .max(1)
-              .optional()
-              .describe("Confidence for this category assignment."),
-          })
-        )
-        .describe("Applicable categories from the allowed list; use 'other' if none apply."),
-    })
-  );
-}
-
 const FALLBACK_RESULT: SentimentAnalysisResult = {
   overall_sentiment: "neutral",
   sentiment_confidence: 0.5,
   categories: [{ name: "other" }],
 };
 
-const promptTemplate = PromptTemplate.fromTemplate(`
-You classify user feedback.
+/** Shape we expect inside the model JSON (before strict category / sentiment checks). */
+const llmJsonSchema = z.object({
+  overall_sentiment: z.enum(["positive", "neutral", "negative"]),
+  sentiment_confidence: z.number().min(0).max(1),
+  categories: z.array(
+    z.object({
+      name: z.string(),
+      confidence: z.number().min(0).max(1).optional(),
+    }),
+  ),
+});
 
-Allowed workspace categories (use exact spelling when applicable, case-insensitive match allowed):
-{allowedCategories}
+function extractJsonObjects(text: string): string[] {
+  const out: string[] = [];
+  const trimmed = text.trim();
+  if (trimmed.length > 0) out.push(trimmed);
 
-If none of the categories fit, include a single entry with name "other".
+  for (const m of trimmed.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)) {
+    const inner = m[1]?.trim();
+    if (inner) out.push(inner);
+  }
 
-Feedback text:
----
-{review}
----
+  let from = 0;
+  while ((from = trimmed.indexOf("{", from)) !== -1) {
+    let depth = 0;
+    for (let i = from; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          out.push(trimmed.slice(from, i + 1));
+          break;
+        }
+      }
+    }
+    from++;
+  }
 
-Return only valid JSON with:
-- overall_sentiment: positive | neutral | negative
-- sentiment_confidence: number 0-1
-- categories: array of {{ name, confidence? }} where name is from the allowed list or "other"
+  return [...new Set(out)];
+}
 
-{format_instructions}
-`);
+function parseFirstValidPayload(
+  raw: string,
+): z.infer<typeof llmJsonSchema> | null {
+  for (const chunk of extractJsonObjects(raw)) {
+    try {
+      const obj = JSON.parse(chunk) as unknown;
+      const parsed = llmJsonSchema.safeParse(obj);
+      if (parsed.success) return parsed.data;
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return null;
+}
+
+/**
+ * Map category names to workspace spelling; require every name to be either
+ * "other" or a case-insensitive match to an allowed category.
+ */
+function normalizeStrict(
+  data: z.infer<typeof llmJsonSchema>,
+  workspaceCategoryNames: string[],
+): SentimentAnalysisResult | null {
+  const allowedByLower = new Map(
+    workspaceCategoryNames.map((n) => {
+      const t = n.trim();
+      return [t.toLowerCase(), t] as const;
+    }),
+  );
+
+  const categories: { name: string; confidence?: number }[] = [];
+
+  for (const c of data.categories) {
+    const key = c.name.trim().toLowerCase();
+    if (key === "other") {
+      categories.push({ name: "other", confidence: c.confidence });
+      continue;
+    }
+    if (workspaceCategoryNames.length === 0) {
+      return null;
+    }
+    const canonical = allowedByLower.get(key);
+    if (!canonical) return null;
+    categories.push({ name: canonical, confidence: c.confidence });
+  }
+
+  if (categories.length === 0) return null;
+
+  return {
+    overall_sentiment: data.overall_sentiment,
+    sentiment_confidence: data.sentiment_confidence,
+    categories,
+  };
+}
+
+function buildPrompt(content: string, workspaceCategoryNames: string[]): string {
+  const allowedLines =
+    workspaceCategoryNames.length > 0
+      ? workspaceCategoryNames.map((c) => `- ${c.trim()}`).join("\n")
+      : '(only "other" — no workspace categories configured)';
+
+  return `Classify the feedback. Reply with a single JSON object only (no markdown, no code fences, no explanation, no reasoning).
+
+Required keys:
+- "overall_sentiment": one of "positive", "neutral", "negative"
+- "sentiment_confidence": number between 0 and 1
+- "categories": array of objects with "name" and optional "confidence" (0-1)
+
+Each category "name" must be exactly one of the allowed names below (same spelling; matching is case-insensitive) or the word other.
+
+Allowed category names:
+${allowedLines}
+
+Feedback:
+${content}`;
+}
+
+function quietFallback(reason: string): SentimentAnalysisResult {
+  logger.debug({ reason }, "LLM output invalid or unparsable; using neutral/other fallback");
+  return FALLBACK_RESULT;
+}
 
 export const llmService = {
-  async analyzeFeedback(content: string, workspaceCategoryNames: string[]): Promise<SentimentAnalysisResult> {
-    const allowedLines =
-      workspaceCategoryNames.length > 0
-        ? workspaceCategoryNames.map((c) => `- ${c}`).join("\n")
-        : "(no workspace categories configured — use only \"other\".)";
+  async analyzeFeedback(
+    content: string,
+    workspaceCategoryNames: string[],
+  ): Promise<SentimentAnalysisResult> {
+    const prompt = buildPrompt(content, workspaceCategoryNames);
 
-    const parser = buildParser();
-    const prompt = await promptTemplate.format({
-      review: content,
-      allowedCategories: allowedLines,
-      format_instructions: parser.getFormatInstructions(),
-    });
-
+    let raw: string | undefined;
     try {
       const response = await groq.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
         model: "llama-3.1-8b-instant",
-        max_tokens: 1024,
-        temperature: 0.3,
+        max_tokens: 256,
+        temperature: 0.1,
+        response_format: { type: "json_object" },
       });
 
-      const raw = response.choices[0]?.message?.content?.trim();
-      const parsed = await parser.parse(raw ?? "");
+      raw = response.choices[0]?.message?.content?.trim();
+      if (!raw) {
+        return quietFallback("empty_model_content");
+      }
+
+      const payload = parseFirstValidPayload(raw);
+      if (!payload) {
+        return quietFallback("json_parse_or_schema_mismatch");
+      }
+
+      const normalized = normalizeStrict(payload, workspaceCategoryNames);
+      if (!normalized) {
+        return quietFallback("category_or_sentiment_not_in_allowed_set");
+      }
+
       logger.debug(
-        { sentiment: parsed.overall_sentiment, categories: parsed.categories },
-        "LLM analysis complete"
+        { sentiment: normalized.overall_sentiment, categories: normalized.categories },
+        "LLM analysis complete",
       );
-      return {
-        overall_sentiment: parsed.overall_sentiment,
-        sentiment_confidence: parsed.sentiment_confidence,
-        categories: parsed.categories.map((c) => ({
-          name: c.name,
-          confidence: c.confidence,
-        })),
-      };
+      return normalized;
     } catch (error) {
-      logger.error({ error: String(error) }, "LLM sentiment analysis failed, using fallback");
+      const message = String(error);
+      if (
+        message.includes("response_format") ||
+        message.includes("json_object") ||
+        message.includes("json mode")
+      ) {
+        try {
+          const response = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama-3.1-8b-instant",
+            max_tokens: 256,
+            temperature: 0.1,
+          });
+          raw = response.choices[0]?.message?.content?.trim();
+          if (!raw) return quietFallback("empty_model_content_retry");
+          const payload = parseFirstValidPayload(raw);
+          if (!payload) return quietFallback("json_parse_or_schema_mismatch_retry");
+          const normalized = normalizeStrict(payload, workspaceCategoryNames);
+          if (!normalized) {
+            return quietFallback("category_or_sentiment_not_in_allowed_set_retry");
+          }
+          logger.debug(
+            { sentiment: normalized.overall_sentiment, categories: normalized.categories },
+            "LLM analysis complete",
+          );
+          return normalized;
+        } catch (retryErr) {
+          logger.debug(
+            { error: String(retryErr) },
+            "LLM request failed after json_mode retry; using fallback",
+          );
+          return FALLBACK_RESULT;
+        }
+      }
+
+      logger.debug({ error: message }, "LLM request failed; using fallback");
       return FALLBACK_RESULT;
     }
   },

@@ -5,14 +5,21 @@ import com.feedlytics.service.common.exception.ForbiddenException
 import com.feedlytics.service.common.exception.LimitExceededException
 import com.feedlytics.service.common.exception.NotFoundException
 import com.feedlytics.service.common.repository.UserRepository
+import com.feedlytics.service.feedback.entity.enums.SourceTypeEnum
+import com.feedlytics.service.feedback.repository.FeedbacksRepository
 import com.feedlytics.service.feedback.service.FeedbacksService
-import com.feedlytics.service.workspace.config.PlanLimits
+import com.feedlytics.service.workspace.planlimits.PlanLimitStrategyFactory
+import com.feedlytics.service.workspace.planlimits.WorkspaceFreePlanConstants
 import com.feedlytics.service.workspace.dto.WorkspaceWithRoleDto
 import com.feedlytics.service.workspace.dto.request.CreateWorkspaceRequest
 import com.feedlytics.service.workspace.dto.request.TransferOwnershipRequest
 import com.feedlytics.service.workspace.dto.request.UpdateWorkspaceRequest
 import com.feedlytics.service.workspace.dto.response.WorkspaceData
 import com.feedlytics.service.workspace.dto.response.WorkspaceListResponse
+import com.feedlytics.service.workspace.dto.response.WorkspacePlanUsageBySourceType
+import com.feedlytics.service.workspace.dto.response.WorkspacePlanUsageLimitKind
+import com.feedlytics.service.workspace.dto.response.WorkspacePlanUsageMetric
+import com.feedlytics.service.workspace.dto.response.WorkspacePlanUsageResponse
 import com.feedlytics.service.workspace.dto.response.WorkspaceResponse
 import com.feedlytics.service.workspace.entity.WorkspaceMembersEntity
 import com.feedlytics.service.workspace.entity.WorkspacesEntity
@@ -21,8 +28,12 @@ import com.feedlytics.service.workspace.entity.enums.PlansEnum
 import com.feedlytics.service.workspace.entity.enums.WorkspaceRoleEnum
 import com.feedlytics.service.workspace.repository.WorkspaceMembersRepository
 import com.feedlytics.service.workspace.repository.WorkspaceRepository
+import com.feedlytics.service.widget.WidgetDefaults
+import com.feedlytics.service.widget.repository.WidgetRepository
+import com.feedlytics.service.workspace.service.UsageLimitService
 import com.feedlytics.service.workspace.service.WorkspacePlanService
 import com.feedlytics.service.workspace.service.WorkspaceService
+import com.feedlytics.service.workspace.usage.BillingPeriod
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -33,7 +44,11 @@ class WorkspaceServiceImpl(
     private val workspaceMemberRepository: WorkspaceMembersRepository,
     private val workspacePlanService: WorkspacePlanService,
     private val feedbacksService: FeedbacksService,
+    private val feedbacksRepository: FeedbacksRepository,
+    private val usageLimitService: UsageLimitService,
     private val userRepository: UserRepository,
+    private val planLimitStrategyFactory: PlanLimitStrategyFactory,
+    private val widgetRepository: WidgetRepository,
 ) : WorkspaceService {
 
     @Transactional
@@ -54,6 +69,8 @@ class WorkspaceServiceImpl(
             status = MemberStatusEnum.ACTIVE
         )
         workspaceMemberRepository.save(member)
+
+        widgetRepository.save(WidgetDefaults.newEntityForWorkspace(savedWorkspace.id))
 
         return WorkspaceResponse(
             message = "Workspace created successfully.",
@@ -79,6 +96,60 @@ class WorkspaceServiceImpl(
 
         return WorkspaceResponse(
             workspace = toWorkspaceData(workspace, membership.role, membership.status)
+        )
+    }
+
+    @Transactional(readOnly = true)
+    override fun getWorkspacePlanUsage(workspacePublicId: UUID, userId: Long): WorkspacePlanUsageResponse {
+        val workspace = findWorkspaceByPublicId(workspacePublicId)
+        findMembership(workspace.id, userId)
+        checkWorkspaceAccessible(workspace)
+
+        val limits = planLimitStrategyFactory.getStrategy(workspace.plan).toPlanLimit()
+        val usage = usageLimitService.getCurrentUsage(workspace.id)
+        val periodStart = usage.periodStart
+        val periodEnd = BillingPeriod.nextUtcMonthStart(periodStart)
+
+        val countsBySourceType = feedbacksRepository.getFeedbackUsageBySourceType(
+            workspaceId = workspace.id,
+            periodStart = periodStart,
+            periodEnd = periodEnd,
+        ).associate { row ->
+            SourceTypeEnum.valueOf(row.sourceType) to (row.usedCount ?: 0L)
+        }
+
+        val feedbacksBySourceType = SourceTypeEnum.entries.map { sourceType ->
+            val limitKind = if (sourceType == SourceTypeEnum.API_KEY) {
+                WorkspacePlanUsageLimitKind.API_MONTHLY
+            } else {
+                WorkspacePlanUsageLimitKind.SHARED_MONTHLY_FEEDBACK
+            }
+            val limit = if (sourceType == SourceTypeEnum.API_KEY) {
+                limits.maxApiCallsPerMonth
+            } else {
+                limits.maxFeedbacksPerMonth
+            }
+            WorkspacePlanUsageBySourceType(
+                sourceType = sourceType,
+                used = countsBySourceType[sourceType] ?: 0L,
+                limit = limit,
+                limitKind = limitKind,
+            )
+        }
+
+        return WorkspacePlanUsageResponse(
+            plan = workspace.plan,
+            periodStart = periodStart,
+            periodEnd = periodEnd,
+            monthlyFeedback = WorkspacePlanUsageMetric(
+                used = usage.feedbackCount.toLong(),
+                limit = limits.maxFeedbacksPerMonth,
+            ),
+            feedbacksBySourceType = feedbacksBySourceType,
+            members = WorkspacePlanUsageMetric(
+                used = workspaceMemberRepository.countByWorkspaceId(workspace.id),
+                limit = limits.maxMembers,
+            ),
         )
     }
 
@@ -181,16 +252,16 @@ class WorkspaceServiceImpl(
 
     private fun checkFreeWorkspaceLimit(userId: Long) {
         val freeWorkspaceCount = workspaceRepository.countByOwnerIdAndPlan(userId, PlansEnum.FREE)
-        if (freeWorkspaceCount >= PlanLimits.MAX_FREE_WORKSPACES_PER_USER) {
+        if (freeWorkspaceCount >= WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER) {
             throw LimitExceededException(
                 "FREE_WORKSPACE_LIMIT_EXCEEDED",
-                "You can only have ${PlanLimits.MAX_FREE_WORKSPACES_PER_USER} free workspaces. Upgrade an existing workspace to PRO or BUSINESS to create more."
+                "You can only have ${WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER} free workspaces. Upgrade an existing workspace to PRO or BUSINESS to create more."
             )
         }
     }
 
     private fun checkWorkspaceAccessible(workspace: WorkspacesEntity) {
-        if (!PlanLimits.isAccessible(workspace.plan)) {
+        if (!planLimitStrategyFactory.getStrategy(workspace.plan).isAccessible()) {
             throw ForbiddenException(
                 "WORKSPACE_ARCHIVED",
                 "This workspace has been archived due to plan limits. Upgrade to PRO or BUSINESS to restore access."
@@ -220,6 +291,7 @@ class WorkspaceServiceImpl(
         status: MemberStatusEnum
     ): WorkspaceData {
         val feedbackStats = feedbacksService.getFeedbacksCountAndAvgRatings(workspace.id)
+        val maxMembers = planLimitStrategyFactory.getStrategy(workspace.plan).toPlanLimit().maxMembers
         return WorkspaceData(
             publicId = workspace.publicId,
             name = workspace.name,
@@ -228,6 +300,7 @@ class WorkspaceServiceImpl(
             role = role,
             status = status,
             memberCount = workspaceMemberRepository.countByWorkspaceId(workspace.id),
+            maxMembers = maxMembers,
             feedbackCount = feedbackStats.totalFeedbacks,
             avgRating = feedbackStats.averageRating,
             createdAt = workspace.createdAt
@@ -235,6 +308,7 @@ class WorkspaceServiceImpl(
     }
 
     private fun WorkspaceWithRoleDto.toWorkspaceData(): WorkspaceData {
+        val maxMembers = planLimitStrategyFactory.getStrategy(this.plan).toPlanLimit().maxMembers
         return WorkspaceData(
             publicId = this.publicId,
             name = this.name,
@@ -243,6 +317,7 @@ class WorkspaceServiceImpl(
             role = this.role,
             status = this.status,
             memberCount = this.memberCount,
+            maxMembers = maxMembers,
             feedbackCount = this.feedbackCount,
             avgRating = this.avgRating,
             createdAt = this.createdAt

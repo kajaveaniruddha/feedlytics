@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
@@ -25,12 +25,16 @@ import {
   verifyEmailSchema,
   type VerifyEmailRequest,
 } from "@/features/auth/schemas/verify-email.schema";
+import { routes } from "@/config/routes";
 
 import { verifyCopy } from "../constants/signup.constants";
 
 export function EmailVerificationStep() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const presetEmail = searchParams.get("email") ?? "";
+  const presetEmail = searchParams.get("email")?.trim() ?? "";
+  const shouldAutoResend = searchParams.get("resend") === "1";
+  const resendNonce = searchParams.get("nonce") ?? "";
 
   const form = useForm<VerifyEmailRequest>({
     resolver: zodResolver(verifyEmailSchema),
@@ -39,7 +43,39 @@ export function EmailVerificationStep() {
   });
 
   const { mutate, isPending } = useVerifyEmail();
-  const { mutate: resend, isPending: isResending } = useRegenerateEmailCode();
+  const { mutate: resend, mutateAsync: resendAsync, isPending: isResending } =
+    useRegenerateEmailCode();
+
+  React.useEffect(() => {
+    if (!shouldAutoResend || !presetEmail) return;
+
+    const cleanQs = new URLSearchParams({ email: presetEmail });
+    const gateKey =
+      resendNonce.length > 0
+        ? `feedlytics:verify-autoresend:${presetEmail}:${resendNonce}`
+        : `feedlytics:verify-autoresend:${presetEmail}:legacy`;
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        if (!sessionStorage.getItem(gateKey)) {
+          sessionStorage.setItem(gateKey, "1");
+          await resendAsync({ email: presetEmail });
+        }
+      } catch {
+        /* useRegenerateEmailCode onError already toasts */
+      } finally {
+        if (!cancelled) {
+          router.replace(`${routes.verifyEmail}?${cleanQs.toString()}`, { scroll: false });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldAutoResend, presetEmail, resendNonce, resendAsync, router]);
 
   const onSubmit = form.handleSubmit((values) => mutate(values));
 

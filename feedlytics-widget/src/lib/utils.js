@@ -5,9 +5,9 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
 
-// Use inter-docker proxy via Vite in dev (relative "/api"),
-// but allow override via VITE_DASHBOARD_BASE_URL when embedding/production.
-export const DASHBOARD_BASE_URL = import.meta.env.VITE_DASHBOARD_BASE_URL || "";
+const rawFeedlyticsApiBase =
+  import.meta.env.VITE_FEEDLYTICS_API_BASE_URL || "http://localhost:8081";
+export const FEEDLYTICS_API_BASE_URL = rawFeedlyticsApiBase.replace(/\/$/, "");
 
 export function lightenColor(color, percent) {
   let num = parseInt(color.slice(1), 16);

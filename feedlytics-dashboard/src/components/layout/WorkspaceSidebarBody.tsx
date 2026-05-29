@@ -47,7 +47,7 @@ export function WorkspaceSidebarBody({ onNavigate, className }: WorkspaceSidebar
           All workspaces
         </Link>
       </div>
-      <Separator className="mb-6 bg-secondary-gray-200 dark:bg-white/10" />
+      <Separator className="mb-6" />
       <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto" aria-label="Workspace">
         {workspaceSidebarNavEntries.map((entry) => {
           const href = entry.resolveHref(ctx);

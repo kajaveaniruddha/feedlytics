@@ -5,6 +5,7 @@ import com.feedlytics.service.workspace.dto.request.CreateWorkspaceRequest
 import com.feedlytics.service.workspace.dto.request.TransferOwnershipRequest
 import com.feedlytics.service.workspace.dto.request.UpdateWorkspaceRequest
 import com.feedlytics.service.workspace.dto.response.WorkspaceListResponse
+import com.feedlytics.service.workspace.dto.response.WorkspacePlanUsageResponse
 import com.feedlytics.service.workspace.dto.response.WorkspaceResponse
 
 import com.feedlytics.service.workspace.service.WorkspaceService
@@ -45,6 +46,14 @@ class WorkspaceController(
         @PathVariable workspaceId: UUID
     ): WorkspaceResponse {
         return workspaceService.getWorkspace(workspaceId, user.id)
+    }
+
+    @GetMapping("/{workspaceId}/plan-usage")
+    fun getWorkspacePlanUsage(
+        @AuthenticationPrincipal user: AuthenticatedUser,
+        @PathVariable workspaceId: UUID,
+    ): WorkspacePlanUsageResponse {
+        return workspaceService.getWorkspacePlanUsage(workspaceId, user.id)
     }
 
     @PutMapping("/{workspaceId}")

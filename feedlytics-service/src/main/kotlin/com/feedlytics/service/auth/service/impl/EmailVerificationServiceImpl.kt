@@ -3,18 +3,25 @@ package com.feedlytics.service.auth.service.impl
 import com.feedlytics.service.auth.entity.EmailVerificationEntity
 import com.feedlytics.service.auth.repository.EmailVerificationRepository
 import com.feedlytics.service.auth.service.EmailVerificationService
+import com.feedlytics.service.common.notification.Notification
+import com.feedlytics.service.common.notification.NotificationChannelType
+import com.feedlytics.service.common.notification.NotificationService
 import com.feedlytics.service.common.entity.User
 import com.feedlytics.service.common.exception.BadRequestException
 import com.feedlytics.service.common.repository.UserRepository
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.Instant
 import kotlin.random.Random
 
 @Service
 class EmailVerificationServiceImpl(
     private val emailVerificationRepository: EmailVerificationRepository,
-    private val userRepository: UserRepository) :
+    private val userRepository: UserRepository,
+    private val notificationService: NotificationService,
+) :
     EmailVerificationService {
     companion object {
         private const val CODE_EXPIRY_MINUTES = 15L
@@ -32,9 +39,23 @@ class EmailVerificationServiceImpl(
             expiresAt = Instant.now().plusSeconds(CODE_EXPIRY_MINUTES * 60)
         )
         emailVerificationRepository.save(verification)
-        // TODO: Send email with code (implement email service later)
-        println("Verification code for ${user.email}: $code")
 
+        val expiryMs = verification.expiresAt.toEpochMilli()
+        TransactionSynchronizationManager.registerSynchronization(
+            object : TransactionSynchronization {
+                override fun afterCommit() {
+                    notificationService.notify(
+                        NotificationChannelType.EMAIL,
+                        Notification.EmailVerification(
+                            email = user.email,
+                            username = user.name,
+                            verifyCode = code,
+                            expiryAtEpochMs = expiryMs,
+                        ),
+                    )
+                }
+            },
+        )
     }
 
     @Transactional

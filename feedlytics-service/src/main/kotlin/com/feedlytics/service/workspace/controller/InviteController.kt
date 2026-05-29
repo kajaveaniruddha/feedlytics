@@ -9,7 +9,14 @@ import com.feedlytics.service.workspace.service.InviteService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
@@ -81,6 +88,30 @@ class InviteController(
             success = true,
             invites = invites
         )
+    }
+
+    @PostMapping("/invites/pending/{inviteId}/accept")
+    fun acceptPendingInvite(
+        @AuthenticationPrincipal user: AuthenticatedUser,
+        @PathVariable inviteId: UUID,
+    ): AcceptInviteResponse {
+        val result = inviteService.acceptPendingInviteById(inviteId, user.id)
+        return AcceptInviteResponse(
+            success = true,
+            message = "You have joined ${result.workspaceName}.",
+            workspacePublicId = result.workspacePublicId,
+            workspaceName = result.workspaceName,
+            member = result.member
+        )
+    }
+
+    @PostMapping("/invites/pending/{inviteId}/reject")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun rejectPendingInvite(
+        @AuthenticationPrincipal user: AuthenticatedUser,
+        @PathVariable inviteId: UUID,
+    ) {
+        inviteService.rejectPendingInviteById(inviteId, user.id)
     }
 }
 

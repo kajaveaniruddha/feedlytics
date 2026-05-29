@@ -26,6 +26,7 @@ data class WorkspaceData(
     val role: WorkspaceRoleEnum,
     val status: MemberStatusEnum,
     val memberCount: Long,
+    val maxMembers: Int,
     val feedbackCount: Long,
     val avgRating: Double?,
     val createdAt: Instant

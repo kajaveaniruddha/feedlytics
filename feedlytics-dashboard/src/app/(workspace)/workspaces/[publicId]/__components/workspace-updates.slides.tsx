@@ -58,7 +58,7 @@ export function workspaceUpdateSlides(workspacePublicId: string): WorkspaceUpdat
       description:
         "Set up your theme, pick a layout, and embed it on your site in under a minute.",
       ctaLabel: "Open Widget Editor",
-      href: `${w}#widget-editor`,
+      href: `${w}/widget/#customize-appearance`,
       visual: <WidgetPreviewPlaceholder />,
     },
   ];

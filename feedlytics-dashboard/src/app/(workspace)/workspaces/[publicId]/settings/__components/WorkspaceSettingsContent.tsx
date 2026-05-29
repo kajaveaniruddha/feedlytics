@@ -12,6 +12,7 @@ import { useCurrentUser } from "@/features/user/hooks/useCurrentUser";
 import { workspaceInitials } from "@/features/workspace/lib/workspace-initials";
 
 import { WorkspaceAllowedOriginsSection } from "./WorkspaceAllowedOriginsSection";
+import { WorkspaceDeleteSection } from "./WorkspaceDeleteSection";
 
 export type WorkspaceSettingsContentProps = {
   workspacePublicId: string;
@@ -47,6 +48,9 @@ export function WorkspaceSettingsContent({ workspacePublicId }: WorkspaceSetting
         </div>
         <div className="rounded-[20px] border border-border bg-surface p-6 shadow-card md:p-8">
           <FeedbackCategoriesSection workspacePublicId={workspacePublicId} />
+        </div>
+        <div className="rounded-[20px] border border-destructive/25 bg-surface p-6 shadow-card md:p-8">
+          <WorkspaceDeleteSection workspacePublicId={workspacePublicId} />
         </div>
       </Stack>
     </WorkspaceDashboardShell>

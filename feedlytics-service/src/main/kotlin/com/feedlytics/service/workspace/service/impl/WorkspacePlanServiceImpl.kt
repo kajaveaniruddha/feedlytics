@@ -2,20 +2,28 @@ package com.feedlytics.service.workspace.service.impl
 
 import com.feedlytics.service.common.exception.BadRequestException
 import com.feedlytics.service.common.exception.NotFoundException
-import com.feedlytics.service.workspace.config.PlanLimits
+import com.feedlytics.service.workspace.archive.WorkspaceArchiveStrategy
+import com.feedlytics.service.workspace.planlimits.WorkspaceFreePlanConstants
 import com.feedlytics.service.workspace.entity.enums.PlansEnum
 import com.feedlytics.service.workspace.repository.WorkspaceRepository
 import com.feedlytics.service.workspace.service.WorkspacePlanService
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WorkspacePlanServiceImpl(
-    private val workspaceRepository: WorkspaceRepository
+    private val workspaceRepository: WorkspaceRepository,
+    archiveStrategies: List<WorkspaceArchiveStrategy>,
+    @Value("\${workspace.archive.strategy:leastUsed}") archiveStrategyKey: String,
 ) : WorkspacePlanService {
 
     private val logger = LoggerFactory.getLogger(WorkspacePlanServiceImpl::class.java)
+
+    private val archiveStrategy: WorkspaceArchiveStrategy =
+        archiveStrategies.find { it.strategyKey == archiveStrategyKey }
+            ?: archiveStrategies.first()
 
     @Transactional
     override fun downgradeToFree(workspaceId: Long): WorkspacePlanService.DowngradeResult {
@@ -94,9 +102,9 @@ class WorkspacePlanServiceImpl(
 
         // For FREE plan, check if limit allows
         val currentFreeCount = workspaceRepository.countByOwnerIdAndPlan(workspace.ownerId, PlansEnum.FREE)
-        if (currentFreeCount >= PlanLimits.MAX_FREE_WORKSPACES_PER_USER) {
-            logger.warn("Cannot restore workspace {} to FREE - limit exceeded ({}/{})", 
-                workspaceId, currentFreeCount, PlanLimits.MAX_FREE_WORKSPACES_PER_USER)
+        if (currentFreeCount >= WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER) {
+            logger.warn("Cannot restore workspace {} to FREE - limit exceeded ({}/{})",
+                workspaceId, currentFreeCount, WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER)
             return false
         }
 
@@ -111,14 +119,14 @@ class WorkspacePlanServiceImpl(
         val freeWorkspaces = workspaceRepository.findFreeWorkspacesByOwnerOrderedByUsage(ownerId)
         val archivedIds = mutableListOf<Long>()
 
-        if (freeWorkspaces.size <= PlanLimits.MAX_FREE_WORKSPACES_PER_USER) {
+        if (freeWorkspaces.size <= WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER) {
             return archivedIds
         }
 
-        val countToArchive = freeWorkspaces.size - PlanLimits.MAX_FREE_WORKSPACES_PER_USER
+        val countToArchive = freeWorkspaces.size - WorkspaceFreePlanConstants.MAX_FREE_WORKSPACES_PER_USER
 
-        // Archive the least used workspaces (first in the list = least used)
-        freeWorkspaces.take(countToArchive).forEach { workspace ->
+        val toArchive = archiveStrategy.selectWorkspacesToArchive(freeWorkspaces, countToArchive)
+        toArchive.forEach { workspace ->
             workspace.plan = PlansEnum.ARCHIVED
             workspaceRepository.save(workspace)
             archivedIds.add(workspace.id)

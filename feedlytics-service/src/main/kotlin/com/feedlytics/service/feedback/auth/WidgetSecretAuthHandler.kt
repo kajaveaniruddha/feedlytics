@@ -1,47 +1,38 @@
-package com.feedlytics.service.feedback.service
+package com.feedlytics.service.feedback.auth
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.feedlytics.service.common.exception.ForbiddenException
-import com.feedlytics.service.common.exception.UnauthorizedException
 import com.feedlytics.service.feedback.entity.enums.SourceTypeEnum
 import com.feedlytics.service.workspace.entity.WorkspacesEntity
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 
-@Service
-class WorkspaceSubmissionCredentialService(
+@Component
+class WidgetSecretAuthHandler(
     private val passwordEncoder: PasswordEncoder,
-) {
+) : BaseAuthHandler() {
 
     private val objectMapper = ObjectMapper()
 
-    fun requireApiKeyOrWidgetSecret(
-        workspace: WorkspacesEntity,
-        apiKeyHeader: String?,
-        widgetSecretHeader: String?,
-        origin: String?,
-    ): SourceTypeEnum {
-        val apiKey = apiKeyHeader?.trim()?.takeIf { it.isNotEmpty() }
-        val widgetSecret = widgetSecretHeader?.trim()?.takeIf { it.isNotEmpty() }
+    override fun canHandle(request: FeedbackAuthRequest): Boolean =
+        !request.widgetSecret.isNullOrBlank()
 
-        if (apiKey != null && !workspace.apiKeyHash.isNullOrBlank() &&
-            passwordEncoder.matches(apiKey, workspace.apiKeyHash)
-        ) {
-            return SourceTypeEnum.API_KEY
-        }
-
-        if (widgetSecret != null && !workspace.widgetSecretHash.isNullOrBlank() &&
+    override fun authenticate(request: FeedbackAuthRequest): AuthResult {
+        val workspace = request.workspace
+        val widgetSecret = request.widgetSecret!!.trim()
+        if (!workspace.widgetSecretHash.isNullOrBlank() &&
             passwordEncoder.matches(widgetSecret, workspace.widgetSecretHash)
         ) {
-            requireWidgetOrigin(workspace, origin)
-            return SourceTypeEnum.WIDGET
+            requireWidgetOrigin(workspace, request.origin)
+            return AuthResult.Success(SourceTypeEnum.WIDGET)
         }
+        return AuthResult.Failure("Invalid widget secret")
+    }
 
-        throw UnauthorizedException(
-            "INVALID_CREDENTIALS",
-            "Invalid or missing workspace credentials. Configure an API key or widget secret for this workspace.",
-        )
+    /** Public widget config (GET): no secret; [origin] must match workspace allowed origins. */
+    fun requireAllowedOriginForPublicWidgetRead(workspace: WorkspacesEntity, origin: String?) {
+        requireWidgetOrigin(workspace, origin)
     }
 
     private fun requireWidgetOrigin(workspace: WorkspacesEntity, origin: String?) {
@@ -57,7 +48,7 @@ class WorkspaceSubmissionCredentialService(
         }
         val requestOrigin = origin?.trim().orEmpty()
         if (requestOrigin.isEmpty()) {
-            throw ForbiddenException("ORIGIN_REQUIRED", "Origin header is required for widget submissions")
+            throw ForbiddenException("ORIGIN_REQUIRED", "Origin header is required")
         }
         val normalizedRequest = normalizeOrigin(requestOrigin)
         val ok = allowed.any { normalizeOrigin(it) == normalizedRequest }

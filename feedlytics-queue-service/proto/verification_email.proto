@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package com.feedlytics.queue.email.v1;
+
+option java_multiple_files = true;
+option java_package = "com.feedlytics.queue.email.v1";
+
+// Queue service ingests verification email jobs from feedlytics-service over gRPC.
+service VerificationEmailQueue {
+  rpc EnqueueVerificationEmail (EnqueueVerificationEmailRequest) returns (EnqueueVerificationEmailResponse);
+}
+
+message EnqueueVerificationEmailRequest {
+  string email = 1;
+  string username = 2;
+  string verify_code = 3;
+  int64 expiry_at_epoch_ms = 4;
+}
+
+message EnqueueVerificationEmailResponse {
+  bool accepted = 1;
+}

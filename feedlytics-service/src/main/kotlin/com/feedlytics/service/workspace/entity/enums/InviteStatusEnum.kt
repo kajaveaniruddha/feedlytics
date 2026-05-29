@@ -4,5 +4,6 @@ enum class InviteStatusEnum {
     PENDING,
     ACCEPTED,
     EXPIRED,
-    CANCELLED
+    CANCELLED,
+    REJECTED,
 }

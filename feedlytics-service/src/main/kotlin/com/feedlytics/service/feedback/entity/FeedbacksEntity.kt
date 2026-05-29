@@ -17,7 +17,13 @@ class FeedbacksEntity(
     @Column(nullable = false)
     val content: String,
 
-    @Column(nullable=false)
-    val rating: Int
+    @Column(nullable = false)
+    val rating: Int,
+
+    @Column(name = "submitter_name")
+    val submitterName: String? = null,
+
+    @Column(name = "submitter_email")
+    val submitterEmail: String? = null,
 
 ) : BasePublicEntity()

@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { BellIcon, InfoIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 
 import { ToolbarThemeToggle } from "@/components/layout/ToolbarThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { IconButton } from "@/components/ui/icon-button";
+import { PendingInvitesMenu } from "@/components/layout/PendingInvitesMenu";
 import { cn } from "@/lib/utils/cn";
 
 export type DashboardHeaderCapsuleProps = {
@@ -47,15 +48,7 @@ export function DashboardHeaderCapsule({
       ) : null}
 
       <div className="flex shrink-0 items-center gap-0.5 md:gap-1">
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          label="Notifications (coming soon)"
-          className={actionIconClass}
-        >
-          <BellIcon className="size-[18px]" strokeWidth={2} />
-        </IconButton>
+        <PendingInvitesMenu actionIconClass={actionIconClass} />
         <ToolbarThemeToggle />
         <IconButton
           type="button"

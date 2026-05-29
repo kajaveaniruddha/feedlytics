@@ -31,7 +31,9 @@ export const Basic: Story = {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter showCloseButton>
-          <Button variant="destructive">Delete</Button>
+          <Button variant="destructive" size="sm">
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

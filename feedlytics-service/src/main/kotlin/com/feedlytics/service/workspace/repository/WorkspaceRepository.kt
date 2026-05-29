@@ -11,6 +11,8 @@ interface WorkspaceRepository : JpaRepository<WorkspacesEntity, Long> {
 
     fun findByPublicId(publicId: UUID): WorkspacesEntity?
 
+    fun findByStripeCustomerId(stripeCustomerId: String): WorkspacesEntity?
+
     @Query(
         """
         SELECT new com.feedlytics.service.workspace.dto.WorkspaceWithRoleDto(

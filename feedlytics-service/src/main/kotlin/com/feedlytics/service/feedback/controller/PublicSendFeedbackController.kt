@@ -31,8 +31,8 @@ class PublicSendFeedbackController(
         @RequestHeader(FeedlyticsHttpHeaders.WIDGET_SECRET, required = false) widgetSecret: String?,
         @RequestHeader(value = HttpHeaders.ORIGIN, required = false) origin: String?,
         request: HttpServletRequest,
-    ): Map<String, Long> {
-        val feedbackId = publicSendFeedbackService.send(
+    ): Map<String, Boolean> {
+        publicSendFeedbackService.send(
             workspacePublicId = workspacePublicId,
             body = body,
             apiKey = apiKey,
@@ -40,12 +40,20 @@ class PublicSendFeedbackController(
             origin = origin,
             remoteIp = clientIp(request),
             userAgent = request.getHeader(HttpHeaders.USER_AGENT),
+            referrer = request.getHeader("Referer")?.take(PublicSendFeedbackController.MAX_REFERRER_HEADER),
+            acceptLanguage = request.getHeader(HttpHeaders.ACCEPT_LANGUAGE)
+                ?.take(PublicSendFeedbackController.MAX_ACCEPT_LANGUAGE_HEADER),
         )
-        return mapOf("feedbackId" to feedbackId)
+        return mapOf("success" to true)
     }
 
     private fun clientIp(request: HttpServletRequest): String? {
         val forwarded = request.getHeader("X-Forwarded-For")?.split(",")?.firstOrNull()?.trim()
         return forwarded?.ifEmpty { null } ?: request.remoteAddr?.takeIf { it.isNotBlank() }
+    }
+
+    private companion object {
+        const val MAX_REFERRER_HEADER = 2048
+        const val MAX_ACCEPT_LANGUAGE_HEADER = 500
     }
 }

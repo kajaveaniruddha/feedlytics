@@ -1,7 +1,7 @@
-import "dotenv/config";
+import { env } from "./env";
 
 export const redisConnection = {
-  url: process.env.REDIS_URL,
+  url: env.REDIS_URL,
 };
 
 export const defaultJobOptions = {

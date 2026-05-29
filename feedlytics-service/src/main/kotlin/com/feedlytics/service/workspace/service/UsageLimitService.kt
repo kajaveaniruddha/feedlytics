@@ -11,11 +11,11 @@ interface UsageLimitService {
 
     fun canCreateCampaign(workspaceId: Long, plan: PlansEnum): Boolean
 
-    fun incrementFeedbackCount(workspaceId: Long)
+    fun incrementFeedbackCount(workspaceId: Long, plan: PlansEnum, feedbackId: Long)
 
-    fun incrementApiCalls(workspaceId: Long)
+    fun incrementApiCalls(workspaceId: Long, plan: PlansEnum)
 
-    fun incrementCampaignCount(workspaceId: Long)
+    fun incrementCampaignCount(workspaceId: Long, plan: PlansEnum)
 
     fun decrementCampaignCount(workspaceId: Long)
 

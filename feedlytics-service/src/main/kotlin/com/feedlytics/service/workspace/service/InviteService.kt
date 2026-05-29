@@ -30,6 +30,16 @@ interface InviteService {
     fun acceptInvite(token: String, userId: Long): AcceptInviteResult
 
     /**
+     * Accept a pending invite for the current user (matched by email), without a token.
+     */
+    fun acceptPendingInviteById(inviteId: UUID, userId: Long): AcceptInviteResult
+
+    /**
+     * Decline a pending invite for the current user (matched by email).
+     */
+    fun rejectPendingInviteById(inviteId: UUID, userId: Long)
+
+    /**
      * Cancel/revoke a pending invite.
      */
     fun cancelInvite(workspacePublicId: UUID, inviteId: UUID, requesterId: Long)

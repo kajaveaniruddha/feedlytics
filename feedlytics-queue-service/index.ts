@@ -1,10 +1,15 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+dotenv.config({ path: path.join(repoRoot, ".env.development") });
+import { env } from "./src/config/env";
 import { createApp } from "./src/app";
 import { logger } from "./src/lib/logger";
 import "./src/workers";
-import { startFeedbackGrpcServer } from "./src/grpc/feedback-grpc-server";
+import { startQueueGrpcServer } from "./src/grpc/feedback-grpc-server";
 import { flushAnalysisCallbacksOnShutdown } from "./src/services/ai-analysis-callback-batcher";
-import { env } from "./src/config/env";
 
 const app = createApp();
 const port = env.PORT;
@@ -13,7 +18,7 @@ app.listen(port, () => {
   logger.info({ port }, "Services server started");
 });
 
-startFeedbackGrpcServer(env.GRPC_PORT);
+startQueueGrpcServer(env.GRPC_PORT);
 
 async function shutdown(signal: string) {
   logger.info({ signal }, "Shutting down");

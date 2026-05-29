@@ -30,4 +30,16 @@ class WorkspacesEntity(
     @Column(name = "widget_allowed_origins", columnDefinition = "TEXT")
     var widgetAllowedOrigins: String? = null,
 
+    @Column(name = "stripe_customer_id")
+    var stripeCustomerId: String? = null,
+
+    @Column(name = "stripe_subscription_id")
+    var stripeSubscriptionId: String? = null,
+
+    @Column(name = "stripe_price_id")
+    var stripePriceId: String? = null,
+
+    @Column(name = "billing_interval", length = 10)
+    var billingInterval: String? = null,
+
 ) : BasePublicEntity()

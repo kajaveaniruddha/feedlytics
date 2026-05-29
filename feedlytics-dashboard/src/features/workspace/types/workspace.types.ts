@@ -12,6 +12,7 @@ export type WorkspaceData = {
   role: WorkspaceRole;
   status: MemberStatus;
   memberCount: number;
+  maxMembers: number;
   feedbackCount: number;
   avgRating: number | null;
   createdAt: string;

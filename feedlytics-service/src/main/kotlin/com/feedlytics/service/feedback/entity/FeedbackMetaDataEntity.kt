@@ -21,4 +21,10 @@ class FeedbackMetaDataEntity(
     @Column(name = "location")
     val location: String? = null,
 
+    @Column(name = "referrer")
+    val referrer: String? = null,
+
+    @Column(name = "accept_language")
+    val acceptLanguage: String? = null,
+
 ) : BasePublicEntity()

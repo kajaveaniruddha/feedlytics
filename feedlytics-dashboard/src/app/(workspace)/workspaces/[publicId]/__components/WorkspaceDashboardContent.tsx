@@ -12,11 +12,18 @@ import { Heading } from "@/components/ui/heading";
 import { MutedText } from "@/components/ui/muted-text";
 import { Stack } from "@/components/ui/stack";
 import { useCurrentUser } from "@/features/user/hooks/useCurrentUser";
+import { useWorkspaceDetail } from "@/features/workspace/hooks/useWorkspaceDetail";
 import { useWorkspaceOverviewAnalytics } from "@/features/workspace/hooks/useWorkspaceOverviewAnalytics";
+import { useWorkspacesList } from "@/features/workspace/hooks/useWorkspacesList";
+import { formatWorkspaceRole } from "@/features/workspace/lib/format-workspace-role";
 import { workspaceInitials } from "@/features/workspace/lib/workspace-initials";
 
 import { workspaceUpdateSlides } from "./workspace-updates.slides";
 import { WorkspaceKpiSection } from "./WorkspaceKpiSection";
+import { WorkspaceMonthlyFeedbacksPanel } from "./WorkspaceMonthlyFeedbacksPanel";
+import { WorkspacePlanUsagePanel } from "./WorkspacePlanUsagePanel";
+import { WorkspaceRecentFeedbacksPanel } from "./WorkspaceRecentFeedbacksPanel";
+import { WorkspaceUserProfileCard } from "./WorkspaceUserProfileCard";
 
 export type WorkspaceDashboardContentProps = {
   workspacePublicId: string;
@@ -25,7 +32,11 @@ export type WorkspaceDashboardContentProps = {
 export function WorkspaceDashboardContent({ workspacePublicId }: WorkspaceDashboardContentProps) {
   const { data: user } = useCurrentUser();
   const { data, isPending, isError, error, refetch } = useWorkspaceOverviewAnalytics(workspacePublicId);
+  const { data: workspaces, isPending: isWorkspacesPending } = useWorkspacesList();
+  const { data: workspace, isPending: isWorkspacePending } = useWorkspaceDetail(workspacePublicId);
   const userInitials = user?.name ? workspaceInitials(user.name) : "?";
+  const ownedCount = workspaces?.filter((w) => w.role === "OWNER").length ?? 0;
+  const profileLoading = !user || isWorkspacesPending || isWorkspacePending;
 
   if (isPending) {
     return <LoadingViewportCenter label="Loading workspace overview" />;
@@ -62,9 +73,26 @@ export function WorkspaceDashboardContent({ workspacePublicId }: WorkspaceDashbo
         </Stack>
       }
     >
-      <div className="w-full lg:w-3/4">
-        <WorkspaceUpdatesCarousel slides={workspaceUpdateSlides(workspacePublicId)} />
-      </div>
+      <Stack gap="lg" className="w-full">
+        <div className="grid items-start gap-5 lg:grid-cols-[1.6fr_1fr]">
+          <WorkspaceUpdatesCarousel slides={workspaceUpdateSlides(workspacePublicId)} />
+          <WorkspacePlanUsagePanel workspacePublicId={workspacePublicId} />
+        </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
+          <WorkspaceMonthlyFeedbacksPanel trend={data.rolling30DayFeedbacks} />
+          <WorkspaceRecentFeedbacksPanel workspacePublicId={workspacePublicId} />
+          <WorkspaceUserProfileCard
+            name={user?.name ?? "—"}
+            initials={userInitials}
+            roleLabel={workspace?.role ? formatWorkspaceRole(workspace.role) : "—"}
+            stats={[
+              { label: "Workspaces", value: workspaces?.length ?? 0 },
+              { label: "Owned", value: ownedCount },
+            ]}
+            isLoading={profileLoading}
+          />
+        </div>
+      </Stack>
     </WorkspaceDashboardShell>
   );
 }

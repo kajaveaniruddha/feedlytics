@@ -5,8 +5,15 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
 
-// Use inter-docker proxy via Vite in dev (relative "/api"),
-// but allow override via VITE_DASHBOARD_BASE_URL when embedding/production.
+/**
+ * Kotlin API origin for widget GET/PATCH paths (no trailing slash).
+ * Configure via `VITE_FEEDLYTICS_API_BASE_URL` in `.env` / build, or assign a default here for custom bundles.
+ */
+const rawFeedlyticsApiBase =
+  import.meta.env.VITE_FEEDLYTICS_API_BASE_URL || "";
+export const FEEDLYTICS_API_BASE_URL = rawFeedlyticsApiBase.replace(/\/$/, "");
+
+/** @deprecated Legacy dashboard proxy; prefer VITE_FEEDLYTICS_API_BASE_URL. */
 export const DASHBOARD_BASE_URL = import.meta.env.VITE_DASHBOARD_BASE_URL || "";
 
 export function lightenColor(color, percent) {

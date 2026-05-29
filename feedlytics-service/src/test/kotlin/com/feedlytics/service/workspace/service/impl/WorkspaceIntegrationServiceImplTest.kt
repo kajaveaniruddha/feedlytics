@@ -9,6 +9,11 @@ import com.feedlytics.service.workspace.entity.WorkspacesEntity
 import com.feedlytics.service.workspace.entity.enums.MemberStatusEnum
 import com.feedlytics.service.workspace.entity.enums.PlansEnum
 import com.feedlytics.service.workspace.entity.enums.WorkspaceRoleEnum
+import com.feedlytics.service.workspace.planlimits.ArchivedPlanLimitStrategy
+import com.feedlytics.service.workspace.planlimits.BusinessPlanLimitStrategy
+import com.feedlytics.service.workspace.planlimits.FreePlanLimitStrategy
+import com.feedlytics.service.workspace.planlimits.PlanLimitStrategyFactory
+import com.feedlytics.service.workspace.planlimits.ProPlanLimitStrategy
 import com.feedlytics.service.workspace.repository.WorkspaceMembersRepository
 import com.feedlytics.service.workspace.repository.WorkspaceRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,10 +45,19 @@ class WorkspaceIntegrationServiceImplTest {
 
     @BeforeEach
     fun setup() {
+        val planLimitStrategyFactory = PlanLimitStrategyFactory(
+            listOf(
+                FreePlanLimitStrategy(),
+                ProPlanLimitStrategy(),
+                BusinessPlanLimitStrategy(),
+                ArchivedPlanLimitStrategy(),
+            ),
+        )
         service = WorkspaceIntegrationServiceImpl(
             workspaceRepository,
             workspaceMemberRepository,
             passwordEncoder,
+            planLimitStrategyFactory,
         )
     }
 

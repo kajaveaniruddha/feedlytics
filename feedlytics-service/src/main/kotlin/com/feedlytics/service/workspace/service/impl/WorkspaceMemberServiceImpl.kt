@@ -4,7 +4,7 @@ import com.feedlytics.service.common.exception.BadRequestException
 import com.feedlytics.service.common.exception.ForbiddenException
 import com.feedlytics.service.common.exception.NotFoundException
 import com.feedlytics.service.common.repository.UserRepository
-import com.feedlytics.service.workspace.config.PlanLimits
+import com.feedlytics.service.workspace.planlimits.PlanLimitStrategyFactory
 import com.feedlytics.service.workspace.dto.MemberWithUserDto
 import com.feedlytics.service.workspace.dto.request.UpdateMemberRoleRequest
 import com.feedlytics.service.workspace.dto.response.MemberData
@@ -25,7 +25,8 @@ class WorkspaceMemberServiceImpl(
     private val workspaceRepository: WorkspaceRepository,
     private val workspaceMemberRepository: WorkspaceMembersRepository,
     private val userRepository: UserRepository,
-    private val inviteService: InviteService
+    private val inviteService: InviteService,
+    private val planLimitStrategyFactory: PlanLimitStrategyFactory,
 ) : WorkspaceMemberService {
 
     @Transactional(readOnly = true)
@@ -162,7 +163,7 @@ class WorkspaceMemberServiceImpl(
     }
 
     private fun checkWorkspaceAccessible(workspace: WorkspacesEntity) {
-        if (!PlanLimits.isAccessible(workspace.plan)) {
+        if (!planLimitStrategyFactory.getStrategy(workspace.plan).isAccessible()) {
             throw ForbiddenException(
                 "WORKSPACE_ARCHIVED",
                 "This workspace has been archived due to plan limits."

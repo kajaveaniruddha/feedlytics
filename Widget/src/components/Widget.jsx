@@ -4,7 +4,7 @@ import { Textarea } from "./ui/textarea";
 import { useState, useEffect, useRef } from "react";
 import tailwindStyles from "../index.css?inline";
 import axios from "axios";
-import { DASHBOARD_BASE_URL, lightenColor, blendColor } from "@/lib/utils";
+import { FEEDLYTICS_API_BASE_URL, lightenColor, blendColor } from "@/lib/utils";
 import {
   DEFAULT_FORM_THEME,
   SHADOW_MAP,
@@ -17,12 +17,21 @@ import root from "react-shadow";
 
 const RATING_LABELS = ["Terrible", "Bad", "Okay", "Good", "Excellent!"];
 
-export const Widget = ({ username }) => {
+function apiErrorMessage(error, fallback) {
+  return (
+    error.response?.data?.error?.message ||
+    error.response?.data?.message ||
+    fallback
+  );
+}
+
+export const Widget = ({ workspacePublicId, widgetSecret }) => {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [configError, setConfigError] = useState("");
   const [widgetSettings, setWidgetSettings] = useState(null);
   const [theme, setTheme] = useState(DEFAULT_FORM_THEME);
   const [isOpen, setIsOpen] = useState(false);
@@ -31,25 +40,29 @@ export const Widget = ({ username }) => {
   const [submittedName, setSubmittedName] = useState("");
 
   useEffect(() => {
-    axios
-      .post(`${DASHBOARD_BASE_URL}/api/get-widget-settings`, { username })
-      .then((response) => {
-        setWidgetSettings(response.data);
-        if (response.data.formTheme) {
-          setTheme(mergeWithDefaults(response.data.formTheme));
-        } else {
-          setTheme(
-            mergeWithDefaults({
-              formBgColor: response.data.bg_color || "#FFFFFF",
-              formTextColor: response.data.text_color || "#000000",
-            })
-          );
-        }
-      })
-      .catch((error) =>
-        console.error("Error fetching widget settings:", error)
+    if (!FEEDLYTICS_API_BASE_URL) return;
+    if (!workspacePublicId?.trim()) {
+      setConfigError(
+        "Workspace ID is missing. Use data-workspace-public-id on the script tag, set window.feedlytics_widget before the bundle loads, or use a /…/uuid URL path.",
       );
-  }, [username]);
+      return;
+    }
+    setConfigError("");
+    axios
+      .get(`${FEEDLYTICS_API_BASE_URL}/api/v1/workspaces/${workspacePublicId}/widget`)
+      .then((response) => {
+        const d = response.data;
+        setWidgetSettings({
+          collectName: Boolean(d.collectName),
+          collectEmail: Boolean(d.collectEmail),
+        });
+        setTheme(mergeWithDefaults(d.theme || {}));
+      })
+      .catch((error) => {
+        console.error("Error fetching widget settings:", error);
+        setConfigError(apiErrorMessage(error, "Could not load widget."));
+      });
+  }, [workspacePublicId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -83,26 +96,59 @@ export const Widget = ({ username }) => {
     setIsSubmitting(true);
     setErrorMessage("");
 
+    const secret = (widgetSecret || "").trim();
+    if (!secret) {
+      setErrorMessage("Widget secret is not configured.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (rating < 1) {
+      setErrorMessage("Please select a star rating before sending.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const form = e.target;
-    const name = form.name?.value || "";
+    const name = (form.elements.namedItem("name")?.value || "").trim();
+    const email = (form.elements.namedItem("email")?.value || "").trim();
+    const content = (form.elements.namedItem("feedback")?.value || "").trim();
     setSubmittedName(name);
 
-    const data = {
-      username,
-      name,
-      email: form.email?.value || "",
-      content: form.feedback.value,
-      stars: rating,
+    const payload = {
+      content,
+      rating,
+      sourceType: "WIDGET",
+      reportedUserAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
     };
+    if (widgetSettings?.collectName) {
+      payload.submitterName = name || undefined;
+    }
+    if (widgetSettings?.collectEmail) {
+      payload.submitterEmail = email || undefined;
+    }
 
     try {
-      await axios.post(`${DASHBOARD_BASE_URL}/api/send-message`, data);
-      setSubmitted(true);
+      const res = await axios.post(
+        `${FEEDLYTICS_API_BASE_URL}/api/v1/workspaces/${workspacePublicId}/send-feedback`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Feedlytics-Widget-Secret": secret,
+          },
+          validateStatus: () => true,
+        },
+      );
+      if (res.status === 202) {
+        setSubmitted(true);
+      } else {
+        setErrorMessage(
+          res.data?.error?.message || res.data?.message || "Something went wrong. Please try again.",
+        );
+      }
     } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again.";
-      setErrorMessage(message);
+      setErrorMessage(apiErrorMessage(error, "Something went wrong. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -134,7 +180,7 @@ export const Widget = ({ username }) => {
               boxShadow: SHADOW_MAP[theme.shadow],
               fontFamily: FONT_MAP[theme.fontFamily] || FONT_MAP.System,
             }}
-            className="animate-slide-fade-in fixed bottom-20 right-3 sm:right-4 w-[360px] max-w-[calc(100vw-24px)] widget z-50 overflow-hidden"
+            className="animate-slide-fade-in fixed bottom-[4.75rem] left-3 z-50 w-[360px] max-w-[calc(100vw-24px)] overflow-hidden widget sm:left-4"
           >
             <style>{fontImport}{tailwindStyles}</style>
 
@@ -147,7 +193,18 @@ export const Widget = ({ username }) => {
             />
 
             <div style={{ padding }}>
-              {submitted ? (
+              {configError ? (
+                <div
+                  className="rounded-lg bg-red-50 p-4 text-sm text-red-700"
+                  role="alert"
+                >
+                  {configError}
+                </div>
+              ) : !widgetSettings ? (
+                <p className="text-center text-sm py-8" style={{ color: theme.secondaryTextColor }}>
+                  Loading widget…
+                </p>
+              ) : submitted ? (
                 <ThankYouScreen
                   rating={rating}
                   theme={theme}
@@ -192,12 +249,13 @@ export const Widget = ({ username }) => {
           </div>
         )}
 
-        {/* ─── Floating Trigger Button ─── */}
+        {/* ─── Launcher (bottom-left, subtle corners — not chat-bubble style) ─── */}
         <button
           ref={buttonRef}
-          className={`widget fixed bottom-4 right-4 z-50 flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl cursor-pointer ${
-            !isOpen ? "animate-pulse-ring" : ""
-          }`}
+          type="button"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Close feedback" : "Open feedback"}
+          className="widget fixed bottom-3 left-3 z-50 flex cursor-pointer items-center gap-2 rounded-md border border-black/10 px-3.5 py-2 text-sm font-semibold shadow-md transition-[box-shadow,transform] duration-200 hover:shadow-lg active:scale-[0.98] sm:bottom-4 sm:left-4"
           style={{
             backgroundColor: theme.accentColor,
             color: theme.formBgColor,
@@ -205,11 +263,11 @@ export const Widget = ({ username }) => {
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? (
-            <CloseIcon className="h-5 w-5" />
+            <CloseIcon className="h-4 w-4 shrink-0" />
           ) : (
             <>
-              <MessageCircleIcon className="h-5 w-5" />
-              <span>Feedback</span>
+              <FeedbackLauncherIcon className="h-4 w-4 shrink-0 opacity-95" />
+              <span className="tracking-tight">Feedback</span>
             </>
           )}
         </button>
@@ -270,6 +328,11 @@ function FeedbackForm({
         >
           {activeStar > 0 ? RATING_LABELS[activeStar - 1] : ""}
         </span>
+        {rating < 1 ? (
+          <span className="text-xs mt-1 text-center" style={{ color: theme.secondaryTextColor }}>
+            Select a rating to send feedback.
+          </span>
+        ) : null}
       </div>
 
       {errorMessage && (
@@ -282,39 +345,43 @@ function FeedbackForm({
       )}
 
       <form className="space-y-3" onSubmit={onSubmit}>
-        {(!widgetSettings || widgetSettings.collect_info?.name) && (
+        {widgetSettings?.collectName ? (
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
               Name
             </Label>
             <Input
               id="name"
+              name="name"
               placeholder="Your name"
               className="h-10 text-sm border"
               style={inputStyle}
             />
           </div>
-        )}
-        {(!widgetSettings || widgetSettings.collect_info?.email) && (
+        ) : null}
+        {widgetSettings?.collectEmail ? (
           <div className="space-y-1.5">
             <Label htmlFor="email" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
               Email
             </Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="you@example.com"
               className="h-10 text-sm border"
               style={inputStyle}
             />
           </div>
-        )}
+        ) : null}
         <div className="space-y-1.5">
           <Label htmlFor="feedback" className="text-xs font-medium" style={{ color: theme.secondaryTextColor }}>
             Feedback
           </Label>
           <Textarea
             id="feedback"
+            name="feedback"
+            required
             placeholder="Share your thoughts..."
             className="min-h-[110px] text-sm resize-none border"
             style={inputStyle}
@@ -323,7 +390,7 @@ function FeedbackForm({
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || rating < 1}
           className="w-full py-2.5 text-sm font-semibold transition-all duration-200 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
           style={{
             backgroundColor: theme.accentColor,
@@ -499,7 +566,8 @@ function StarIcon({ filled, className, accentColor = "#F59E0B", ...props }) {
   );
 }
 
-function MessageCircleIcon(props) {
+/** Outline star — reads as “rate / feedback”, not a chat bubble. */
+function FeedbackLauncherIcon(props) {
   return (
     <svg
       {...props}
@@ -513,7 +581,7 @@ function MessageCircleIcon(props) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
 }

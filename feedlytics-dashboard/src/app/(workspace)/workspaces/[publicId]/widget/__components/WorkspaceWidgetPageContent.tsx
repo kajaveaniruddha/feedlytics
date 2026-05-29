@@ -10,6 +10,9 @@ import { Stack } from "@/components/ui/stack";
 import { useCurrentUser } from "@/features/user/hooks/useCurrentUser";
 import { workspaceInitials } from "@/features/workspace/lib/workspace-initials";
 
+import { Separator } from "@/components/ui/separator";
+
+import { WorkspaceWidgetAppearanceSection } from "./WorkspaceWidgetAppearanceSection";
 import { WorkspaceWidgetIntegrationSection } from "../../settings/__components/WorkspaceWidgetIntegrationSection";
 
 export type WorkspaceWidgetPageContentProps = {
@@ -40,8 +43,10 @@ export function WorkspaceWidgetPageContent({ workspacePublicId }: WorkspaceWidge
         </Stack>
       }
     >
-      <div className="w-full max-w-6xl">
+      <div className="flex w-full max-w-6xl flex-col gap-8">
         <WorkspaceWidgetIntegrationSection key={workspacePublicId} workspacePublicId={workspacePublicId} />
+        <Separator />
+        <WorkspaceWidgetAppearanceSection workspacePublicId={workspacePublicId} />
       </div>
     </WorkspaceDashboardShell>
   );

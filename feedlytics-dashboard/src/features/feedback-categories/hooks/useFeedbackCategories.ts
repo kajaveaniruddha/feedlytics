@@ -29,22 +29,5 @@ export function useFeedbackCategories(workspacePublicId: string) {
       }),
   });
 
-  const update = useMutation({
-    mutationFn: (input: { categoryId: number; name: string }) =>
-      feedbackCategoriesService.update(workspacePublicId, input.categoryId, input.name),
-    onSuccess: () =>
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.workspace.feedbackCategories(workspacePublicId),
-      }),
-  });
-
-  const remove = useMutation({
-    mutationFn: (categoryId: number) => feedbackCategoriesService.delete(workspacePublicId, categoryId),
-    onSuccess: () =>
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.workspace.feedbackCategories(workspacePublicId),
-      }),
-  });
-
-  return { ...query, create, update, remove };
+  return { ...query, create };
 }
