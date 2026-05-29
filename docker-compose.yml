@@ -69,6 +69,8 @@ services:
       - prod/.env
     environment:
       NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
     ports:
       - "127.0.0.1:3000:3000"
     networks:
