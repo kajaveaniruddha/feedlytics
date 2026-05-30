@@ -3,38 +3,38 @@ name: Deploy Service
 on:
   workflow_dispatch:
     inputs:
-      dashboard:
-        description: "Build & deploy feedlytics-dashboard"
-        type: boolean
-        default: false
-      service:
-        description: "Build & deploy feedlytics-service"
-        type: boolean
-        default: false
-      queue:
-        description: "Build & deploy feedlytics-queue-service"
-        type: boolean
-        default: false
-      widget:
-        description: "Build & deploy feedlytics-widget"
-        type: boolean
-        default: false
-      sync_compose:
-        description: "Sync docker-compose.yml to VPS"
-        type: boolean
-        default: false
       branch:
         description: "Branch to build from"
         required: true
         default: "master"
+      queue:
+        description: "feedlytics-queue-service"
+        type: boolean
+        default: false
+      service:
+        description: "feedlytics-service"
+        type: boolean
+        default: false
+      dashboard:
+        description: "feedlytics-dashboard"
+        type: boolean
+        default: false
+      widget:
+        description: "feedlytics-widget"
+        type: boolean
+        default: false
       build:
-        description: "Build & push Docker images?"
+        description: "Build & push selected services to Docker Hub"
         type: boolean
         default: true
       deploy:
-        description: "Deploy selected services to VPS?"
+        description: "Pull & restart selected services on VPS"
         type: boolean
         default: true
+      sync_compose:
+        description: "Sync docker-compose.yml to VPS"
+        type: boolean
+        default: false
 
 env:
   DOCKER_USERNAME: aniii1802
