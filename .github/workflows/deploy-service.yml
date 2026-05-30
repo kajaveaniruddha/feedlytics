@@ -132,19 +132,19 @@ jobs:
             docker compose --env-file prod/.env pull feedlytics-service
             docker compose --env-file prod/.env up -d --force-recreate feedlytics-service
             docker compose --env-file prod/.env ps feedlytics-service
-            echo "Waiting for feedlytics-service health (up to 3 minutes)..."
-            for i in $(seq 1 18); do
+            echo "Waiting for feedlytics-service health (up to 6 minutes)..."
+            for i in $(seq 1 36); do
               if curl -sf http://127.0.0.1:8081/actuator/health >/dev/null 2>&1; then
                 echo "feedlytics-service is healthy"
                 curl -s http://127.0.0.1:8081/actuator/health
                 docker image prune -f
                 exit 0
               fi
-              echo "Attempt $i/18 — not ready yet, retrying in 10s..."
+              echo "Attempt $i/36 — not ready yet, retrying in 10s..."
               sleep 10
             done
             docker compose --env-file prod/.env logs --tail=100 feedlytics-service || true
-            echo "feedlytics-service health check failed after 3 minutes" >&2
+            echo "feedlytics-service health check failed after 6 minutes" >&2
             exit 1
 
   deploy-dashboard:
