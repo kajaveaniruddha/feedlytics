@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS billing_audit_logs (
+CREATE TABLE billing_audit_logs (
     id              BIGSERIAL PRIMARY KEY,
     workspace_id    BIGINT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
     actor_type      VARCHAR(20)  NOT NULL,
@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS billing_audit_logs (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_audit_workspace ON billing_audit_logs(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_audit_action    ON billing_audit_logs(action);
+CREATE INDEX idx_audit_workspace ON billing_audit_logs(workspace_id);
+CREATE INDEX idx_audit_action    ON billing_audit_logs(action);

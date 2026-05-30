@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS feedbacks_categories (
+CREATE TABLE feedbacks_categories (
     id BIGSERIAL PRIMARY KEY,
     workspace_id BIGINT NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS feedback_ai_analysis (
+CREATE TABLE feedback_ai_analysis (
     id BIGSERIAL PRIMARY KEY,
     feedback_id BIGINT NOT NULL REFERENCES feedbacks (id) ON DELETE CASCADE,
     sentiment VARCHAR(50) NOT NULL,

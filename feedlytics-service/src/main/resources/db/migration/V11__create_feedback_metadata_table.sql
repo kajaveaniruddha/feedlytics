@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS feedback_metadata (
+CREATE TABLE feedback_metadata (
     id BIGSERIAL PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     feedback_id BIGINT NOT NULL REFERENCES feedbacks (id) ON DELETE CASCADE,
