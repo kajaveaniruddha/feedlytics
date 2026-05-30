@@ -27,8 +27,12 @@ on:
         description: "Branch to build from"
         required: true
         default: "master"
+      build:
+        description: "Build & push Docker images?"
+        type: boolean
+        default: true
       deploy:
-        description: "Deploy to VPS after build?"
+        description: "Deploy selected services to VPS?"
         type: boolean
         default: true
 
@@ -36,7 +40,32 @@ env:
   DOCKER_USERNAME: aniii1802
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate workflow inputs
+        run: |
+          set -euo pipefail
+          any_service=false
+          if [[ "${{ inputs.dashboard }}" == "true" ]]; then any_service=true; fi
+          if [[ "${{ inputs.service }}" == "true" ]]; then any_service=true; fi
+          if [[ "${{ inputs.queue }}" == "true" ]]; then any_service=true; fi
+          if [[ "${{ inputs.widget }}" == "true" ]]; then any_service=true; fi
+
+          if [[ "${{ inputs.sync_compose }}" != "true" && "${{ inputs.build }}" != "true" && "${{ inputs.deploy }}" != "true" ]]; then
+            echo "Select at least one of: sync_compose, build, or deploy." >&2
+            exit 1
+          fi
+
+          if [[ "${{ inputs.build }}" == "true" || "${{ inputs.deploy }}" == "true" ]]; then
+            if [[ "$any_service" != "true" ]]; then
+              echo "Select at least one service when build or deploy is enabled." >&2
+              exit 1
+            fi
+          fi
+
   sync-compose:
+    needs: validate
     if: inputs.sync_compose
     runs-on: ubuntu-latest
 
@@ -70,11 +99,13 @@ jobs:
             docker compose --env-file prod/.env up -d --force-recreate
 
   build-and-push:
-    needs: sync-compose
+    needs: [validate, sync-compose]
     runs-on: ubuntu-latest
     if: |
       always() &&
+      needs.validate.result == 'success' &&
       (needs.sync-compose.result == 'success' || needs.sync-compose.result == 'skipped') &&
+      inputs.build &&
       (inputs.dashboard || inputs.service || inputs.queue || inputs.widget)
 
     steps:
@@ -134,9 +165,14 @@ jobs:
           docker push $DOCKER_USERNAME/feedlytics-widget:latest
 
   deploy-queue:
-    if: inputs.deploy && inputs.queue
-    needs: build-and-push
+    needs: [validate, build-and-push]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      inputs.deploy &&
+      inputs.queue &&
+      (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
 
     steps:
       - name: Deploy feedlytics-queue-service
@@ -170,9 +206,14 @@ jobs:
             exit 1
 
   deploy-service:
-    if: inputs.deploy && inputs.service
-    needs: build-and-push
+    needs: [validate, build-and-push]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      inputs.deploy &&
+      inputs.service &&
+      (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
 
     steps:
       - name: Deploy feedlytics-service
@@ -203,9 +244,14 @@ jobs:
             exit 1
 
   deploy-dashboard:
-    if: inputs.deploy && inputs.dashboard
-    needs: build-and-push
+    needs: [validate, build-and-push]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      inputs.deploy &&
+      inputs.dashboard &&
+      (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
 
     steps:
       - name: Deploy feedlytics-dashboard
@@ -223,9 +269,14 @@ jobs:
             docker compose --env-file prod/.env ps feedlytics-dashboard
 
   deploy-widget:
-    if: inputs.deploy && inputs.widget
-    needs: build-and-push
+    needs: [validate, build-and-push]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      inputs.deploy &&
+      inputs.widget &&
+      (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
 
     steps:
       - name: Deploy feedlytics-widget
@@ -244,12 +295,14 @@ jobs:
 
   cleanup:
     needs:
+      - validate
       - sync-compose
+      - build-and-push
       - deploy-queue
       - deploy-service
       - deploy-dashboard
       - deploy-widget
-    if: always() && inputs.deploy
+    if: always() && needs.validate.result == 'success' && inputs.deploy
     runs-on: ubuntu-latest
 
     steps:
