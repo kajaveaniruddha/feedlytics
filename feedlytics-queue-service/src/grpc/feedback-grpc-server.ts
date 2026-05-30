@@ -10,10 +10,12 @@ import type { FeedbackJobData } from "../types/feedback.types";
 import type { InvitationEmailData, VerificationEmailData } from "../types/email.types";
 import { logger } from "../lib/logger";
 
+const PROTO_DIR = path.join(process.cwd(), "proto");
+
 const PROTO_PATHS = [
-  path.join(__dirname, "../../proto/feedback_analysis.proto"),
-  path.join(__dirname, "../../proto/invitation_email.proto"),
-  path.join(__dirname, "../../proto/verification_email.proto"),
+  path.join(PROTO_DIR, "feedback_analysis.proto"),
+  path.join(PROTO_DIR, "invitation_email.proto"),
+  path.join(PROTO_DIR, "verification_email.proto"),
 ];
 
 export function startQueueGrpcServer(port: number): void {

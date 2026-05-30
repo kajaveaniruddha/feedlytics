@@ -152,6 +152,22 @@ jobs:
             docker compose --env-file prod/.env pull feedlytics-queue-service
             docker compose --env-file prod/.env up -d --force-recreate feedlytics-queue-service
             docker compose --env-file prod/.env ps feedlytics-queue-service
+            echo "Waiting for feedlytics-queue-service health (up to 2 minutes)..."
+            for i in $(seq 1 24); do
+              if docker compose --env-file prod/.env exec -T feedlytics-queue-service node -e "
+                require('http').get('http://127.0.0.1:3001/health', (res) => {
+                  process.exit(res.statusCode === 200 ? 0 : 1);
+                }).on('error', () => process.exit(1));
+              "; then
+                echo "feedlytics-queue-service is healthy"
+                exit 0
+              fi
+              echo "Attempt $i/24 — not ready yet, retrying in 5s..."
+              sleep 5
+            done
+            docker compose --env-file prod/.env logs --tail=100 feedlytics-queue-service || true
+            echo "feedlytics-queue-service health check failed after 2 minutes" >&2
+            exit 1
 
   deploy-service:
     if: inputs.deploy && inputs.service
