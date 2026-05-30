@@ -248,13 +248,15 @@ Deployments are managed via the **Deploy Service** workflow (`Actions` tab > `De
 You get checkboxes to pick **any combination** of services to build and deploy in a single run:
 
 
-| Input                          | Type     | Description                                                  |
-| ------------------------------ | -------- | ------------------------------------------------------------ |
-| **Deploy Next.js**             | Checkbox | Build and deploy the Next.js dashboard                       |
-| **Deploy Services**            | Checkbox | Build and deploy the Express/BullMQ backend                  |
-| **Deploy Widget**              | Checkbox | Build and deploy the Vite widget                             |
-| **Branch**                     | Text     | Branch to build from (defaults to `master`)                  |
-| **Deploy to VPS after build?** | Checkbox | Uncheck to only build + push to Docker Hub without deploying |
+| Input                            | Type     | Description                                                       |
+| -------------------------------- | -------- | ----------------------------------------------------------------- |
+| **feedlytics-dashboard**         | Checkbox | Build and deploy the Next.js dashboard                            |
+| **feedlytics-service**           | Checkbox | Build and deploy the Spring Boot API                              |
+| **feedlytics-queue-service**     | Checkbox | Build and deploy the BullMQ queue worker                          |
+| **feedlytics-widget**            | Checkbox | Build and deploy the Vite widget                                  |
+| **Sync docker-compose.yml**      | Checkbox | Upload `docker-compose.yml` to the VPS (applies stack if no service selected) |
+| **Branch**                       | Text     | Branch to build from (defaults to `master`)                       |
+| **Deploy to VPS after build?**   | Checkbox | Uncheck to only build + push to Docker Hub without deploying      |
 
 
 **Required GitHub Secrets:**

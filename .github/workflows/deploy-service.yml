@@ -19,10 +19,14 @@ on:
         description: "Build & deploy feedlytics-widget"
         type: boolean
         default: false
+      sync_compose:
+        description: "Sync docker-compose.yml to VPS"
+        type: boolean
+        default: false
       branch:
         description: "Branch to build from"
         required: true
-        default: "revamp"
+        default: "master"
       deploy:
         description: "Deploy to VPS after build?"
         type: boolean
@@ -32,9 +36,46 @@ env:
   DOCKER_USERNAME: aniii1802
 
 jobs:
-  build-and-push:
+  sync-compose:
+    if: inputs.sync_compose
     runs-on: ubuntu-latest
-    if: inputs.dashboard || inputs.service || inputs.queue || inputs.widget
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Sync docker-compose.yml to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          source: "docker-compose.yml"
+          target: "feedlytics"
+          overwrite: true
+
+      - name: Apply compose on VPS
+        if: inputs.deploy && !inputs.dashboard && !inputs.service && !inputs.queue && !inputs.widget
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env up -d --force-recreate
+
+  build-and-push:
+    needs: sync-compose
+    runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (needs.sync-compose.result == 'success' || needs.sync-compose.result == 'skipped') &&
+      (inputs.dashboard || inputs.service || inputs.queue || inputs.widget)
 
     steps:
       - name: Checkout code
@@ -111,7 +152,6 @@ jobs:
             docker compose --env-file prod/.env pull feedlytics-queue-service
             docker compose --env-file prod/.env up -d --force-recreate feedlytics-queue-service
             docker compose --env-file prod/.env ps feedlytics-queue-service
-            docker image prune -f
 
   deploy-service:
     if: inputs.deploy && inputs.service
@@ -137,7 +177,6 @@ jobs:
               if curl -sf http://127.0.0.1:8081/actuator/health >/dev/null 2>&1; then
                 echo "feedlytics-service is healthy"
                 curl -s http://127.0.0.1:8081/actuator/health
-                docker image prune -f
                 exit 0
               fi
               echo "Attempt $i/36 — not ready yet, retrying in 10s..."
@@ -166,7 +205,6 @@ jobs:
             docker compose --env-file prod/.env pull feedlytics-dashboard
             docker compose --env-file prod/.env up -d --force-recreate feedlytics-dashboard
             docker compose --env-file prod/.env ps feedlytics-dashboard
-            docker image prune -f
 
   deploy-widget:
     if: inputs.deploy && inputs.widget
@@ -187,4 +225,23 @@ jobs:
             docker compose --env-file prod/.env pull feedlytics-widget
             docker compose --env-file prod/.env up -d --force-recreate feedlytics-widget
             docker compose --env-file prod/.env ps feedlytics-widget
-            docker image prune -f
+
+  cleanup:
+    needs:
+      - sync-compose
+      - deploy-queue
+      - deploy-service
+      - deploy-dashboard
+      - deploy-widget
+    if: always() && inputs.deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prune unused Docker images on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            docker image prune -f || true

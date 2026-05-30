@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const repoRoot = path.resolve(__dirname, "..");
 const envDevelopmentPath = path.join(repoRoot, ".env.development");
 if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: envDevelopmentPath });

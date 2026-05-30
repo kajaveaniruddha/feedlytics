@@ -32,7 +32,7 @@ function createApiClient(): AxiosInstance {
     baseURL: env.apiBaseUrl,
     withCredentials: true,
     headers: { "Content-Type": "application/json" },
-    timeout: 5000,
+    timeout: 20_000,
   });
 
   attachAuthRequestInterceptor(client);
