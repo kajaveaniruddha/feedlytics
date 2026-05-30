@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package com.feedlytics.queue.invitation.v1;
+
+option java_multiple_files = true;
+option java_package = "com.feedlytics.queue.invitation.v1";
+
+service InvitationEmailQueue {
+  rpc EnqueueInvitationEmail (EnqueueInvitationEmailRequest) returns (EnqueueInvitationEmailResponse);
+}
+
+message EnqueueInvitationEmailRequest {
+  string email = 1;
+  string workspace_name = 2;
+  string inviter_name = 3;
+  string role = 4;
+  string invite_token = 5;
+  int64 expires_at_epoch_ms = 6;
+}
+
+message EnqueueInvitationEmailResponse {
+  bool accepted = 1;
+}

@@ -1,72 +1,9 @@
 services:
-  nextjs:
-    image: aniii1802/feedlytics-nextjs:latest
-    restart: always
-    ports:
-      - "3000:3000"
-    networks:
-      - app-network
-    depends_on:
-      - services
-      - redis
-    env_file:
-      - .env
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=512
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 768M
-
-  services:
-    image: aniii1802/feedlytics-services:latest
-    restart: always
-    ports:
-      - "3001:3001"
-    networks:
-      - app-network
-    depends_on:
-      - redis
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    env_file:
-      - .env
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-
-  widget:
-    image: aniii1802/feedlytics-widget:latest
-    restart: always
-    ports:
-      - "4173:4173"
-    networks:
-      - app-network
-    env_file:
-      - .env
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-
   redis:
     image: redis:7-alpine
     container_name: feedlytics-redis
     restart: always
-    command: redis-server --requirepass redispass
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redispass}
     networks:
       - app-network
     deploy:
@@ -74,6 +11,99 @@ services:
         limits:
           cpus: "0.25"
           memory: 128M
+
+  feedlytics-queue-service:
+    image: ${DOCKER_USERNAME:-aniii1802}/feedlytics-queue-service:latest
+    build:
+      context: ./feedlytics-queue-service
+      dockerfile: Dockerfile
+    container_name: feedlytics-queue-service
+    restart: always
+    env_file:
+      - prod/.env
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  feedlytics-service:
+    image: ${DOCKER_USERNAME:-aniii1802}/feedlytics-service:latest
+    build:
+      context: ./feedlytics-service
+      dockerfile: Dockerfile
+    container_name: feedlytics-service
+    restart: always
+    env_file:
+      - prod/.env
+    environment:
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://feedlytics.in,https://www.feedlytics.in}
+      APP_COOKIE_DOMAIN: ${APP_COOKIE_DOMAIN:-.feedlytics.in}
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-true}
+      APP_COOKIE_SAME_SITE: ${APP_COOKIE_SAME_SITE:-Lax}
+    ports:
+      - "127.0.0.1:8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 360s
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 768M
+
+  feedlytics-dashboard:
+    image: ${DOCKER_USERNAME:-aniii1802}/feedlytics-dashboard:latest
+    build:
+      context: ./feedlytics-dashboard
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+        NEXT_PUBLIC_ENABLE_MSW: ${NEXT_PUBLIC_ENABLE_MSW:-false}
+    container_name: feedlytics-dashboard
+    restart: always
+    env_file:
+      - prod/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+
+  feedlytics-widget:
+    image: ${DOCKER_USERNAME:-aniii1802}/feedlytics-widget:latest
+    build:
+      context: ./feedlytics-widget
+      dockerfile: Dockerfile
+      args:
+        VITE_FEEDLYTICS_API_BASE_URL: ${VITE_FEEDLYTICS_API_BASE_URL}
+    container_name: feedlytics-widget
+    restart: always
+    ports:
+      - "127.0.0.1:4173:4173"
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
 
   prometheus:
     image: prom/prometheus
@@ -99,15 +129,13 @@ services:
     container_name: feedlytics-grafana
     restart: always
     ports:
-      - "3002:3000"
+      - "127.0.0.1:3002:3000"
     volumes:
       - grafanadata:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-    depends_on:
-      - prometheus
     networks:
       - app-network
     deploy:

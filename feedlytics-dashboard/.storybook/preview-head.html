@@ -1,0 +1,12 @@
+<!--
+  Storybook does not run `app/layout.tsx`, so `next/font` never injects the
+  subset font-family names onto `<html>`. Load the same families from Google
+  Fonts here so `font-sans` / `font-heading` resolve to real faces instead of
+  falling back to Times New Roman.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+  rel="stylesheet"
+/>

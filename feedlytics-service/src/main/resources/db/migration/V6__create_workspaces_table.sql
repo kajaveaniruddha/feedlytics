@@ -1,0 +1,10 @@
+CREATE TABLE workspaces (
+    id BIGSERIAL PRIMARY KEY,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    owner_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    plan VARCHAR(50) NOT NULL DEFAULT 'FREE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

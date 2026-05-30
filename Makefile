@@ -1,16 +1,37 @@
-.PHONY: dev down build logs ps
+.PHONY: dev down logs ps build prod-up prod-down prod-logs prod-build prod-pull prod-push
+
+COMPOSE_DEV := docker compose -f docker-compose.dev.yml
+COMPOSE_PROD := docker compose --env-file prod/.env -f docker-compose.yml
 
 dev:
-	docker-compose -f docker-compose.dev.yml up --watch --build
+	$(COMPOSE_DEV) up --build
 
 down:
-	docker-compose -f docker-compose.dev.yml down -v
+	$(COMPOSE_DEV) down -v
 
 logs:
-	docker-compose -f docker-compose.dev.yml logs -f
+	$(COMPOSE_DEV) logs -f
 
 ps:
-	docker-compose -f docker-compose.dev.yml ps
+	$(COMPOSE_DEV) ps
 
 build:
-	docker-compose -f docker-compose.dev.yml build --no-cache
+	$(COMPOSE_DEV) build --no-cache
+
+prod-up:
+	$(COMPOSE_PROD) up -d --build
+
+prod-down:
+	$(COMPOSE_PROD) down
+
+prod-logs:
+	$(COMPOSE_PROD) logs -f
+
+prod-build:
+	$(COMPOSE_PROD) build
+
+prod-pull:
+	$(COMPOSE_PROD) pull
+
+prod-push:
+	./scripts/build-and-push.sh

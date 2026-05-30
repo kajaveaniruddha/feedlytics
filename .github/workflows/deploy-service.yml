@@ -3,22 +3,26 @@ name: Deploy Service
 on:
   workflow_dispatch:
     inputs:
-      nextjs:
-        description: "Deploy Next.js"
+      dashboard:
+        description: "Build & deploy feedlytics-dashboard"
         type: boolean
         default: false
-      services:
-        description: "Deploy Services"
+      service:
+        description: "Build & deploy feedlytics-service"
+        type: boolean
+        default: false
+      queue:
+        description: "Build & deploy feedlytics-queue-service"
         type: boolean
         default: false
       widget:
-        description: "Deploy Widget"
+        description: "Build & deploy feedlytics-widget"
         type: boolean
         default: false
       branch:
         description: "Branch to build from"
         required: true
-        default: "master"
+        default: "revamp"
       deploy:
         description: "Deploy to VPS after build?"
         type: boolean
@@ -30,7 +34,7 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    if: inputs.nextjs || inputs.services || inputs.widget
+    if: inputs.dashboard || inputs.service || inputs.queue || inputs.widget
 
     steps:
       - name: Checkout code
@@ -47,56 +51,140 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Next.js
-        if: inputs.nextjs
+      - name: Build and push feedlytics-queue-service
+        if: inputs.queue
         run: |
           docker build \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --build-arg NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }} \
-            --build-arg STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
-            --build-arg STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
-            --build-arg STRIPE_PRICE_PRO_MONTHLY=${{ secrets.STRIPE_PRICE_PRO_MONTHLY }} \
-            --build-arg STRIPE_PRICE_PRO_YEARLY=${{ secrets.STRIPE_PRICE_PRO_YEARLY }} \
-            --build-arg STRIPE_PRICE_BUSINESS_MONTHLY=${{ secrets.STRIPE_PRICE_BUSINESS_MONTHLY }} \
-            --build-arg STRIPE_PRICE_BUSINESS_YEARLY=${{ secrets.STRIPE_PRICE_BUSINESS_YEARLY }} \
-            -t $DOCKER_USERNAME/feedlytics-nextjs:latest ./Next
-          docker push $DOCKER_USERNAME/feedlytics-nextjs:latest
+            -t $DOCKER_USERNAME/feedlytics-queue-service:latest \
+            ./feedlytics-queue-service
+          docker push $DOCKER_USERNAME/feedlytics-queue-service:latest
 
-      - name: Build and push Services
-        if: inputs.services
+      - name: Build and push feedlytics-service
+        if: inputs.service
         run: |
-          docker build -t $DOCKER_USERNAME/feedlytics-services:latest ./Services
-          docker push $DOCKER_USERNAME/feedlytics-services:latest
+          docker build \
+            -t $DOCKER_USERNAME/feedlytics-service:latest \
+            ./feedlytics-service
+          docker push $DOCKER_USERNAME/feedlytics-service:latest
 
-      - name: Build and push Widget
+      - name: Build and push feedlytics-dashboard
+        if: inputs.dashboard
+        run: |
+          API_BASE="${{ secrets.NEXT_PUBLIC_API_BASE_URL }}"
+          API_BASE="${API_BASE:-https://api.feedlytics.in}"
+          GOOGLE_ID="${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}"
+          docker build \
+            --build-arg NEXT_PUBLIC_API_BASE_URL="${API_BASE}" \
+            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID="${GOOGLE_ID}" \
+            --build-arg NEXT_PUBLIC_ENABLE_MSW=false \
+            -t $DOCKER_USERNAME/feedlytics-dashboard:latest \
+            ./feedlytics-dashboard
+          docker push $DOCKER_USERNAME/feedlytics-dashboard:latest
+
+      - name: Build and push feedlytics-widget
         if: inputs.widget
         run: |
-          docker build -t $DOCKER_USERNAME/feedlytics-widget:latest ./Widget
+          WIDGET_API_BASE="${{ secrets.VITE_FEEDLYTICS_API_BASE_URL }}"
+          WIDGET_API_BASE="${WIDGET_API_BASE:-https://api.feedlytics.in}"
+          docker build \
+            --build-arg VITE_FEEDLYTICS_API_BASE_URL="${WIDGET_API_BASE}" \
+            -t $DOCKER_USERNAME/feedlytics-widget:latest \
+            ./feedlytics-widget
           docker push $DOCKER_USERNAME/feedlytics-widget:latest
 
-  deploy:
-    if: inputs.deploy && (inputs.nextjs || inputs.services || inputs.widget)
+  deploy-queue:
+    if: inputs.deploy && inputs.queue
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-      - name: Resolve deploy targets
-        id: targets
-        run: |
-          SERVICES=""
-          if [ "${{ inputs.nextjs }}" = "true" ]; then SERVICES="$SERVICES nextjs"; fi
-          if [ "${{ inputs.services }}" = "true" ]; then SERVICES="$SERVICES services"; fi
-          if [ "${{ inputs.widget }}" = "true" ]; then SERVICES="$SERVICES widget"; fi
-          echo "compose_services=$SERVICES" >> $GITHUB_OUTPUT
-
-      - name: Deploy to Hostinger VPS
+      - name: Deploy feedlytics-queue-service
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
           username: ${{ secrets.HOSTINGER_VPS_USER }}
           key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
           script: |
+            set -euo pipefail
             cd feedlytics/
-            docker compose pull ${{ steps.targets.outputs.compose_services }}
-            docker compose up -d --force-recreate ${{ steps.targets.outputs.compose_services }}
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-queue-service
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-queue-service
+            docker compose --env-file prod/.env ps feedlytics-queue-service
+            docker image prune -f
+
+  deploy-service:
+    if: inputs.deploy && inputs.service
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy feedlytics-service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-service
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-service
+            docker compose --env-file prod/.env ps feedlytics-service
+            echo "Waiting for feedlytics-service health (up to 6 minutes)..."
+            for i in $(seq 1 36); do
+              if curl -sf http://127.0.0.1:8081/actuator/health >/dev/null 2>&1; then
+                echo "feedlytics-service is healthy"
+                curl -s http://127.0.0.1:8081/actuator/health
+                docker image prune -f
+                exit 0
+              fi
+              echo "Attempt $i/36 — not ready yet, retrying in 10s..."
+              sleep 10
+            done
+            docker compose --env-file prod/.env logs --tail=100 feedlytics-service || true
+            echo "feedlytics-service health check failed after 6 minutes" >&2
+            exit 1
+
+  deploy-dashboard:
+    if: inputs.deploy && inputs.dashboard
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy feedlytics-dashboard
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-dashboard
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-dashboard
+            docker compose --env-file prod/.env ps feedlytics-dashboard
+            docker image prune -f
+
+  deploy-widget:
+    if: inputs.deploy && inputs.widget
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy feedlytics-widget
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_VPS_HOST }}
+          username: ${{ secrets.HOSTINGER_VPS_USER }}
+          key: ${{ secrets.HOSTINGER_VPS_PVT_KEY }}
+          script: |
+            set -euo pipefail
+            cd feedlytics/
+            test -f prod/.env
+            docker compose --env-file prod/.env pull feedlytics-widget
+            docker compose --env-file prod/.env up -d --force-recreate feedlytics-widget
+            docker compose --env-file prod/.env ps feedlytics-widget
             docker image prune -f

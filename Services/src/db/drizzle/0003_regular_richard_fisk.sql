@@ -1,1 +1,0 @@
-ALTER TABLE "user_slack_channels" ADD COLUMN "is_active" boolean;

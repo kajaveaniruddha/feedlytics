@@ -6,7 +6,7 @@ on:
       branch:
         description: "Branch to sync from"
         required: true
-        default: "master"
+        default: "revamp"
       confirm:
         description: "Type YES to confirm (this will cause downtime)"
         required: true
@@ -31,13 +31,10 @@ jobs:
           script: |
             cd feedlytics/
             echo ">>> Stopping containers and removing images..."
-            docker compose down --rmi all
+            docker compose --env-file prod/.env down --rmi all
             echo ">>> Tear down complete."
 
-      - name: Prepare compose file
-        run: cp Prod/docker-compose.yml docker-compose.yml
-
-      - name: Upload new compose file
+      - name: Upload compose file
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOSTINGER_VPS_HOST }}
@@ -56,10 +53,11 @@ jobs:
           script: |
             cd feedlytics/
             echo ">>> Verifying files..."
-            ls -la docker-compose.yml .env
+            ls -la docker-compose.yml prod/.env
             echo ">>> Pulling fresh images and starting..."
-            docker compose up -d
+            docker compose --env-file prod/.env pull
+            docker compose --env-file prod/.env up -d
             echo ">>> Cleaning up dangling images..."
             docker image prune -f
             echo ">>> Done. Current status:"
-            docker compose ps
+            docker compose --env-file prod/.env ps
