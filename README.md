@@ -185,9 +185,10 @@ cp .env.development.example .env.development
 
 Open `.env.development` and fill in your values. At minimum you need:
 
-- `DATABASE_URL` — your Neon Postgres connection string
+- `SPRING_DATASOURCE_URL` — your Neon Postgres connection string
 - `GROQ_API_KEY` — your Groq API key
-- `NEXTAUTH_SECRET` — any random string
+- `JWT_SECRET` — random string (at least 32 characters)
+- `GOOGLE_OAUTH_CLIENT_ID` and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — same Google OAuth Web client ID (for Sign in with Google)
 - `STRIPE_SECRET_KEY` — your Stripe test secret key
 - `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_YEARLY`, `STRIPE_PRICE_BUSINESS_MONTHLY`, `STRIPE_PRICE_BUSINESS_YEARLY` — create products/prices in your [Stripe Dashboard](https://dashboard.stripe.com/test/products) and copy the price IDs
 
@@ -268,7 +269,8 @@ You get checkboxes to pick **any combination** of services to build and deploy i
 | `HOSTINGER_VPS_HOST`                 | VPS hostname/IP                  |
 | `HOSTINGER_VPS_USER`                 | VPS SSH username                 |
 | `HOSTINGER_VPS_PVT_KEY`              | VPS SSH private key              |
-| `DATABASE_URL`                       | Production Neon Postgres URL     |
+| `NEXT_PUBLIC_API_BASE_URL`           | Dashboard API base URL (build arg) |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`       | Google OAuth Web client ID (dashboard build arg) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key           |
 | `STRIPE_SECRET_KEY`                  | Stripe secret key                |
 | `STRIPE_WEBHOOK_SECRET`              | Stripe webhook secret            |
@@ -287,13 +289,12 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 
 | Variable                                   | Required | Description                                                        |
 | ------------------------------------------ | -------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`                             | Yes      | Neon Postgres connection string                                    |
+| `SPRING_DATASOURCE_URL`                    | Yes      | Neon Postgres JDBC connection string                               |
 | `REDIS_URL`                                | Auto     | Pre-configured for Docker (`redis://default:redispass@redis:6379`) |
 | `GROQ_API_KEY`                             | Yes      | Groq API key for AI analysis                                       |
-| `NEXTAUTH_SECRET`                          | Yes      | Random string for session encryption                               |
-| `NEXTAUTH_URL`                             | Yes      | `http://localhost:3000` for dev                                    |
-| `GITHUB_ID` / `GITHUB_SECRET`              | Optional | GitHub OAuth app credentials                                       |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`    | Optional | Google OAuth app credentials                                       |
+| `JWT_SECRET`                               | Yes      | Secret for signing access tokens (min 32 characters)               |
+| `GOOGLE_OAUTH_CLIENT_ID`                   | Optional | Google OAuth Web client ID (backend ID token verification)         |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`             | Optional | Same Google client ID (dashboard GIS sign-in; must match above)    |
 | `STRIPE_SECRET_KEY`                        | Yes      | Stripe test/live secret key                                        |
 | `STRIPE_WEBHOOK_SECRET`                    | Yes      | Stripe webhook signing secret                                      |
 | `STRIPE_PRICE_PRO_MONTHLY`                 | Yes      | Stripe price ID for Pro monthly plan                               |
@@ -302,8 +303,6 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 | `STRIPE_PRICE_BUSINESS_YEARLY`             | Yes      | Stripe price ID for Business yearly plan                           |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       | Optional | Stripe publishable key (for client-side)                           |
 | `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts                                        |
-| `UPSTASH_REDIS_URL`                        | Optional | Upstash Redis URL (enables Redis-backed rate limiting)             |
-| `UPSTASH_REDIS_TOKEN`                      | Optional | Upstash Redis token                                                |
 
 
 ---

@@ -8,3 +8,8 @@ export const oauthConfig = {
 } as const;
 
 export type OAuthProviderKey = keyof typeof oauthConfig;
+
+/** True when `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is set for this build/runtime. */
+export function isGoogleOAuthConfigured(): boolean {
+  return oauthConfig.google.clientId.length > 0;
+}

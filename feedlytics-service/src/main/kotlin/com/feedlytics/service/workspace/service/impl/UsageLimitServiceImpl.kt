@@ -25,22 +25,22 @@ class UsageLimitServiceImpl(
     @Transactional(readOnly = true)
     override fun canSubmitFeedback(workspaceId: Long, plan: PlansEnum): Boolean {
         val limits = planLimitStrategyFactory.getStrategy(plan).toPlanLimit()
-        val usage = getOrCreateCurrentPeriodUsage(workspaceId)
-        return usage.feedbackCount < limits.maxFeedbacksPerMonth
+        val usage = findCurrentPeriodUsage(workspaceId)
+        return (usage?.feedbackCount ?: 0) < limits.maxFeedbacksPerMonth
     }
 
     @Transactional(readOnly = true)
     override fun canMakeApiCall(workspaceId: Long, plan: PlansEnum): Boolean {
         val limits = planLimitStrategyFactory.getStrategy(plan).toPlanLimit()
-        val usage = getOrCreateCurrentPeriodUsage(workspaceId)
-        return usage.apiCalls < limits.maxApiCallsPerMonth
+        val usage = findCurrentPeriodUsage(workspaceId)
+        return (usage?.apiCalls ?: 0) < limits.maxApiCallsPerMonth
     }
 
     @Transactional(readOnly = true)
     override fun canCreateCampaign(workspaceId: Long, plan: PlansEnum): Boolean {
         val limits = planLimitStrategyFactory.getStrategy(plan).toPlanLimit()
-        val usage = getOrCreateCurrentPeriodUsage(workspaceId)
-        return usage.campaignCount < limits.maxCampaigns
+        val usage = findCurrentPeriodUsage(workspaceId)
+        return (usage?.campaignCount ?: 0) < limits.maxCampaigns
     }
 
     @Transactional
@@ -96,12 +96,13 @@ class UsageLimitServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getCurrentUsage(workspaceId: Long): UsageInfoDto {
-        val usage = getOrCreateCurrentPeriodUsage(workspaceId)
+        val periodStart = getCurrentPeriodStart()
+        val usage = usageLimitRepository.findByWorkspaceIdAndPeriodStart(workspaceId, periodStart)
         return UsageInfoDto(
-            feedbackCount = usage.feedbackCount,
-            apiCalls = usage.apiCalls,
-            campaignCount = usage.campaignCount,
-            periodStart = usage.periodStart
+            feedbackCount = usage?.feedbackCount ?: 0,
+            apiCalls = usage?.apiCalls ?: 0,
+            campaignCount = usage?.campaignCount ?: 0,
+            periodStart = periodStart,
         )
     }
 
@@ -119,15 +120,19 @@ class UsageLimitServiceImpl(
         usageObservers.forEach { it.onLimitApproaching(event) }
     }
 
+    private fun findCurrentPeriodUsage(workspaceId: Long): UsageLimitEntity? {
+        return usageLimitRepository.findByWorkspaceIdAndPeriodStart(workspaceId, getCurrentPeriodStart())
+    }
+
     private fun getOrCreateCurrentPeriodUsage(workspaceId: Long): UsageLimitEntity {
         val periodStart = getCurrentPeriodStart()
 
-        return usageLimitRepository.findByWorkspaceIdAndPeriodStart(workspaceId, periodStart)
+        return findCurrentPeriodUsage(workspaceId)
             ?: usageLimitRepository.save(
                 UsageLimitEntity(
                     workspaceId = workspaceId,
-                    periodStart = periodStart
-                )
+                    periodStart = periodStart,
+                ),
             )
     }
 
