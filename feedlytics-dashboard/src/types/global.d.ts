@@ -7,7 +7,11 @@ declare global {
         id?: {
           initialize: (config: Record<string, unknown>) => void;
           prompt: (
-            callback?: (notification: { isNotDisplayed: () => boolean }) => void,
+            callback?: (notification: {
+              isNotDisplayed: () => boolean;
+              isSkippedMoment: () => boolean;
+              isDismissedMoment: () => boolean;
+            }) => void,
           ) => void;
           renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
         };
