@@ -1,6 +1,7 @@
 FROM node:20-alpine
 
-RUN npm install -g pnpm
+# Matches queue/widget dev images — some corporate proxies break npm TLS in Docker builds.
+RUN npm config set strict-ssl false && npm install -g pnpm
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
