@@ -27,7 +27,6 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 - **Subscription Billing** — 3-tier plan system (Free, Pro, Business) with **Stripe Subscriptions**, monthly usage resets, and self-service billing portal.
 - **Data Retention** — Automated cleanup of old feedbacks based on plan tier (90 days free, 1 year pro, unlimited business).
 - **High-Traffic Ready** — Powered by Redis queues, rate limiting, and Bloom filters to handle scale.
-- **Observability** — Prometheus + Grafana monitoring with per-API latency tracking (p99/p95) and system metrics.
 
 ---
 
@@ -84,27 +83,11 @@ Plan limits are centrally configured in `Next/src/config/plans.ts` and `Services
 
 | Service           | Port   | Description                                           |
 | ----------------- | ------ | ----------------------------------------------------- |
-| **Next.js**       | `3000` | Dashboard, auth, Stripe billing, API metrics          |
+| **Next.js**       | `3000` | Dashboard, auth, Stripe billing                         |
 | **Services**      | `3001` | API, BullMQ workers, AI analysis, data retention cron |
 | **Widget**        | `4173` | Embeddable feedback widget (Vite + React)             |
 | **Redis**         | `6379` | Job queues, rate limiting, caching                    |
-| **Prometheus**    | `9090` | Metrics collection and storage                        |
-| **Grafana**       | `3002` | Dashboards and visualization                          |
-| **node-exporter** | `9100` | Host CPU, RAM, disk metrics                           |
 
-
----
-
-## Monitoring
-
-Feedlytics includes Prometheus + Grafana monitoring with:
-
-- **Per-API latency** (p99, p95) for all Next.js API routes
-- **Overall latency** (p99, p50) across all routes
-- **System metrics** (CPU, RAM, disk) via node-exporter
-- All API routes instrumented via `withMetrics` wrapper using `globalThis` singleton pattern
-
-See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORING.md)**
 
 ---
 
@@ -147,7 +130,6 @@ feedlytics/
 │   ├── src/jobs/           # Data retention cron, email, AI analysis
 │   └── src/workers/        # BullMQ workers (email, feedback, notifications)
 ├── Widget/                 # Vite + React embeddable widget
-├── monitoring/             # Prometheus, Grafana configs + MONITORING.md
 ├── prod/                   # VPS: prod/.env only. Template: prod/.env.example
 │   └── nginx/              # local only (gitignored) — copy to /etc/nginx on VPS
 ├── scripts/                # build-and-push.sh (local / CI, not on VPS)
@@ -203,7 +185,6 @@ Once running, open:
 - **Dashboard:** [http://localhost:3000](http://localhost:3000)
 - **Services API:** [http://localhost:3001](http://localhost:3001) (health check: [http://localhost:3001/health](http://localhost:3001/health))
 - **Widget:** [http://localhost:4173](http://localhost:4173)
-- **Grafana:** [http://localhost:3002](http://localhost:3002) (admin/admin)
 
 **4. Test Stripe webhooks locally (optional)**
 

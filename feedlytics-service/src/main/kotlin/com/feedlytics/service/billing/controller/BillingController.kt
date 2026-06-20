@@ -8,6 +8,7 @@ import com.feedlytics.service.billing.service.BillingService
 import com.feedlytics.service.common.security.AuthenticatedUser
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,11 +24,14 @@ class BillingController(
     private val billingService: BillingService,
 ) {
 
+    private val log = LoggerFactory.getLogger(BillingController::class.java)
+
     @GetMapping
     fun getBillingInfo(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable workspaceId: UUID,
     ): BillingInfoResponse {
+        log.info("billing getBillingInfo workspaceId={} userId={}", workspaceId, user.id)
         return billingService.getBillingInfo(workspaceId, user.id)
     }
 
@@ -38,6 +42,7 @@ class BillingController(
         @Valid @RequestBody request: CheckoutSessionRequest,
         httpRequest: HttpServletRequest,
     ): CheckoutSessionResponse {
+        log.info("billing createCheckoutSession workspaceId={} userId={}", workspaceId, user.id)
         val origin = httpRequest.getHeader("Origin")
             ?: httpRequest.getHeader("Referer")?.substringBefore("/", "")
             ?: "http://localhost:3000"
@@ -50,6 +55,7 @@ class BillingController(
         @PathVariable workspaceId: UUID,
         httpRequest: HttpServletRequest,
     ): PortalSessionResponse {
+        log.info("billing createPortalSession workspaceId={} userId={}", workspaceId, user.id)
         val origin = httpRequest.getHeader("Origin")
             ?: httpRequest.getHeader("Referer")?.substringBefore("/", "")
             ?: "http://localhost:3000"

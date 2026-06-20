@@ -124,11 +124,6 @@
 		</dependency>
 
 		<!-- Prometheus metrics (for existing Grafana setup) -->
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
-
 		<!-- Stripe SDK for billing -->
 		<dependency>
 			<groupId>com.stripe</groupId>

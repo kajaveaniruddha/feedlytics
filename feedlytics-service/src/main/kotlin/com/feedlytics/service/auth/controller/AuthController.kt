@@ -13,6 +13,7 @@ import com.feedlytics.service.auth.service.AuthService
 import com.feedlytics.service.auth.service.OAuthService
 import com.feedlytics.service.auth.util.RefreshCookieFactory
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -31,8 +32,11 @@ class AuthController(
     private val refreshCookieFactory: RefreshCookieFactory
 ) {
 
+    private val log = LoggerFactory.getLogger(AuthController::class.java)
+
     @PostMapping("/register")
     fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<*> {
+        log.info("auth register")
         return when (val result = authService.register(request)) {
             is RegisterResult.RequiresVerification -> {
                 ResponseEntity.status(HttpStatus.CREATED).body(
@@ -50,12 +54,14 @@ class AuthController(
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<AuthResponse> {
+        log.info("auth login")
         val outcome = authService.login(request)
         return respondWithRefreshCookie(outcome, HttpStatus.OK)
     }
 
     @PostMapping("/verify-email")
     fun verifyEmail(@Valid @RequestBody request: VerifyEmailRequest): ResponseEntity<Map<String, Any>> {
+        log.info("auth verifyEmail")
         authService.verifyEmail(request)
         return ResponseEntity.ok(mapOf("success" to true, "message" to "Email verified successfully"))
     }
@@ -64,6 +70,7 @@ class AuthController(
     fun regenerateEmailVerificationCode(
         @Valid @RequestBody request: RegenerateEmailVerificationCodeRequest
     ): ResponseEntity<Map<String, Any>> {
+        log.info("auth regenerateEmailVerificationCode")
         authService.regenerateEmailVerificationCode(request)
         return ResponseEntity.ok(mapOf("success" to true, "message" to "Verification code sent"))
     }
@@ -73,6 +80,7 @@ class AuthController(
         @PathVariable provider: String,
         @Valid @RequestBody request: OAuthSignInRequest
     ): ResponseEntity<AuthResponse> {
+        log.info("auth oauthSignIn provider={}", provider)
         val outcome = oauthService.authenticate(provider, request.idToken, request.inviteToken)
         return respondWithRefreshCookie(outcome, HttpStatus.OK)
     }
@@ -86,6 +94,7 @@ class AuthController(
     fun refresh(
         @CookieValue(name = "\${app.cookie.refresh-name}", required = false) refreshToken: String?
     ): ResponseEntity<AuthResponse> {
+        log.info("auth refresh hasToken={}", !refreshToken.isNullOrBlank())
         if (refreshToken.isNullOrBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         }
@@ -97,6 +106,7 @@ class AuthController(
     fun logout(
         @CookieValue(name = "\${app.cookie.refresh-name}", required = false) refreshToken: String?
     ): ResponseEntity<Map<String, Any>> {
+        log.info("auth logout hasToken={}", !refreshToken.isNullOrBlank())
         authService.logout(refreshToken)
         // Always clear the cookie regardless of whether one was sent so logout
         // is idempotent and won't leave a stale cookie on the client.

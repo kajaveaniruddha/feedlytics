@@ -83,12 +83,12 @@ Services/
 │   ├── controllers/
 │   │   ├── email.controller.ts           # POST /emails/verification, /emails/payment
 │   │   ├── feedback.controller.ts        # POST /feedbacks
-│   │   └── health.controller.ts          # GET /health, GET /metrics
+│   │   └── health.controller.ts          # GET /health
 │   │
 │   ├── routes/
 │   │   ├── email.routes.ts               # Wire email controller + validation
 │   │   ├── feedback.routes.ts            # Wire feedback controller + validation
-│   │   ├── health.routes.ts              # Wire health/metrics endpoints
+│   │   ├── health.routes.ts              # Wire health endpoint
 │   │   └── index.ts                      # Mount all route groups
 │   │
 │   ├── queues/
@@ -773,16 +773,10 @@ export const emailController = {
 **`src/controllers/health.controller.ts`**
 ```typescript
 import { Request, Response } from "express";
-import client from "prom-client";
 
 export const healthController = {
   health(_req: Request, res: Response) {
     res.json({ status: "ok", uptime: process.uptime() });
-  },
-
-  async metrics(_req: Request, res: Response) {
-    res.setHeader("Content-Type", client.register.contentType);
-    res.send(await client.register.metrics());
   },
 };
 ```
@@ -832,7 +826,6 @@ export default router;
 
 ```typescript
 import express from "express";
-import client from "prom-client";
 import routes from "./routes";
 import { requestLogger } from "./middleware/request-logger";
 import { errorHandler } from "./middleware/error-handler";
@@ -840,8 +833,6 @@ import { notFoundHandler } from "./middleware/not-found";
 
 export function createApp() {
   const app = express();
-
-  client.collectDefaultMetrics({ register: client.register });
 
   app.use(express.json());
   app.use(requestLogger);
@@ -910,7 +901,7 @@ The endpoint path changes. Update the fetch URL:
 | `/get-verification-email` | `/emails/verification` | POST |
 | `/get-payment-email` | `/emails/payment` | POST |
 | `/health` | `/health` | GET |
-| `/metrics` | `/metrics` | GET |
+| `/metrics` | **REMOVED** | — |
 | `/health-email` | **REMOVED** (test only) | — |
 | `/health-feedback` | **REMOVED** (test only) | — |
 
@@ -928,7 +919,7 @@ The endpoint path changes. Update the fetch URL:
 
 ### Already present (no changes needed)
 - `zod` (already used via `langchain`)
-- `express`, `bullmq`, `drizzle-orm`, `groq-sdk`, `prom-client`, `node-cron`, `nodemailer`
+- `express`, `bullmq`, `drizzle-orm`, `groq-sdk`, `node-cron`, `nodemailer`
 
 ---
 
@@ -957,7 +948,6 @@ After each phase, verify:
 - [ ] Existing tests (if any) still pass
 - [ ] Server starts without errors
 - [ ] `/health` endpoint responds
-- [ ] `/metrics` endpoint returns Prometheus data
 - [ ] Send a test feedback via widget — appears in dashboard with correct sentiment
 - [ ] Verification email sends on new user signup
 - [ ] Payment email sends on Stripe webhook
@@ -977,4 +967,4 @@ After each phase, verify:
 | **Separation of Concerns** | HTTP layer (controller) never touches DB; worker layer never builds HTTP responses |
 | **Type Safety** | End-to-end typed from request validation (Zod) -> service -> repository -> DB (Drizzle inferred types) |
 | **Fail-Safe Defaults** | Validated env vars crash on startup if missing; LLM falls back to neutral sentiment on failure |
-| **Observability** | Structured logs (pino) + Prometheus metrics on every request |
+| **Observability** | Structured logs (pino) on every request (use a third-party APM/metrics provider in production as needed) |
