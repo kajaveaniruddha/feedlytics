@@ -259,6 +259,8 @@ You get checkboxes to pick **any combination** of services to build and deploy i
 | **Branch**                       | Text     | Branch to build from (defaults to `master`)                       |
 | **Deploy to VPS after build?**   | Checkbox | Uncheck to only build + push to Docker Hub without deploying      |
 
+Building **feedlytics-dashboard** bakes `NEXT_PUBLIC_GOOGLE_CLIENT_ID` into the client at image build time. The workflow passes it from the repository secret of the same name; the **validate** job and **Dockerfile** fail fast if that secret is missing when dashboard build is selected. Changing the Google Web client ID requires a new dashboard image (re-run workflow with **feedlytics-dashboard** checked).
+
 
 **Required GitHub Secrets:**
 

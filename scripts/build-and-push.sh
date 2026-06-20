@@ -30,6 +30,12 @@ build_and_push() {
 
 build_and_push feedlytics-queue-service ./feedlytics-queue-service
 build_and_push feedlytics-service ./feedlytics-service
+
+if [[ -z "${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}" ]]; then
+  echo "ERROR: Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in prod/.env (or export it) before building the dashboard." >&2
+  exit 1
+fi
+
 build_and_push feedlytics-dashboard ./feedlytics-dashboard \
   "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-https://api.feedlytics.in}" \
   "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}" \

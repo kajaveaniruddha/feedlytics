@@ -18,6 +18,10 @@ ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_PUBLIC_ENABLE_MSW=$NEXT_PUBLIC_ENABLE_MSW
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Fail fast: client ID is baked into the bundle at build time (GitHub Actions / prod/.env).
+RUN test -n "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" \
+  || (echo "ERROR: build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID is required (Google Web OAuth client ID)." >&2 && exit 1)
+
 RUN pnpm build
 
 FROM node:20-alpine AS runner

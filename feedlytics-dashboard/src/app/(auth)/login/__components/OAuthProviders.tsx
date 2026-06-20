@@ -1,6 +1,5 @@
 "use client";
 
-import { isGoogleOAuthConfigured } from "@/config/oauth";
 import { GoogleOAuthButton } from "@/features/auth/components/GoogleOAuthButton";
 import { Separator } from "@/components/ui/separator";
 
@@ -13,8 +12,6 @@ import { loginCopy } from "../constants/login.constants";
  * and uses semantic layout via copy.
  */
 export function OAuthProviders() {
-  if (!isGoogleOAuthConfigured()) return null;
-
   return (
     <div className="flex flex-col gap-6">
       <GoogleOAuthButton label={loginCopy.submit === "Sign In" ? "Sign in with Google" : "Continue with Google"} />

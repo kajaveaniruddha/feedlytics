@@ -9,7 +9,7 @@
  *
  * The SDK is only loaded in the browser; SSR never touches this file.
  */
-import { oauthConfig } from "@/config/oauth";
+import { env } from "@/config/env";
 import { ApiError } from "@/services/api/errors/ApiError";
 import { authService } from "@/services/auth/auth.service";
 
@@ -100,7 +100,10 @@ function showGoogleButtonOverlay(
   });
 }
 
-function requestGoogleIdToken(gis: NonNullable<GisIdClient>): Promise<string> {
+function requestGoogleIdToken(
+  gis: NonNullable<GisIdClient>,
+  clientId: string,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     let settled = false;
     const settle = (action: () => void) => {
@@ -110,7 +113,7 @@ function requestGoogleIdToken(gis: NonNullable<GisIdClient>): Promise<string> {
     };
 
     gis.initialize({
-      client_id: oauthConfig.google.clientId,
+      client_id: clientId,
       callback: (response: GisCredentialResponse) => {
         document.querySelector('[role="dialog"][aria-label="Sign in with Google"]')?.remove();
         if (response?.credential) {
@@ -153,7 +156,8 @@ export class GoogleOAuthStrategy implements OAuthStrategy {
   readonly provider = "google" as const;
 
   async authenticate(inviteToken?: string): Promise<AuthResponse> {
-    if (!oauthConfig.google.clientId) {
+    const clientId = env.googleClientId?.trim() || "";
+    if (!clientId) {
       throw new ApiError(
         "OAUTH_NOT_CONFIGURED",
         "Google sign-in isn't configured in this environment.",
@@ -168,7 +172,7 @@ export class GoogleOAuthStrategy implements OAuthStrategy {
       throw new ApiError("OAUTH_SDK_UNAVAILABLE", "Google SDK unavailable", 0);
     }
 
-    const idToken = await requestGoogleIdToken(gis);
+    const idToken = await requestGoogleIdToken(gis, clientId);
     return authService.oauthSignIn("google", idToken, inviteToken);
   }
 }

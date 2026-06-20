@@ -1,14 +1,11 @@
 "use client";
 
-import { isGoogleOAuthConfigured } from "@/config/oauth";
 import { Separator } from "@/components/ui/separator";
 import { GoogleOAuthButton } from "@/features/auth/components/GoogleOAuthButton";
 
 import { signupCopy } from "../constants/signup.constants";
 
 export function OAuthProviders() {
-  if (!isGoogleOAuthConfigured()) return null;
-
   return (
     <div className="flex flex-col gap-6">
       <GoogleOAuthButton label="Sign up with Google" />
