@@ -7,6 +7,7 @@ import com.feedlytics.service.workspace.dto.response.RotateWidgetSecretResponse
 import com.feedlytics.service.workspace.dto.response.WorkspaceIntegrationStatusResponse
 import com.feedlytics.service.workspace.service.WorkspaceIntegrationService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -26,19 +27,25 @@ class WorkspaceIntegrationController(
     private val workspaceIntegrationService: WorkspaceIntegrationService,
 ) {
 
+    private val log = LoggerFactory.getLogger(WorkspaceIntegrationController::class.java)
+
     @GetMapping
     fun getStatus(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): WorkspaceIntegrationStatusResponse =
-        workspaceIntegrationService.getStatus(workspacePublicId, user.id)
+    ): WorkspaceIntegrationStatusResponse {
+        log.info("integration getStatus workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceIntegrationService.getStatus(workspacePublicId, user.id)
+    }
 
     @PostMapping("/api-key/rotate")
     fun rotateApiKey(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): RotateApiKeyResponse =
-        workspaceIntegrationService.rotateApiKey(workspacePublicId, user.id)
+    ): RotateApiKeyResponse {
+        log.info("integration rotateApiKey workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceIntegrationService.rotateApiKey(workspacePublicId, user.id)
+    }
 
     @DeleteMapping("/api-key")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -46,6 +53,7 @@ class WorkspaceIntegrationController(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ) {
+        log.info("integration revokeApiKey workspacePublicId={} userId={}", workspacePublicId, user.id)
         workspaceIntegrationService.revokeApiKey(workspacePublicId, user.id)
     }
 
@@ -53,8 +61,10 @@ class WorkspaceIntegrationController(
     fun rotateWidgetSecret(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): RotateWidgetSecretResponse =
-        workspaceIntegrationService.rotateWidgetSecret(workspacePublicId, user.id)
+    ): RotateWidgetSecretResponse {
+        log.info("integration rotateWidgetSecret workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceIntegrationService.rotateWidgetSecret(workspacePublicId, user.id)
+    }
 
     @DeleteMapping("/widget-secret")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -62,6 +72,7 @@ class WorkspaceIntegrationController(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ) {
+        log.info("integration revokeWidgetSecret workspacePublicId={} userId={}", workspacePublicId, user.id)
         workspaceIntegrationService.revokeWidgetSecret(workspacePublicId, user.id)
     }
 
@@ -70,6 +81,8 @@ class WorkspaceIntegrationController(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
         @Valid @RequestBody body: UpdateWidgetOriginsRequest,
-    ): WorkspaceIntegrationStatusResponse =
-        workspaceIntegrationService.updateWidgetOrigins(workspacePublicId, user.id, body)
+    ): WorkspaceIntegrationStatusResponse {
+        log.info("integration updateWidgetOrigins workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceIntegrationService.updateWidgetOrigins(workspacePublicId, user.id, body)
+    }
 }

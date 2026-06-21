@@ -1,5 +1,6 @@
 package com.feedlytics.service.common.exception
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     data class ErrorResponse(
         val success: Boolean = false,
@@ -22,6 +25,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException::class)
     fun handleApiException(ex: ApiException): ResponseEntity<ErrorResponse> {
+        log.warn("ApiException status={} code={} message={}", ex.status, ex.code, ex.message)
         val response = ErrorResponse(
             error = ErrorDetail(ex.code, ex.message)
         )
@@ -33,6 +37,7 @@ class GlobalExceptionHandler {
         val message = ex.bindingResult.fieldErrors
             .joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
 
+        log.warn("Validation failed: {}", message)
         val response = ErrorResponse(
             error = ErrorDetail("VALIDATION_ERROR", message)
         )
@@ -41,6 +46,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        log.error("Unhandled exception: {}", ex.message, ex)
         val response = ErrorResponse(
             error = ErrorDetail("INTERNAL_ERROR", "An unexpected error occurred")
         )

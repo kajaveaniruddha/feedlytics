@@ -5,6 +5,7 @@ import com.feedlytics.service.widget.dto.request.PatchWorkspaceWidgetRequest
 import com.feedlytics.service.widget.dto.response.WorkspaceWidgetResponse
 import com.feedlytics.service.widget.service.WorkspaceWidgetService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,25 +23,33 @@ class WorkspaceWidgetController(
     private val workspaceWidgetService: WorkspaceWidgetService,
 ) {
 
+    private val log = LoggerFactory.getLogger(WorkspaceWidgetController::class.java)
+
     @GetMapping("/widget")
     fun getPublicWidgetConfig(
         @PathVariable workspacePublicId: UUID,
         @RequestHeader(value = HttpHeaders.ORIGIN, required = false) origin: String?,
-    ): WorkspaceWidgetResponse =
-        workspaceWidgetService.getPublicConfig(workspacePublicId, origin)
+    ): WorkspaceWidgetResponse {
+        log.info("widget getPublicConfig workspacePublicId={}", workspacePublicId)
+        return workspaceWidgetService.getPublicConfig(workspacePublicId, origin)
+    }
 
     @GetMapping("/widget/management")
     fun getManagementWidgetConfig(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): WorkspaceWidgetResponse =
-        workspaceWidgetService.getManagementConfig(workspacePublicId, user.id)
+    ): WorkspaceWidgetResponse {
+        log.info("widget getManagementConfig workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceWidgetService.getManagementConfig(workspacePublicId, user.id)
+    }
 
     @PatchMapping("/widget/management")
     fun patchWidget(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
         @Valid @RequestBody body: PatchWorkspaceWidgetRequest,
-    ): WorkspaceWidgetResponse =
-        workspaceWidgetService.patch(workspacePublicId, user.id, body)
+    ): WorkspaceWidgetResponse {
+        log.info("widget patch workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return workspaceWidgetService.patch(workspacePublicId, user.id, body)
+    }
 }

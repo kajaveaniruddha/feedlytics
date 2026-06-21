@@ -6,6 +6,7 @@ import com.feedlytics.service.workspace.dto.response.MemberListResponse
 import com.feedlytics.service.workspace.dto.response.MemberResponse
 import com.feedlytics.service.workspace.service.WorkspaceMemberService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -17,11 +18,14 @@ class WorkspaceMemberController(
     private val workspaceMemberService: WorkspaceMemberService
 ) {
 
+    private val log = LoggerFactory.getLogger(WorkspaceMemberController::class.java)
+
     @GetMapping
     fun getMembers(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable workspaceId: UUID
     ): MemberListResponse {
+        log.info("workspaceMembers list workspaceId={} userId={}", workspaceId, user.id)
         return workspaceMemberService.getMembers(workspaceId, user.id)
     }
 
@@ -32,6 +36,12 @@ class WorkspaceMemberController(
         @PathVariable memberUserPublicId: UUID,
         @Valid @RequestBody request: UpdateMemberRoleRequest
     ): MemberResponse {
+        log.info(
+            "workspaceMembers updateRole workspaceId={} memberUserPublicId={} actorUserId={}",
+            workspaceId,
+            memberUserPublicId,
+            user.id,
+        )
         return workspaceMemberService.updateMemberRole(workspaceId, memberUserPublicId, request, user.id)
     }
 
@@ -42,6 +52,12 @@ class WorkspaceMemberController(
         @PathVariable workspaceId: UUID,
         @PathVariable memberUserPublicId: UUID
     ) {
+        log.info(
+            "workspaceMembers remove workspaceId={} memberUserPublicId={} actorUserId={}",
+            workspaceId,
+            memberUserPublicId,
+            user.id,
+        )
         workspaceMemberService.removeMember(workspaceId, memberUserPublicId, user.id)
     }
 
@@ -51,6 +67,7 @@ class WorkspaceMemberController(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable workspaceId: UUID
     ) {
+        log.info("workspaceMembers leave workspaceId={} userId={}", workspaceId, user.id)
         workspaceMemberService.leaveWorkspace(workspaceId, user.id)
     }
 }

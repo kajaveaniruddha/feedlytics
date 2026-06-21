@@ -64,6 +64,17 @@ jobs:
             fi
           fi
 
+      - name: Require NEXT_PUBLIC_GOOGLE_CLIENT_ID for dashboard build
+        if: inputs.build && inputs.dashboard
+        env:
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}" ]]; then
+            echo "::error::Set repository secret NEXT_PUBLIC_GOOGLE_CLIENT_ID (Google Web client ID, same as GOOGLE_OAUTH_CLIENT_ID on the API) before building the dashboard."
+            exit 1
+          fi
+
   sync-compose:
     needs: validate
     if: inputs.sync_compose

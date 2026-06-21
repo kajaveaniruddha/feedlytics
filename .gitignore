@@ -12,3 +12,4 @@ prod/nginx/
 .gitignore
 *.log
 /Plans
+.vscode/

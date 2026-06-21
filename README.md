@@ -27,7 +27,6 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 - **Subscription Billing** — 3-tier plan system (Free, Pro, Business) with **Stripe Subscriptions**, monthly usage resets, and self-service billing portal.
 - **Data Retention** — Automated cleanup of old feedbacks based on plan tier (90 days free, 1 year pro, unlimited business).
 - **High-Traffic Ready** — Powered by Redis queues, rate limiting, and Bloom filters to handle scale.
-- **Observability** — Prometheus + Grafana monitoring with per-API latency tracking (p99/p95) and system metrics.
 
 ---
 
@@ -84,27 +83,11 @@ Plan limits are centrally configured in `Next/src/config/plans.ts` and `Services
 
 | Service           | Port   | Description                                           |
 | ----------------- | ------ | ----------------------------------------------------- |
-| **Next.js**       | `3000` | Dashboard, auth, Stripe billing, API metrics          |
+| **Next.js**       | `3000` | Dashboard, auth, Stripe billing                         |
 | **Services**      | `3001` | API, BullMQ workers, AI analysis, data retention cron |
 | **Widget**        | `4173` | Embeddable feedback widget (Vite + React)             |
 | **Redis**         | `6379` | Job queues, rate limiting, caching                    |
-| **Prometheus**    | `9090` | Metrics collection and storage                        |
-| **Grafana**       | `3002` | Dashboards and visualization                          |
-| **node-exporter** | `9100` | Host CPU, RAM, disk metrics                           |
 
-
----
-
-## Monitoring
-
-Feedlytics includes Prometheus + Grafana monitoring with:
-
-- **Per-API latency** (p99, p95) for all Next.js API routes
-- **Overall latency** (p99, p50) across all routes
-- **System metrics** (CPU, RAM, disk) via node-exporter
-- All API routes instrumented via `withMetrics` wrapper using `globalThis` singleton pattern
-
-See the full monitoring guide: **[monitoring/MONITORING.md](monitoring/MONITORING.md)**
 
 ---
 
@@ -147,7 +130,6 @@ feedlytics/
 │   ├── src/jobs/           # Data retention cron, email, AI analysis
 │   └── src/workers/        # BullMQ workers (email, feedback, notifications)
 ├── Widget/                 # Vite + React embeddable widget
-├── monitoring/             # Prometheus, Grafana configs + MONITORING.md
 ├── prod/                   # VPS: prod/.env only. Template: prod/.env.example
 │   └── nginx/              # local only (gitignored) — copy to /etc/nginx on VPS
 ├── scripts/                # build-and-push.sh (local / CI, not on VPS)
@@ -185,9 +167,10 @@ cp .env.development.example .env.development
 
 Open `.env.development` and fill in your values. At minimum you need:
 
-- `DATABASE_URL` — your Neon Postgres connection string
+- `SPRING_DATASOURCE_URL` — your Neon Postgres connection string
 - `GROQ_API_KEY` — your Groq API key
-- `NEXTAUTH_SECRET` — any random string
+- `JWT_SECRET` — random string (at least 32 characters)
+- `GOOGLE_OAUTH_CLIENT_ID` and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — same Google OAuth Web client ID (for Sign in with Google)
 - `STRIPE_SECRET_KEY` — your Stripe test secret key
 - `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_YEARLY`, `STRIPE_PRICE_BUSINESS_MONTHLY`, `STRIPE_PRICE_BUSINESS_YEARLY` — create products/prices in your [Stripe Dashboard](https://dashboard.stripe.com/test/products) and copy the price IDs
 
@@ -202,7 +185,6 @@ Once running, open:
 - **Dashboard:** [http://localhost:3000](http://localhost:3000)
 - **Services API:** [http://localhost:3001](http://localhost:3001) (health check: [http://localhost:3001/health](http://localhost:3001/health))
 - **Widget:** [http://localhost:4173](http://localhost:4173)
-- **Grafana:** [http://localhost:3002](http://localhost:3002) (admin/admin)
 
 **4. Test Stripe webhooks locally (optional)**
 
@@ -258,6 +240,8 @@ You get checkboxes to pick **any combination** of services to build and deploy i
 | **Branch**                       | Text     | Branch to build from (defaults to `master`)                       |
 | **Deploy to VPS after build?**   | Checkbox | Uncheck to only build + push to Docker Hub without deploying      |
 
+Building **feedlytics-dashboard** bakes `NEXT_PUBLIC_GOOGLE_CLIENT_ID` into the client at image build time. The workflow passes it from the repository secret of the same name; the **validate** job and **Dockerfile** fail fast if that secret is missing when dashboard build is selected. Changing the Google Web client ID requires a new dashboard image (re-run workflow with **feedlytics-dashboard** checked).
+
 
 **Required GitHub Secrets:**
 
@@ -268,7 +252,8 @@ You get checkboxes to pick **any combination** of services to build and deploy i
 | `HOSTINGER_VPS_HOST`                 | VPS hostname/IP                  |
 | `HOSTINGER_VPS_USER`                 | VPS SSH username                 |
 | `HOSTINGER_VPS_PVT_KEY`              | VPS SSH private key              |
-| `DATABASE_URL`                       | Production Neon Postgres URL     |
+| `NEXT_PUBLIC_API_BASE_URL`           | Dashboard API base URL (build arg) |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`       | Google OAuth Web client ID (dashboard build arg) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key           |
 | `STRIPE_SECRET_KEY`                  | Stripe secret key                |
 | `STRIPE_WEBHOOK_SECRET`              | Stripe webhook secret            |
@@ -287,13 +272,12 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 
 | Variable                                   | Required | Description                                                        |
 | ------------------------------------------ | -------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`                             | Yes      | Neon Postgres connection string                                    |
+| `SPRING_DATASOURCE_URL`                    | Yes      | Neon Postgres JDBC connection string                               |
 | `REDIS_URL`                                | Auto     | Pre-configured for Docker (`redis://default:redispass@redis:6379`) |
 | `GROQ_API_KEY`                             | Yes      | Groq API key for AI analysis                                       |
-| `NEXTAUTH_SECRET`                          | Yes      | Random string for session encryption                               |
-| `NEXTAUTH_URL`                             | Yes      | `http://localhost:3000` for dev                                    |
-| `GITHUB_ID` / `GITHUB_SECRET`              | Optional | GitHub OAuth app credentials                                       |
-| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`    | Optional | Google OAuth app credentials                                       |
+| `JWT_SECRET`                               | Yes      | Secret for signing access tokens (min 32 characters)               |
+| `GOOGLE_OAUTH_CLIENT_ID`                   | Optional | Google OAuth Web client ID (backend ID token verification)         |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`             | Optional | Same Google client ID (dashboard GIS sign-in; must match above)    |
 | `STRIPE_SECRET_KEY`                        | Yes      | Stripe test/live secret key                                        |
 | `STRIPE_WEBHOOK_SECRET`                    | Yes      | Stripe webhook signing secret                                      |
 | `STRIPE_PRICE_PRO_MONTHLY`                 | Yes      | Stripe price ID for Pro monthly plan                               |
@@ -302,8 +286,6 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 | `STRIPE_PRICE_BUSINESS_YEARLY`             | Yes      | Stripe price ID for Business yearly plan                           |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       | Optional | Stripe publishable key (for client-side)                           |
 | `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts                                        |
-| `UPSTASH_REDIS_URL`                        | Optional | Upstash Redis URL (enables Redis-backed rate limiting)             |
-| `UPSTASH_REDIS_TOKEN`                      | Optional | Upstash Redis token                                                |
 
 
 ---

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.nio.charset.StandardCharsets
 
 @RestController
 @RequestMapping("/api/v1/webhooks/stripe")
@@ -20,31 +21,34 @@ class StripeWebhookController(
     private val processedEventRepository: ProcessedStripeEventRepository,
     private val webhookEventProcessor: WebhookEventProcessor,
 ) {
-    private val logger = LoggerFactory.getLogger(StripeWebhookController::class.java)
+    private val log = LoggerFactory.getLogger(StripeWebhookController::class.java)
 
     @PostMapping
     fun handleWebhook(
-        @RequestBody payload: String,
+        /** Raw JSON bytes — must match Stripe’s payload exactly for signature verification. */
+        @RequestBody payload: ByteArray,
         @RequestHeader("Stripe-Signature") sigHeader: String,
     ): ResponseEntity<Map<String, Boolean>> {
+        log.info("stripe webhook received payloadBytes={}", payload.size)
+        val payloadString = String(payload, StandardCharsets.UTF_8)
         val event: Event = try {
-            Webhook.constructEvent(payload, sigHeader, stripeProperties.webhookSecret)
+            Webhook.constructEvent(payloadString, sigHeader, stripeProperties.webhookSecret)
         } catch (e: Exception) {
-            logger.warn("Webhook signature verification failed: {}", e.message)
+            log.warn("Webhook signature verification failed: {}", e.message)
             return ResponseEntity.badRequest().body(mapOf("received" to false))
         }
 
-        logger.info("Received Stripe event: type={}, id={}", event.type, event.id)
+        log.info("Received Stripe event: type={}, id={}", event.type, event.id)
 
         if (processedEventRepository.existsByStripeEventId(event.id)) {
-            logger.info("Duplicate event skipped: id={}", event.id)
+            log.info("Duplicate event skipped: id={}", event.id)
             return ResponseEntity.ok(mapOf("received" to true))
         }
 
         try {
             webhookEventProcessor.processAndPublish(event)
         } catch (e: Exception) {
-            logger.error("Error processing webhook event {}: {}", event.type, e.message, e)
+            log.error("Error processing webhook event {}: {}", event.type, e.message, e)
             return ResponseEntity.internalServerError().body(mapOf("received" to false))
         }
 

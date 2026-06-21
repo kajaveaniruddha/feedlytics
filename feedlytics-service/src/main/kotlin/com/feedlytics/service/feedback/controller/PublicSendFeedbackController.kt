@@ -5,6 +5,7 @@ import com.feedlytics.service.feedback.dto.request.SendFeedbackRequest
 import com.feedlytics.service.feedback.service.PublicSendFeedbackService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,6 +23,8 @@ class PublicSendFeedbackController(
     private val publicSendFeedbackService: PublicSendFeedbackService,
 ) {
 
+    private val log = LoggerFactory.getLogger(PublicSendFeedbackController::class.java)
+
     @PostMapping("/{workspacePublicId}/send-feedback")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun sendFeedback(
@@ -32,6 +35,7 @@ class PublicSendFeedbackController(
         @RequestHeader(value = HttpHeaders.ORIGIN, required = false) origin: String?,
         request: HttpServletRequest,
     ): Map<String, Boolean> {
+        log.info("public sendFeedback workspacePublicId={}", workspacePublicId)
         publicSendFeedbackService.send(
             workspacePublicId = workspacePublicId,
             body = body,

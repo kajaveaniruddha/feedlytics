@@ -7,6 +7,7 @@ import com.feedlytics.service.workspace.dto.response.MemberData
 import com.feedlytics.service.workspace.dto.response.PendingInviteInfo
 import com.feedlytics.service.workspace.service.InviteService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,6 +26,8 @@ class InviteController(
     private val inviteService: InviteService
 ) {
 
+    private val log = LoggerFactory.getLogger(InviteController::class.java)
+
     @PostMapping("/workspaces/{workspaceId}/invites")
     @ResponseStatus(HttpStatus.CREATED)
     fun inviteMember(
@@ -32,6 +35,7 @@ class InviteController(
         @PathVariable workspaceId: UUID,
         @Valid @RequestBody request: InviteMemberRequest
     ): InviteResponse {
+        log.info("invites create workspaceId={} inviterUserId={}", workspaceId, user.id)
         val invite = inviteService.inviteMember(workspaceId, request, user.id)
         return InviteResponse(
             success = true,
@@ -47,6 +51,7 @@ class InviteController(
         @PathVariable workspaceId: UUID,
         @PathVariable inviteId: UUID
     ) {
+        log.info("invites cancel workspaceId={} inviteId={} userId={}", workspaceId, inviteId, user.id)
         inviteService.cancelInvite(workspaceId, inviteId, user.id)
     }
 
@@ -56,6 +61,7 @@ class InviteController(
         @PathVariable workspaceId: UUID,
         @PathVariable inviteId: UUID
     ): InviteResponse {
+        log.info("invites resend workspaceId={} inviteId={} userId={}", workspaceId, inviteId, user.id)
         val invite = inviteService.resendInvite(workspaceId, inviteId, user.id)
         return InviteResponse(
             success = true,
@@ -69,6 +75,7 @@ class InviteController(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @RequestBody request: AcceptInviteRequest
     ): AcceptInviteResponse {
+        log.info("invites acceptInvite userId={}", user.id)
         val result = inviteService.acceptInvite(request.token, user.id)
         return AcceptInviteResponse(
             success = true,
@@ -83,6 +90,7 @@ class InviteController(
     fun getMyPendingInvites(
         @AuthenticationPrincipal user: AuthenticatedUser
     ): PendingInvitesResponse {
+        log.info("invites listPending userId={}", user.id)
         val invites = inviteService.getPendingInvitesForUser(user.email)
         return PendingInvitesResponse(
             success = true,
@@ -95,6 +103,7 @@ class InviteController(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable inviteId: UUID,
     ): AcceptInviteResponse {
+        log.info("invites acceptPending inviteId={} userId={}", inviteId, user.id)
         val result = inviteService.acceptPendingInviteById(inviteId, user.id)
         return AcceptInviteResponse(
             success = true,
@@ -111,6 +120,7 @@ class InviteController(
         @AuthenticationPrincipal user: AuthenticatedUser,
         @PathVariable inviteId: UUID,
     ) {
+        log.info("invites rejectPending inviteId={} userId={}", inviteId, user.id)
         inviteService.rejectPendingInviteById(inviteId, user.id)
     }
 }

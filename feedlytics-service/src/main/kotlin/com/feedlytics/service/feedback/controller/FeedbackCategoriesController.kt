@@ -7,6 +7,7 @@ import com.feedlytics.service.feedback.dto.response.FeedbackCategoryListResponse
 import com.feedlytics.service.feedback.dto.response.FeedbackCategoryResponse
 import com.feedlytics.service.feedback.service.FeedbackCategoriesManagementService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -26,12 +27,16 @@ class FeedbackCategoriesController(
     private val categoriesManagement: FeedbackCategoriesManagementService,
 ) {
 
+    private val log = LoggerFactory.getLogger(FeedbackCategoriesController::class.java)
+
     @GetMapping
     fun list(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): FeedbackCategoryListResponse =
-        categoriesManagement.listForMember(workspacePublicId, user.id)
+    ): FeedbackCategoryListResponse {
+        log.info("feedbackCategories list workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return categoriesManagement.listForMember(workspacePublicId, user.id)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -39,8 +44,10 @@ class FeedbackCategoriesController(
         @PathVariable workspacePublicId: UUID,
         @AuthenticationPrincipal user: AuthenticatedUser,
         @Valid @RequestBody body: CreateFeedbackCategoryRequest,
-    ): FeedbackCategoryResponse =
-        categoriesManagement.createForMember(workspacePublicId, user.id, body)
+    ): FeedbackCategoryResponse {
+        log.info("feedbackCategories create workspacePublicId={} userId={}", workspacePublicId, user.id)
+        return categoriesManagement.createForMember(workspacePublicId, user.id, body)
+    }
 
     @PutMapping("/{categoryId}")
     fun update(
@@ -48,8 +55,15 @@ class FeedbackCategoriesController(
         @PathVariable categoryId: Long,
         @AuthenticationPrincipal user: AuthenticatedUser,
         @Valid @RequestBody body: UpdateFeedbackCategoryRequest,
-    ): FeedbackCategoryResponse =
-        categoriesManagement.updateForMember(workspacePublicId, categoryId, user.id, body)
+    ): FeedbackCategoryResponse {
+        log.info(
+            "feedbackCategories update workspacePublicId={} categoryId={} userId={}",
+            workspacePublicId,
+            categoryId,
+            user.id,
+        )
+        return categoriesManagement.updateForMember(workspacePublicId, categoryId, user.id, body)
+    }
 
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -58,6 +72,12 @@ class FeedbackCategoriesController(
         @PathVariable categoryId: Long,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ) {
+        log.info(
+            "feedbackCategories delete workspacePublicId={} categoryId={} userId={}",
+            workspacePublicId,
+            categoryId,
+            user.id,
+        )
         categoriesManagement.deleteForMember(workspacePublicId, categoryId, user.id)
     }
 }

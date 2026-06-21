@@ -1,11 +1,12 @@
-FROM eclipse-temurin:25-jdk AS build
+# Dev image: no Maven Wrapper download at *image build* time (avoids PKIX failures behind some TLS proxies).
+# Source is bind-mounted from docker-compose.dev.yml; dependencies resolve when the container starts.
+FROM eclipse-temurin:25-jdk
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends maven curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
-RUN chmod +x mvnw
-COPY src ./src
-RUN ./mvnw -q -DskipTests package
 
 EXPOSE 8081
-CMD ["java", "-jar", "target/feedlytics-service-0.0.1-SNAPSHOT.jar"]
+CMD ["mvn", "-DskipTests", "spring-boot:run"]

@@ -10,7 +10,6 @@ The backend API service handling email delivery, feedback processing (AI analysi
 - **Drizzle ORM** with Neon Postgres
 - **Groq SDK + LangChain** (AI-powered feedback analysis)
 - **Nodemailer** (email delivery via Gmail SMTP)
-- **prom-client** (Prometheus metrics)
 
 ## Port
 
@@ -33,7 +32,6 @@ The backend API service handling email delivery, feedback processing (AI analysi
 | Route | Method | Description |
 |---|---|---|
 | `/health` | GET | Health check |
-| `/metrics` | GET | Prometheus metrics (default Node.js process metrics) |
 | `/add-feedback` | POST | Queue feedback for AI processing |
 | `/get-verification-email` | POST | Queue verification email |
 | `/get-payment-email` | POST | Queue payment confirmation email |
@@ -52,7 +50,7 @@ The backend API service handling email delivery, feedback processing (AI analysi
 
 ```
 Services/
-├── index.ts                # Express server, routes, metrics
+├── index.ts                # Express server and routes
 ├── src/
 │   ├── db/                 # Drizzle ORM setup + models
 │   ├── jobs/               # LLM functions, email sending logic

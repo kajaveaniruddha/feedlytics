@@ -39,14 +39,22 @@ services:
       context: ./feedlytics-service
       dockerfile: Dockerfile.dev
     container_name: feedlytics-service-dev
+    depends_on:
+      redis:
+        condition: service_healthy
     env_file:
       - .env.development
     environment:
       REDIS_URL: redis://default:redispass@redis:6379
       GRPC_CLIENT_FEEDLYTICSQUEUE_ADDRESS: static://feedlytics-queue-service:9090
       FEEDLYTICS_QUEUE_CALLBACK_BASE_URL: http://feedlytics-service:8081
+      # Dev-only: some TLS proxies break Java’s default trust for repo.maven.apache.org inside Docker.
+      MAVEN_OPTS: "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
     ports:
       - "8081:8081"
+    volumes:
+      - ./feedlytics-service:/app
+      - feedlytics_service_m2:/root/.m2
     networks:
       - app-network
 
@@ -59,6 +67,10 @@ services:
       - .env.development
     environment:
       NODE_ENV: development
+      # .env.development sets PORT=3001 for the queue service; override so Next binds to 3000 (matches ports: "3000:3000").
+      PORT: "3000"
+    # Turbopack often fails fetching next/font assets from Google inside Docker (TLS/proxy); webpack is more reliable here.
+    command: ["pnpm", "exec", "next", "dev", "--webpack", "-H", "0.0.0.0"]
     ports:
       - "3000:3000"
     volumes:
@@ -74,6 +86,9 @@ services:
     container_name: feedlytics-widget-dev
     env_file:
       - .env.development
+    environment:
+      # Same shared .env sets PORT=3001 for the queue; keep the widget dev server on 4173.
+      PORT: "4173"
     ports:
       - "4173:4173"
     volumes:
@@ -91,3 +106,4 @@ volumes:
   queue_node_modules:
   dashboard_node_modules:
   widget_node_modules:
+  feedlytics_service_m2:

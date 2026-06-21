@@ -5,6 +5,7 @@ import com.feedlytics.service.common.http.FeedlyticsHttpHeaders
 import com.feedlytics.service.feedback.dto.request.BatchAiAnalysisRequest
 import com.feedlytics.service.feedback.service.FeedbackBatchAiAnalysisService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,6 +24,8 @@ class InternalBatchFeedbackAiController(
     private val batchAiAnalysisService: FeedbackBatchAiAnalysisService,
 ) {
 
+    private val log = LoggerFactory.getLogger(InternalBatchFeedbackAiController::class.java)
+
     @PostMapping("/batch-ai-analysis")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun batch(
@@ -30,8 +33,10 @@ class InternalBatchFeedbackAiController(
         @Valid @RequestBody body: BatchAiAnalysisRequest,
     ) {
         if (!constantTimeEquals(token, expectedToken)) {
+            log.warn("internal batchAiAnalysis invalid auth itemCount={}", body.items.size)
             throw UnauthorizedException("INVALID_INTERNAL_AUTH", "Invalid internal authentication")
         }
+        log.info("internal batchAiAnalysis itemCount={}", body.items.size)
         batchAiAnalysisService.persistBatch(body.items)
     }
 
