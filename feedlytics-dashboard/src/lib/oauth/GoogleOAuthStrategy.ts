@@ -1,11 +1,12 @@
 /**
  * Google Identity Services strategy.
  *
- * Loads the GIS SDK once, prompts the user, receives an `id_token`, and
- * forwards it to the Kotlin backend's `/api/v1/auth/oauth/google` endpoint.
+ * Loads the GIS SDK once, shows a single modal with the official Google button
+ * (`renderButton`), receives an `id_token`, and forwards it to the Kotlin backend's
+ * `/api/v1/auth/oauth/google` endpoint.
  *
- * One Tap (`prompt`) is tried first; when blocked (FedCM, third-party cookies,
- * incognito) a modal with the official Google button is shown as fallback.
+ * We do not call `gis.prompt()` (One Tap) on this path: One Tap (top-right) plus the
+ * fallback modal produced two overlapping Google UIs when users clicked login.
  *
  * The SDK is only loaded in the browser; SSR never touches this file.
  */
@@ -20,11 +21,6 @@ const GIS_SRC = "https://accounts.google.com/gsi/client";
 
 type GisIdClient = NonNullable<NonNullable<Window["google"]>["accounts"]>["id"];
 type GisCredentialResponse = { credential?: string };
-type GisPromptNotification = {
-  isNotDisplayed: () => boolean;
-  isSkippedMoment: () => boolean;
-  isDismissedMoment: () => boolean;
-};
 
 let gisPromise: Promise<void> | null = null;
 
@@ -45,14 +41,6 @@ function loadGis(): Promise<void> {
     document.head.appendChild(script);
   });
   return gisPromise;
-}
-
-function shouldFallbackToButton(notification: GisPromptNotification): boolean {
-  return (
-    notification.isNotDisplayed() ||
-    notification.isSkippedMoment() ||
-    notification.isDismissedMoment()
-  );
 }
 
 function showGoogleButtonOverlay(
@@ -134,20 +122,19 @@ function requestGoogleIdToken(
       use_fedcm_for_prompt: false,
     });
 
-    gis.prompt((notification) => {
-      if (shouldFallbackToButton(notification)) {
-        showGoogleButtonOverlay(gis, () => {
-          settle(() =>
-            reject(
-              new ApiError(
-                "OAUTH_DISMISSED",
-                "Google sign-in dismissed — try again.",
-                0,
-              ),
-            ),
-          );
-        });
-      }
+    // Button-initiated sign-in: one surface only (modal + official Google button).
+    // Do not call `gis.prompt()` here — it shows One Tap (top-right) and often stacks
+    // with this overlay, which feels like double authentication.
+    showGoogleButtonOverlay(gis, () => {
+      settle(() =>
+        reject(
+          new ApiError(
+            "OAUTH_DISMISSED",
+            "Google sign-in dismissed — try again.",
+            0,
+          ),
+        ),
+      );
     });
   });
 }
