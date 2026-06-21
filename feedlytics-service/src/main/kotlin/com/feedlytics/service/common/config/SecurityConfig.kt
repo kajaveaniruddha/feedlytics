@@ -88,6 +88,7 @@ class SecurityConfig(
                         "/api/v1/internal/**",
                         "/internal/**",
                         "/api/v1/webhooks/stripe",
+                        "/api/v1/notifications/stream",
                     ).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/workspaces/*/widget").permitAll()
                     .anyRequest().authenticated()

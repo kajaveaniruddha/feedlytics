@@ -15,6 +15,8 @@ import { MutedText } from "@/components/ui/muted-text";
 import { Separator } from "@/components/ui/separator";
 import { Stack } from "@/components/ui/stack";
 import { cn } from "@/lib/utils/cn";
+import { useNotificationsPreview } from "@/features/notifications/hooks/useNotificationsPreview";
+import { useNotificationsUnreadCount } from "@/features/notifications/hooks/useNotificationsUnreadCount";
 import { usePendingInviteMutations } from "@/features/workspace/hooks/usePendingInviteMutations";
 import { usePendingInvites } from "@/features/workspace/hooks/usePendingInvites";
 import { formatDate } from "@/lib/utils/format";
@@ -27,8 +29,12 @@ export type PendingInvitesMenuProps = {
 
 export function PendingInvitesMenu({ actionIconClass }: PendingInvitesMenuProps) {
   const { data: invites = [], isPending } = usePendingInvites();
+  const { data: unreadData } = useNotificationsUnreadCount();
+  const { data: notificationsPreview } = useNotificationsPreview({ limit: 5 });
   const { acceptPending, rejectPending } = usePendingInviteMutations();
-  const count = invites.length;
+  const inviteCount = invites.length;
+  const unreadFromApi = unreadData?.count ?? 0;
+  const count = Math.max(inviteCount, unreadFromApi);
 
   const badgeLabel = count > 9 ? "9+" : count > 0 ? String(count) : null;
 
@@ -98,6 +104,25 @@ export function PendingInvitesMenu({ actionIconClass }: PendingInvitesMenuProps)
             Pending invites to your email.
           </MutedText>
         </div>
+        {notificationsPreview != null && notificationsPreview.items.length > 0 ? (
+          <div className="border-b border-border px-2.5 py-2">
+            <DropdownMenuLabel className="px-0 py-0 text-xs font-bold text-foreground">
+              Inbox
+            </DropdownMenuLabel>
+            <Stack gap="sm" className="mt-1.5">
+              {notificationsPreview.items.map((n) => (
+                <div key={n.publicId} className="rounded-md bg-muted/40 px-2 py-1.5">
+                  <p className="text-[11px] font-semibold leading-snug text-foreground">{n.payload.title}</p>
+                  {n.payload.description ? (
+                    <MutedText tone="subtle" className="line-clamp-2 text-[10px] leading-snug">
+                      {n.payload.description}
+                    </MutedText>
+                  ) : null}
+                </div>
+              ))}
+            </Stack>
+          </div>
+        ) : null}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-0.5">
           {isPending ? (
             <div className="px-2 py-5 text-center">

@@ -46,12 +46,14 @@ services:
       - .env.development
     environment:
       REDIS_URL: redis://default:redispass@redis:6379
+      GRPC_SERVER_PORT: "9091"
       GRPC_CLIENT_FEEDLYTICSQUEUE_ADDRESS: static://feedlytics-queue-service:9090
       FEEDLYTICS_QUEUE_CALLBACK_BASE_URL: http://feedlytics-service:8081
       # Dev-only: some TLS proxies break Java’s default trust for repo.maven.apache.org inside Docker.
       MAVEN_OPTS: "-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true"
     ports:
       - "8081:8081"
+      - "9091:9091"
     volumes:
       - ./feedlytics-service:/app
       - feedlytics_service_m2:/root/.m2

@@ -11,6 +11,7 @@ export function usePendingInviteMutations() {
   const invalidateAfterInboxChange = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.invites.pending() });
     void queryClient.invalidateQueries({ queryKey: queryKeys.workspace.list() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.root });
   };
 
   const acceptPending = useMutation({

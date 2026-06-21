@@ -26,6 +26,7 @@ import com.feedlytics.service.workspace.service.InviteService
 import com.feedlytics.service.common.notification.Notification
 import com.feedlytics.service.common.notification.NotificationChannelType
 import com.feedlytics.service.common.notification.NotificationService
+import com.feedlytics.service.workspace.notification.WorkspaceInviteInAppNotificationEmitter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -44,6 +45,7 @@ class InviteServiceImpl(
     private val workspaceMemberRepository: WorkspaceMembersRepository,
     private val userRepository: UserRepository,
     private val notificationService: NotificationService,
+    private val workspaceInviteInAppNotificationEmitter: WorkspaceInviteInAppNotificationEmitter,
     private val planLimitStrategyFactory: PlanLimitStrategyFactory,
 ) : InviteService {
 
@@ -124,6 +126,16 @@ class InviteServiceImpl(
         logger.info("Invite created for {} to workspace {} with role {}. Token: {}", 
             request.email, workspace.id, request.role, token)
 
+        val inviter = userRepository.findById(inviterId).orElse(null)
+        if (existingUser != null && inviter != null) {
+            workspaceInviteInAppNotificationEmitter.emitInviteCreated(
+                invite = savedInvite,
+                workspace = workspace,
+                inviter = inviter,
+                inviteeUser = existingUser,
+            )
+        }
+
         val inviterName = userRepository.findById(inviterId)
             .map(User::name)
             .orElse("A teammate")
@@ -175,6 +187,7 @@ class InviteServiceImpl(
         assertInviteEmailMatchesUser(invite, user)
         invite.status = InviteStatusEnum.REJECTED
         inviteRepository.save(invite)
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_rejected")
         logger.info("User {} rejected invite {}", userId, inviteId)
     }
 
@@ -205,6 +218,7 @@ class InviteServiceImpl(
         if (workspaceMemberRepository.existsByUserIdAndWorkspaceId(userId, invite.workspaceId)) {
             invite.status = InviteStatusEnum.ACCEPTED
             inviteRepository.save(invite)
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
             throw ConflictException("ALREADY_MEMBER", "You are already a member of this workspace")
         }
 
@@ -221,6 +235,8 @@ class InviteServiceImpl(
 
         invite.status = InviteStatusEnum.ACCEPTED
         inviteRepository.save(invite)
+
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
 
         logger.info("User {} accepted invite to workspace {}", userId, invite.workspaceId)
 
@@ -258,6 +274,10 @@ class InviteServiceImpl(
         invite.status = InviteStatusEnum.CANCELLED
         inviteRepository.save(invite)
 
+        userRepository.findByEmail(invite.email)?.let {
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(it.id, invite.id, "invite_cancelled")
+        }
+
         logger.info("Invite {} cancelled for workspace {}", inviteId, workspace.id)
     }
 
@@ -279,6 +299,10 @@ class InviteServiceImpl(
         }
 
         // Cancel old invite and create new one with fresh expiry
+        userRepository.findByEmail(invite.email)?.let {
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(it.id, invite.id, "invite_resent")
+        }
+
         invite.status = InviteStatusEnum.CANCELLED
         inviteRepository.save(invite)
 
@@ -293,6 +317,17 @@ class InviteServiceImpl(
         val savedInvite = inviteRepository.save(newInvite)
 
         logger.info("Invite resent to {} for workspace {}. New token: {}", invite.email, workspace.id, newToken)
+
+        val invitee = userRepository.findByEmail(savedInvite.email)
+        val requester = userRepository.findById(requesterId).orElse(null)
+        if (invitee != null && requester != null) {
+            workspaceInviteInAppNotificationEmitter.emitInviteCreated(
+                invite = savedInvite,
+                workspace = workspace,
+                inviter = requester,
+                inviteeUser = invitee,
+            )
+        }
 
         val requesterName = userRepository.findById(requesterId)
             .map(User::name)
@@ -338,6 +373,7 @@ class InviteServiceImpl(
         if (workspaceMemberRepository.existsByUserIdAndWorkspaceId(userId, invite.workspaceId)) {
             invite.status = InviteStatusEnum.ACCEPTED
             inviteRepository.save(invite)
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
             return null
         }
 
@@ -354,6 +390,8 @@ class InviteServiceImpl(
 
         invite.status = InviteStatusEnum.ACCEPTED
         inviteRepository.save(invite)
+
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
 
         logger.info("User {} auto-accepted invite to workspace {} after auth", userId, invite.workspaceId)
 
