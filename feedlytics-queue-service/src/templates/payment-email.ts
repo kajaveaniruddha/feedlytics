@@ -15,9 +15,9 @@ export function paymentEmailTemplate(data: PaymentTemplateData): string {
           <p style="font-size: 16px; color: #333;">Your account has been successfully upgraded to the <strong>Premium Plan</strong>.</p>
           <p style="font-size: 16px; color: #333;">You now have access to:</p>
           <ul style="font-size: 16px; color: #333; padding-left: 20px;">
-            <li>100 feedbacks</li>
-            <li>10 workflows each for Google Chat, Slack, and Microsoft Teams</li>
-            <li>Smarter AI-powered feedback analysis</li>
+            <li>Higher feedback and usage limits on your Feedlytics plan</li>
+            <li>AI-powered feedback analysis (sentiment and categories)</li>
+            <li>Team collaboration, widgets, and dashboard features included in your tier</li>
           </ul>
           <p style="font-size: 16px; color: #333;">We're excited to see what you build with Feedback-Collect!</p>
           <p style="font-size: 16px; color: #333; margin-top: 30px;">Best regards,<br/>The <a href="https://feedlytics.in" target="_blank" style="color: #0077cc; text-decoration: none;">Feedback-Collect Team</a></p>

@@ -44,6 +44,12 @@ class InAppNotificationApplicationService(
     ): InAppNotificationCreateResult {
         val existing = repository.findByRecipientUserIdAndDedupeKey(recipientUserId, dedupeKey).orElse(null)
         if (existing != null) {
+            log.debug(
+                "notifications.app.createOrGetExisting dedupeHit recipient={} dedupeKey={} publicId={}",
+                recipientUserId,
+                dedupeKey,
+                existing.publicId,
+            )
             return InAppNotificationCreateResult(existing.id, existing.publicId, created = false)
         }
         val entity = InAppNotificationEntity(
@@ -58,10 +64,16 @@ class InAppNotificationApplicationService(
             repository.saveAndFlush(entity)
         } catch (_: DataIntegrityViolationException) {
             val existing = repository.findByRecipientUserIdAndDedupeKey(recipientUserId, dedupeKey).orElseThrow()
+            log.debug(
+                "notifications.app.createOrGetExisting dedupeRace recipient={} dedupeKey={} publicId={}",
+                recipientUserId,
+                dedupeKey,
+                existing.publicId,
+            )
             return InAppNotificationCreateResult(existing.id, existing.publicId, created = false)
         }
         log.info(
-            "notification_issued publicId={} id={} userId={} type={} dedupeKey={} deliveryStatus={}",
+            "notifications.app.notification_issued publicId={} id={} userId={} type={} dedupeKey={} deliveryStatus={}",
             saved.publicId,
             saved.id,
             recipientUserId,
@@ -87,7 +99,7 @@ class InAppNotificationApplicationService(
             try {
                 dispatchNew(snapshot)
             } catch (e: Exception) {
-                log.warn("notification dispatch failed id={}: {}", snapshot.id, e.message)
+                log.warn("notifications.app.dispatch_failed id={} err={}", snapshot.id, e.message)
                 deliveryService.markFailed(snapshot.id, e.message ?: "dispatch_error")
             }
         }
@@ -120,10 +132,10 @@ class InAppNotificationApplicationService(
             try {
                 redis.publish(snapshot.recipientUserId, envelope)
                 deliveryService.markSent(snapshot.id)
-                log.debug("notification_delivery_updated id={} status=SENT", snapshot.id)
+                log.debug("notifications.app.delivery_updated id={} status=SENT", snapshot.id)
             } catch (e: Exception) {
                 deliveryService.markFailed(snapshot.id, e.message ?: "redis_publish_failed")
-                log.warn("notification_delivery_updated id={} status=FAILED err={}", snapshot.id, e.message)
+                log.warn("notifications.app.delivery_updated id={} status=FAILED err={}", snapshot.id, e.message)
             }
         } else {
             webSocketRegistry.broadcastText(snapshot.recipientUserId, json)
@@ -132,6 +144,7 @@ class InAppNotificationApplicationService(
     }
 
     fun publishRemoved(recipientUserId: Long, publicId: UUID) {
+        log.debug("notifications.app.publishRemoved recipient={} publicId={}", recipientUserId, publicId)
         val envelope = mapOf(
             "event" to "notification.removed",
             "publicId" to publicId.toString(),
@@ -150,7 +163,12 @@ class InAppNotificationApplicationService(
         val row = repository.findByRecipientUserIdAndDedupeKey(recipientUserId, dedupeKey).orElse(null)
             ?: return null
         val publicId = row.publicId
-        log.info("notification_invite_consumed publicId={} userId={} reason={}", publicId, recipientUserId, reason)
+        log.info(
+            "notifications.app.notification_invite_consumed publicId={} userId={} reason={}",
+            publicId,
+            recipientUserId,
+            reason,
+        )
         repository.delete(row)
         scheduleRemovedAfterCommit(recipientUserId, publicId)
         return publicId

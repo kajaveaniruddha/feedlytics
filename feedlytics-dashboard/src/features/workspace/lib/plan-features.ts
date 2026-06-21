@@ -21,6 +21,7 @@ export const PLAN_FEATURES: PlanFeatureEntry[] = [
       "1 widget",
       "3 feedback categories",
       "90-day data retention",
+      "1,000 API calls / month (server submissions)",
     ],
   },
   {
@@ -35,9 +36,7 @@ export const PLAN_FEATURES: PlanFeatureEntry[] = [
       "5 widgets",
       "6 feedback categories",
       "1-year data retention",
-      "CSV export",
-      "Feedback reply",
-      "Generic webhooks",
+      "50,000 API calls / month (server submissions)",
     ],
   },
   {
@@ -52,11 +51,7 @@ export const PLAN_FEATURES: PlanFeatureEntry[] = [
       "10 widgets",
       "10 feedback categories",
       "Unlimited data retention",
-      "CSV export",
-      "Feedback reply",
-      "Remove branding",
-      "Full API access",
-      "Generic webhooks",
+      "200,000 API calls / month (server submissions)",
     ],
   },
 ];

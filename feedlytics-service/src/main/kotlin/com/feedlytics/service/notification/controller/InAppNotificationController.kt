@@ -56,7 +56,8 @@ class InAppNotificationController(
     ): NotificationUnreadCountResponse =
         NotificationUnreadCountResponse(queryService.unreadCount(user.id, workspacePublicId))
 
-    @GetMapping("/{publicId}")
+    /** UUID pattern so `/notifications/stream` is not captured (WebSocket handshake uses that path). */
+    @GetMapping("/{publicId:[0-9a-fA-F\\-]{36}}")
     @Operation(summary = "Get one notification by public id")
     fun getOne(
         @AuthenticationPrincipal user: AuthenticatedUser,

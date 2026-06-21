@@ -86,7 +86,7 @@ You can still set `window.feedlytics_widget` in an inline script **before** that
 
 | Variable | Description |
 |---|---|
-| `VITE_FEEDLYTICS_API_BASE_URL` | Feedlytics API origin baked into the bundle (e.g. `http://localhost:8080`). Required unless you hardcode a default in `src/lib/utils.js`. |
+| `VITE_FEEDLYTICS_API_BASE_URL` | Feedlytics API origin baked into the bundle (e.g. `http://localhost:8081`). Required unless you hardcode a default in `src/lib/utils.js`. |
 
 ## Key Directories
 

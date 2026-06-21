@@ -22,11 +22,10 @@ Spreadsheets, scattered emails, and disconnected tools just don't scale.
 
 - **Centralized Feedback Collection** — Collect all feedback in one place using a lightweight React widget or customizable forms.
 - **AI-Powered Insights** — Auto-analysis with **Groq's LLM (LLaMA 3.1)** for sentiment detection and categorization (Bug, Request, Complaint, Suggestion, Question, Praise).
-- **Real-Time Alerts** — Trigger instant workflows via **Slack** or **Google Chat** when important feedback arrives.
-- **Smart Dashboard** — Filter, search, and sort through feedback with blazing-fast UI using **TanStack Tables** and **Next.js**.
-- **Subscription Billing** — 3-tier plan system (Free, Pro, Business) with **Stripe Subscriptions**, monthly usage resets, and self-service billing portal.
-- **Data Retention** — Automated cleanup of old feedbacks based on plan tier (90 days free, 1 year pro, unlimited business).
-- **High-Traffic Ready** — Powered by Redis queues, rate limiting, and Bloom filters to handle scale.
+- **Smart Dashboard** — Workspace feedback, billing, and team management with **Next.js** and **TanStack Query** for server state.
+- **Subscription Billing** — 3-tier plan system (Free, Pro, Business) with **Stripe Subscriptions**, usage limits enforced in the API, and the Stripe customer portal for self-service billing changes.
+- **Plan limits** — Per-tier caps on feedback volume, campaigns, members, widgets, and categories (see `feedlytics-service` plan limit strategies). Retention windows are part of the plan definition; automated purge jobs are not wired in the API yet.
+- **High-Traffic Ready** — Redis-backed job queues and a dedicated worker service for heavy work (AI analysis, email).
 
 ---
 
@@ -37,83 +36,48 @@ All plans include AI-powered sentiment analysis, categorization, and monthly usa
 
 | Feature              | Free    | Pro ($19/mo) | Business ($79/mo) |
 | -------------------- | ------- | ------------ | ----------------- |
-| Feedbacks/month      | 200     | 2,000        | 20,000            |
-| Workflows            | 3       | 15           | Unlimited         |
-| Team members         | 1       | 5            | 25                |
-| Data retention       | 90 days | 1 year       | Unlimited         |
-| CSV export           | -       | Yes          | Yes               |
-| Feedback replies     | -       | Yes          | Yes               |
-| Webhook integrations | -       | Yes          | Yes               |
-| API access           | -       | -            | Yes               |
-| Remove branding      | -       | -            | Yes               |
+| Feedbacks/month      | 100     | 5,000        | 20,000            |
+| Campaigns            | 1       | 10           | 50                |
+| Team members         | 2       | 10           | 50                |
+| Widgets              | 1       | 5            | 10                |
+| Feedback categories  | 3       | 6            | 10                |
+| API / server feedback (monthly cap) | 1,000 calls | 50,000 calls | 200,000 calls |
+| Data retention (plan policy) | 90 days | 1 year       | Unlimited         |
 
 
-Plan limits are centrally configured in `Next/src/config/plans.ts` and `Services/src/config/plans.ts`.
+**Enforcement:** usage caps (feedbacks, campaigns, members, widgets, categories, API calls per month) are implemented in **`feedlytics-service`** (`FreePlanLimitStrategy`, `ProPlanLimitStrategy`, `BusinessPlanLimitStrategy`). Marketing copy on the dashboard should stay in sync with **`feedlytics-dashboard/src/features/workspace/lib/plan-features.ts`**.
 
 ---
 
 ## Architecture
 
-```
-                     ┌─────────────────────────────────────────────┐
-                     │                  Browser                    │
-                     └──────┬──────────────┬──────────────┬────────┘
-                            │              │              │
-                       :3000│         :4173│              │
-                            ▼              ▼              │
-                     ┌────────────┐ ┌────────────┐       │
-                     │  Next.js   │ │   Widget   │       │
-                     │ (Dashboard)│ │  (Embed)   │       │
-                     └──────┬─────┘ └──────┬─────┘       │
-                            │              │              │
-                            │   :3001      │              │
-                            ▼──────────────▼              │
-                     ┌─────────────────────┐              │
-                     │     Services        │◄─────────────┘
-                     │  (Express + BullMQ) │
-                     └───┬────────────┬────┘
-                         │            │
-                         ▼            ▼
-                  ┌───────────┐ ┌───────────────┐
-                  │   Redis   │ │ Neon Postgres  │
-                  │  :6379    │ │   (External)   │
-                  └───────────┘ └───────────────┘
+```mermaid
+flowchart LR
+  subgraph clients [Browser]
+    D["feedlytics-dashboard :3000"]
+    W["feedlytics-widget :4173"]
+  end
+  API["feedlytics-service :8081"]
+  Q["feedlytics-queue-service :3001 / gRPC :9090"]
+  R[Redis :6379]
+  P[(Neon Postgres)]
+  D -->|"REST"| API
+  W -->|"REST"| API
+  API -->|"gRPC client"| Q
+  API --> P
+  Q --> R
 ```
 
-
-| Service           | Port   | Description                                           |
-| ----------------- | ------ | ----------------------------------------------------- |
-| **Next.js**       | `3000` | Dashboard, auth, Stripe billing                         |
-| **Services**      | `3001` | API, BullMQ workers, AI analysis, data retention cron |
-| **Widget**        | `4173` | Embeddable feedback widget (Vite + React)             |
-| **Redis**         | `6379` | Job queues, rate limiting, caching                    |
+The **Spring Boot API** owns persistence, auth, Stripe webhooks, and public REST. The **queue service** runs BullMQ workers (email, feedback AI analysis, invitations, notifications) and exposes **gRPC** on port **9090** for the API to enqueue work. Workers call back into the API using **`FEEDLYTICS_QUEUE_CALLBACK_BASE_URL`** (see `.env.development.example`).
 
 
----
-
-## Rate Limiting
-
-Rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via `Next/src/middleware.ts`. Only auth pages and API routes are rate limited; dashboard page routes are not rate limited (they only need auth checks).
-
-**Middleware-level (IP-based):**
-
-| Route | IP Limit | Window | Effective Rate | Purpose |
-|-------|----------|--------|---------------|---------|
-| `/login`, `/register` | 3 requests | 1 sec | 3 req/sec | Brute-force login protection |
-| All `/api/*` routes (in matcher) | 5 requests | 1 sec | 5 req/sec | Backend API protection |
-
-**Handler-level (additional layer inside route handlers):**
-
-| Route | IP Limit | Window | Effective Rate | Purpose |
-|-------|----------|--------|---------------|---------|
-| `/api/register` | 3 requests | 10 sec | 0.3 req/sec | Account creation abuse |
-| `/api/send-message` | 5 requests | 10 sec | 0.5 req/sec | Widget abuse prevention |
-
-- **Page routes** (`/dashboard`, `/analytics`, `/feedbacks`, etc.) are NOT rate limited — middleware only performs auth checks for these
-- **`/api/stripe-webhook`** is excluded from the middleware matcher entirely (Stripe authenticates via HMAC signature)
-- **Session checks** (`/api/auth/session`, `/api/auth/csrf`) are NOT in the matcher so dashboard navigation stays fast
-- **Redis-backed rate limiting** is auto-enabled when `UPSTASH_REDIS_URL` is set; falls back to in-memory otherwise
-- Rate limiting uses IP-based tracking via `@daveyplate/next-rate-limit`
+| Service                     | Ports (dev compose) | Description |
+| --------------------------- | -------------------- | ----------- |
+| **feedlytics-dashboard**     | `3000`             | Next.js app — UI, auth flows, billing UI |
+| **feedlytics-widget**        | `4173`             | Vite embeddable widget |
+| **feedlytics-service**      | `8081` (HTTP), `9091` (gRPC in-app / internal) | Spring Boot — REST API, Stripe webhooks, data |
+| **feedlytics-queue-service**| `3001` (HTTP), `9090` (gRPC) | Express + BullMQ workers + gRPC job ingress |
+| **Redis**                   | `6379`             | Queues and caching |
 
 ---
 
@@ -121,21 +85,16 @@ Rate limiting is configured in `Next/src/config/rateLimiter.ts` and applied via 
 
 ```
 feedlytics/
-├── Next/                   # Next.js dashboard — see Next/README.md
-│   ├── src/config/plans.ts # Centralized plan limits (Free/Pro/Business)
-│   ├── src/db/models/      # Drizzle ORM schemas (user, feedback, workflows)
-│   └── src/app/api/        # API routes (billing, checkout, webhook, etc.)
-├── Services/               # Express + BullMQ backend
-│   ├── src/config/plans.ts # Plan limits (mirrors Next)
-│   ├── src/jobs/           # Data retention cron, email, AI analysis
-│   └── src/workers/        # BullMQ workers (email, feedback, notifications)
-├── Widget/                 # Vite + React embeddable widget
-├── prod/                   # VPS: prod/.env only. Template: prod/.env.example
+├── feedlytics-dashboard/   # Next.js — see feedlytics-dashboard/README.md
+├── feedlytics-service/     # Spring Boot + Kotlin API (JPA, Flyway, Stripe, gRPC client)
+├── feedlytics-queue-service/  # Express + BullMQ + gRPC workers — see its README
+├── feedlytics-widget/      # Vite + React embed — see feedlytics-widget/README.md
+├── prod/                   # VPS: prod/.env (gitignored). Template: prod/.env.example
 │   └── nginx/              # local only (gitignored) — copy to /etc/nginx on VPS
-├── scripts/                # build-and-push.sh (local / CI, not on VPS)
-├── docker-compose.dev.yml  # Local development (uses Dockerfile.dev)
-├── docker-compose.yml      # Production (image-only, no build context)
-└── .env.development.example # Environment variable template
+├── scripts/                # e.g. build-and-push.sh (local / CI)
+├── docker-compose.dev.yml  # Local dev (Dockerfile.dev, volume mounts)
+├── docker-compose.yml      # Production (pre-built images)
+└── .env.development.example
 ```
 
 ---
@@ -171,10 +130,12 @@ Open `.env.development` and fill in your values. At minimum you need:
 - `GROQ_API_KEY` — your Groq API key
 - `JWT_SECRET` — random string (at least 32 characters)
 - `GOOGLE_OAUTH_CLIENT_ID` and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — same Google OAuth Web client ID (for Sign in with Google)
+- `NEXT_PUBLIC_API_BASE_URL` — browser-facing API base URL for the dashboard (e.g. `http://localhost:8081`)
+- `VITE_FEEDLYTICS_API_BASE_URL` — same origin for the widget bundle (local dev / Docker)
 - `STRIPE_SECRET_KEY` — your Stripe test secret key
 - `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_YEARLY`, `STRIPE_PRICE_BUSINESS_MONTHLY`, `STRIPE_PRICE_BUSINESS_YEARLY` — create products/prices in your [Stripe Dashboard](https://dashboard.stripe.com/test/products) and copy the price IDs
 
-**3. . Start all services**
+**3. Start all services**
 
 ```bash
 docker compose -f docker-compose.dev.yml up --build
@@ -183,16 +144,19 @@ docker compose -f docker-compose.dev.yml up --build
 Once running, open:
 
 - **Dashboard:** [http://localhost:3000](http://localhost:3000)
-- **Services API:** [http://localhost:3001](http://localhost:3001) (health check: [http://localhost:3001/health](http://localhost:3001/health))
-- **Widget:** [http://localhost:4173](http://localhost:4173)
+- **API (Spring Boot):** [http://localhost:8081](http://localhost:8081) — e.g. [http://localhost:8081/actuator/health](http://localhost:8081/actuator/health)
+- **Queue service (Express):** [http://localhost:3001/health](http://localhost:3001/health)
+- **Widget dev server:** [http://localhost:4173](http://localhost:4173)
 
 **4. Test Stripe webhooks locally (optional)**
 
+Stripe webhooks are handled by **`feedlytics-service`**, not the Next.js app:
+
 ```bash
-stripe listen --forward-to localhost:3000/api/stripe-webhook
+stripe listen --forward-to localhost:8081/api/v1/webhooks/stripe
 ```
 
-Update `STRIPE_WEBHOOK_SECRET` in `.env.development` with the temporary secret printed by the CLI.
+Update `STRIPE_WEBHOOK_SECRET` in `.env.development` with the signing secret from the Stripe CLI (or your Stripe Dashboard endpoint).
 
 ### Stopping
 
@@ -216,7 +180,7 @@ docker compose -f docker-compose.dev.yml down -v
 | **Compose file**    | `docker-compose.dev.yml`       | `docker-compose.yml` / GH Actions             |
 | **Dockerfiles**     | `Dockerfile.dev` (per service) | `Dockerfile` (per service)                    |
 | **Source code**     | Volume-mounted for hot reload  | Copied into image at build time               |
-| **Env file**        | `.env.development` (local)     | Secrets via GH Secrets / VPS `.env`           |
+| **Env file**        | `.env.development` (local)     | GitHub Secrets for build-time client env; **`prod/.env`** on the VPS for runtime (DB, Stripe, JWT) |
 | **Build target**    | Dev servers (`pnpm dev`)       | Optimized builds (`pnpm build && pnpm start`) |
 | **Stripe webhooks** | Stripe CLI forwarding          | Configured webhook endpoint URL               |
 
@@ -230,37 +194,38 @@ Deployments are managed via the **Deploy Service** workflow (`Actions` tab > `De
 You get checkboxes to pick **any combination** of services to build and deploy in a single run:
 
 
-| Input                            | Type     | Description                                                       |
-| -------------------------------- | -------- | ----------------------------------------------------------------- |
-| **feedlytics-dashboard**         | Checkbox | Build and deploy the Next.js dashboard                            |
-| **feedlytics-service**           | Checkbox | Build and deploy the Spring Boot API                              |
-| **feedlytics-queue-service**     | Checkbox | Build and deploy the BullMQ queue worker                          |
-| **feedlytics-widget**            | Checkbox | Build and deploy the Vite widget                                  |
-| **Sync docker-compose.yml**      | Checkbox | Upload `docker-compose.yml` to the VPS (applies stack if no service selected) |
-| **Branch**                       | Text     | Branch to build from (defaults to `master`)                       |
-| **Deploy to VPS after build?**   | Checkbox | Uncheck to only build + push to Docker Hub without deploying      |
+| Input                        | Type     | Description |
+| ---------------------------- | -------- | ----------- |
+| **branch**                   | Text     | Git branch to build from (default `master`) |
+| **queue**                    | Checkbox | Select **feedlytics-queue-service** for build/deploy steps |
+| **service**                  | Checkbox | Select **feedlytics-service** (Spring Boot) |
+| **dashboard**                | Checkbox | Select **feedlytics-dashboard** (Next.js) |
+| **widget**                   | Checkbox | Select **feedlytics-widget** (Vite) |
+| **build**                    | Checkbox | Build Docker images and push to Docker Hub (default on) |
+| **deploy**                   | Checkbox | SSH to VPS, pull images, restart selected services (default on) |
+| **sync_compose**             | Checkbox | Upload `docker-compose.yml` to the VPS |
 
-Building **feedlytics-dashboard** bakes `NEXT_PUBLIC_GOOGLE_CLIENT_ID` into the client at image build time. The workflow passes it from the repository secret of the same name; the **validate** job and **Dockerfile** fail fast if that secret is missing when dashboard build is selected. Changing the Google Web client ID requires a new dashboard image (re-run workflow with **feedlytics-dashboard** checked).
+At least one of **build**, **deploy**, or **sync_compose** must be enabled. If **build** or **deploy** is on, at least one service checkbox must be selected (unless you only use **sync_compose**).
+
+Docker Hub username is set in the workflow file (`env.DOCKER_USERNAME`); override the image namespace in CI if you fork.
+
+Building **feedlytics-dashboard** bakes `NEXT_PUBLIC_GOOGLE_CLIENT_ID` and `NEXT_PUBLIC_API_BASE_URL` into the client. The **validate** job requires `NEXT_PUBLIC_GOOGLE_CLIENT_ID` when building the dashboard. The widget build uses secret **`VITE_FEEDLYTICS_API_BASE_URL`** (falls back in script if unset—see workflow).
 
 
-**Required GitHub Secrets:**
+**GitHub Actions secrets** (used by `.github/workflows/deploy-service.yml`):
 
 
-| Secret                               | Description                      |
-| ------------------------------------ | -------------------------------- |
-| `DOCKERHUB_TOKEN`                    | Docker Hub access token          |
-| `HOSTINGER_VPS_HOST`                 | VPS hostname/IP                  |
-| `HOSTINGER_VPS_USER`                 | VPS SSH username                 |
-| `HOSTINGER_VPS_PVT_KEY`              | VPS SSH private key              |
-| `NEXT_PUBLIC_API_BASE_URL`           | Dashboard API base URL (build arg) |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`       | Google OAuth Web client ID (dashboard build arg) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key           |
-| `STRIPE_SECRET_KEY`                  | Stripe secret key                |
-| `STRIPE_WEBHOOK_SECRET`              | Stripe webhook secret            |
-| `STRIPE_PRICE_PRO_MONTHLY`           | Stripe Pro monthly price ID      |
-| `STRIPE_PRICE_PRO_YEARLY`            | Stripe Pro yearly price ID       |
-| `STRIPE_PRICE_BUSINESS_MONTHLY`      | Stripe Business monthly price ID |
-| `STRIPE_PRICE_BUSINESS_YEARLY`       | Stripe Business yearly price ID  |
+| Secret                               | Description |
+| ------------------------------------ | ----------- |
+| `DOCKERHUB_TOKEN`                    | Docker Hub access token (password for `docker/login-action`) |
+| `HOSTINGER_VPS_HOST`                 | VPS hostname or IP |
+| `HOSTINGER_VPS_USER`                 | VPS SSH username |
+| `HOSTINGER_VPS_PVT_KEY`              | VPS SSH private key |
+| `NEXT_PUBLIC_API_BASE_URL`           | Public API URL baked into the dashboard image (e.g. `https://api.feedlytics.in`) |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID`       | Google OAuth Web client ID (dashboard build; must match API `GOOGLE_OAUTH_CLIENT_ID`) |
+| `VITE_FEEDLYTICS_API_BASE_URL`       | API origin for the widget production build |
+
+Stripe, JDBC, JWT, and other runtime secrets are **not** passed through this workflow; configure them on the server in **`prod/.env`** (see `prod/.env.example`).
 
 
 ---
@@ -278,6 +243,7 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 | `JWT_SECRET`                               | Yes      | Secret for signing access tokens (min 32 characters)               |
 | `GOOGLE_OAUTH_CLIENT_ID`                   | Optional | Google OAuth Web client ID (backend ID token verification)         |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID`             | Optional | Same Google client ID (dashboard GIS sign-in; must match above)    |
+| `NEXT_PUBLIC_API_BASE_URL`                 | Yes (dev) | Browser-facing Spring API URL (e.g. `http://localhost:8081`)      |
 | `STRIPE_SECRET_KEY`                        | Yes      | Stripe test/live secret key                                        |
 | `STRIPE_WEBHOOK_SECRET`                    | Yes      | Stripe webhook signing secret                                      |
 | `STRIPE_PRICE_PRO_MONTHLY`                 | Yes      | Stripe price ID for Pro monthly plan                               |
@@ -287,16 +253,17 @@ See `[.env.development.example](.env.development.example)` for the full list wit
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       | Optional | Stripe publishable key (for client-side)                           |
 | `GOOGLE_MAIL_FROM` / `GOOGLE_APP_PASSWORD` | Optional | Gmail SMTP for email alerts                                        |
 
-
 ---
 
 ## Screenshots
 
-feedlytics
-flowchart-0
-image
-image
-image
+*(Placeholder list in the repo—replace with real image links or assets when available.)*
+
+feedlytics  
+flowchart-0  
+image  
+image  
+image  
 image
 
 ---

@@ -24,6 +24,7 @@ class InAppNotificationEntity(
     val workspaceId: Long?,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "type", nullable = false, columnDefinition = "notification_type")
     val type: NotificationTypeEnum,
 
@@ -38,6 +39,7 @@ class InAppNotificationEntity(
     var readAt: Instant? = null,
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "delivery_status", nullable = false, columnDefinition = "notification_delivery_status")
     var deliveryStatus: NotificationDeliveryStatusEnum = NotificationDeliveryStatusEnum.PENDING,
 

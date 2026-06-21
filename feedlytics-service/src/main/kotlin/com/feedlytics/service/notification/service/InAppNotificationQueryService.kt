@@ -6,6 +6,7 @@ import com.feedlytics.service.notification.dto.NotificationResponseDto
 import com.feedlytics.service.notification.entity.NotificationTypeEnum
 import com.feedlytics.service.notification.repository.InAppNotificationRepository
 import com.feedlytics.service.workspace.repository.WorkspaceRepository
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,6 +18,8 @@ class InAppNotificationQueryService(
     private val repository: InAppNotificationRepository,
     private val workspaceRepository: WorkspaceRepository,
 ) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Transactional(readOnly = true)
     fun list(
@@ -38,7 +41,18 @@ class InAppNotificationQueryService(
         }
         val beforeId = cursor?.let { decodeCursor(it) }
         val pageable = PageRequest.of(0, limit + 1)
-        val rows = repository.listForUser(
+
+        log.debug(
+            "notifications.query.list userId={} beforeId={} type={} workspaceId={} readStatus={} limit={}",
+            userId,
+            beforeId,
+            type,
+            workspaceId,
+            readParam,
+            limit,
+        )
+
+        val rows = repository.listInboxForUser(
             userId = userId,
             beforeId = beforeId,
             type = type,
@@ -59,11 +73,18 @@ class InAppNotificationQueryService(
         } else {
             null
         }
+        log.debug(
+            "notifications.query.list.result userId={} returned={} hasMore={}",
+            userId,
+            page.size,
+            hasMore,
+        )
         return NotificationListResponseDto(items, nextCursor, hasMore)
     }
 
     @Transactional(readOnly = true)
     fun getByPublicId(userId: Long, publicId: UUID): NotificationResponseDto {
+        log.debug("notifications.query.getById userId={} publicId={}", userId, publicId)
         val entity = repository.findByRecipientUserIdAndPublicId(userId, publicId)
             .orElseThrow { NotFoundException("NOTIFICATION_NOT_FOUND", "Notification not found") }
         val wsPublic = entity.workspaceId?.let { wid ->
@@ -77,7 +98,13 @@ class InAppNotificationQueryService(
         val workspaceId = workspacePublicId?.let {
             workspaceRepository.findByPublicId(it)?.id
         }
-        return repository.countUnread(userId, workspaceId)
+        val count = if (workspaceId == null) {
+            repository.countByRecipientUserIdAndReadAtIsNull(userId)
+        } else {
+            repository.countByRecipientUserIdAndReadAtIsNullAndWorkspaceId(userId, workspaceId)
+        }
+        log.debug("notifications.query.unreadCount userId={} workspaceId={} count={}", userId, workspaceId, count)
+        return count
     }
 
     private fun encodeCursor(id: Long): String =
