@@ -5,10 +5,11 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   res.on("finish", () => {
     logger.info({
+      channel: "http",
       method: req.method,
       url: req.originalUrl,
       status: res.statusCode,
-      duration: `${Date.now() - start}ms`,
+      durationMs: Date.now() - start,
     }, "HTTP request");
   });
   next();

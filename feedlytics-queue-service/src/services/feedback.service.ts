@@ -28,6 +28,11 @@ export const feedbackService = {
       submittedAtEpochMs,
     } = data;
 
+    logger.info(
+      { component: "feedback.service", feedbackId, contentLength: content.length, webhookCount: notificationWebhooks?.length ?? 0 },
+      "Starting feedback LLM analysis",
+    );
+
     const analysis = await llmService.analyzeFeedback(content, workspaceCategoryNames);
 
     const categoriesForCallback = analysis.categories

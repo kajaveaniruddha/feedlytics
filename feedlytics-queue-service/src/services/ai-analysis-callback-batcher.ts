@@ -61,9 +61,19 @@ async function flushNow(): Promise<void> {
   const batch = buffer.splice(0, buffer.length);
   try {
     await postBatch(batch);
-    logger.info({ count: batch.length }, "Flushed AI analysis batch to feedlytics-service");
+    logger.info(
+      {
+        component: "ai-analysis-callback-batcher",
+        count: batch.length,
+        feedbackIdSample: batch.slice(0, 20).map((i) => i.feedbackId),
+      },
+      "Flushed AI analysis batch to feedlytics-service",
+    );
   } catch (err) {
-    logger.error({ err: String(err), count: batch.length }, "AI analysis batch callback failed");
+    logger.error(
+      { component: "ai-analysis-callback-batcher", err: String(err), count: batch.length },
+      "AI analysis batch callback failed",
+    );
     buffer.unshift(...batch);
   } finally {
     flushing = false;
@@ -72,6 +82,10 @@ async function flushNow(): Promise<void> {
 
 export function enqueueAnalysisCallbackItem(item: AnalysisCallbackPayloadItem): void {
   buffer.push(item);
+  logger.debug(
+    { component: "ai-analysis-callback-batcher", feedbackId: item.feedbackId, bufferSize: buffer.length },
+    "Buffered AI analysis callback item",
+  );
 
   if (buffer.length >= MAX_BATCH_SIZE) {
     void flushNow();

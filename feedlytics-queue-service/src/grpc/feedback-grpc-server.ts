@@ -65,7 +65,7 @@ export function startQueueGrpcServer(port: number): void {
           await enqueueFeedback(job);
           cb(null, { accepted: true });
         } catch (err) {
-          logger.error({ err: String(err) }, "EnqueueFeedbackAnalysis failed");
+          logger.error({ channel: "grpc", method: "EnqueueFeedbackAnalysis", err: String(err) }, "EnqueueFeedbackAnalysis failed");
           cb(err as grpc.ServiceError, null);
         }
       })();
@@ -89,7 +89,7 @@ export function startQueueGrpcServer(port: number): void {
           await enqueueVerificationEmail(data);
           cb(null, { accepted: true });
         } catch (err) {
-          logger.error({ err: String(err) }, "EnqueueVerificationEmail failed");
+          logger.error({ channel: "grpc", method: "EnqueueVerificationEmail", err: String(err) }, "EnqueueVerificationEmail failed");
           cb(err as grpc.ServiceError, null);
         }
       })();
@@ -115,7 +115,7 @@ export function startQueueGrpcServer(port: number): void {
           await enqueueInvitationEmail(data);
           cb(null, { accepted: true });
         } catch (err) {
-          logger.error({ err: String(err) }, "EnqueueInvitationEmail failed");
+          logger.error({ channel: "grpc", method: "EnqueueInvitationEmail", err: String(err) }, "EnqueueInvitationEmail failed");
           cb(err as grpc.ServiceError, null);
         }
       })();
@@ -124,10 +124,13 @@ export function startQueueGrpcServer(port: number): void {
 
   server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), (error) => {
     if (error) {
-      logger.error({ err: String(error) }, "gRPC bind failed");
+      logger.error({ channel: "grpc", err: String(error) }, "gRPC bind failed");
       throw error;
     }
     server.start();
-    logger.info({ port }, "Queue gRPC server listening (feedback + verification + invitation email)");
+    logger.info(
+      { channel: "grpc", port, bind: `0.0.0.0:${port}` },
+      "Queue gRPC server listening (feedback + verification + invitation email)",
+    );
   });
 }

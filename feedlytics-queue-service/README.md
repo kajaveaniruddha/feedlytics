@@ -25,6 +25,15 @@ Local development loads **`../.env.development`** (repo root) when `NODE_ENV !==
 
 In **Docker Compose dev**, Redis URL and other vars come from the same root `.env.development` as the other services.
 
+## Logging
+
+Structured logs go to **stdout** via `src/lib/logger.ts`. Every line is prefixed with **`[feedlytics-queue-service]`** and includes ISO timestamp, level, message, and a JSON context object (e.g. `queue`, `bullJobId`, `feedbackId`, `channel: "http" | "grpc"`).
+
+- **`LOG_LEVEL`** — `debug` \| `info` \| `warn` \| `error` (default `info`). Set in repo root `.env.development` as `LOG_LEVEL=debug` to see buffered AI callback debug lines.
+- HTTP: request line on response finish; 404s and `AppError` responses are logged; unhandled errors include path and method.
+- Queues: each `enqueue*` logs queue name and Bull job id; workers log **active** (start), **completed**, and **failed**.
+- gRPC: bind and failures include `channel: "grpc"`; successful enqueues are covered by enqueue logs (includes `feedbackId` / job kind).
+
 ## Scripts
 
 | Command        | Description |

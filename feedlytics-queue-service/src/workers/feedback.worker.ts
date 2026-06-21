@@ -15,6 +15,13 @@ export const feedbackWorker = new Worker(
   },
 );
 
+feedbackWorker.on("active", (job: Job) => {
+  logger.info(
+    { component: "feedback.worker", queue: "feedbackQueue", bullJobId: job.id, feedbackId: job.data?.feedbackId },
+    "Feedback job started",
+  );
+});
+
 feedbackWorker.on("completed", (job: Job) => {
   logger.info({ jobId: job.id }, "Feedback job completed");
 });
