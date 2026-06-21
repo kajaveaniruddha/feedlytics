@@ -63,7 +63,7 @@ class SubscriptionEventHandler(
     fun onSubscriptionUpdated(event: BillingDomainEvent.SubscriptionUpdated) {
         logger.info("Processing SubscriptionUpdated event: workspace={}, newPlan={}", event.workspaceId, event.newPlan)
 
-        val subscription = subscriptionRepository.findByStripeCustomerId(event.stripeCustomerId)
+        val subscription = subscriptionRepository.findByStripeSubscriptionId(event.stripeSubscriptionId)
         if (subscription != null) {
             subscription.stripePriceId = event.priceId
             subscription.plan = event.newPlan
@@ -88,7 +88,7 @@ class SubscriptionEventHandler(
     fun onSubscriptionDeleted(event: BillingDomainEvent.SubscriptionDeleted) {
         logger.info("Processing SubscriptionDeleted event: workspace={}", event.workspaceId)
 
-        val subscription = subscriptionRepository.findByStripeCustomerId(event.stripeCustomerId)
+        val subscription = subscriptionRepository.findByStripeSubscriptionId(event.stripeSubscriptionId)
         if (subscription != null) {
             subscription.status = SubscriptionStatusEnum.CANCELLED
             subscription.cancelledAt = Instant.now()
@@ -111,7 +111,7 @@ class SubscriptionEventHandler(
     fun onInvoicePaid(event: BillingDomainEvent.InvoicePaid) {
         logger.info("Processing InvoicePaid event: workspace={}", event.workspaceId)
 
-        val subscription = subscriptionRepository.findByStripeCustomerId(event.stripeCustomerId)
+        val subscription = event.stripeSubscriptionId?.let { subscriptionRepository.findByStripeSubscriptionId(it) }
         if (subscription != null) {
             subscription.status = SubscriptionStatusEnum.ACTIVE
             subscriptionRepository.save(subscription)
