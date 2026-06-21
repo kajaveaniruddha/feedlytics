@@ -113,10 +113,13 @@ class WebhookEventProcessor(
         val customerId = invoice.getCustomer()
         val workspace = workspaceRepository.findByStripeCustomerId(customerId)
 
+        val stripeSubscriptionId = invoice.subscription
+
         eventPublisher.publishEvent(
             BillingDomainEvent.InvoicePaid(
                 workspaceId = workspace?.id ?: 0,
                 stripeCustomerId = customerId,
+                stripeSubscriptionId = stripeSubscriptionId,
                 stripeEventId = event.id,
             )
         )
@@ -142,6 +145,7 @@ class WebhookEventProcessor(
             BillingDomainEvent.SubscriptionUpdated(
                 workspaceId = workspace.id,
                 stripeCustomerId = customerId,
+                stripeSubscriptionId = subscription.id,
                 priceId = priceId,
                 previousPlan = workspace.plan,
                 newPlan = resolvedPlan.plan,
@@ -165,6 +169,7 @@ class WebhookEventProcessor(
             BillingDomainEvent.SubscriptionDeleted(
                 workspaceId = workspace.id,
                 stripeCustomerId = customerId,
+                stripeSubscriptionId = subscription.id,
                 previousPlan = workspace.plan,
                 stripeEventId = event.id,
             )

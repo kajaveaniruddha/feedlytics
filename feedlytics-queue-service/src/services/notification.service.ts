@@ -27,6 +27,13 @@ export const notificationService = {
     if (!response.ok) {
       throw new Error(`Webhook failed: ${response.status} ${response.statusText}`);
     }
+    let host = "unknown";
+    try {
+      host = new URL(webhookUrl).host;
+    } catch {
+      /* ignore */
+    }
+    logger.info({ component: "notification.service", webhookHost: host, status: response.status }, "Workflow webhook POST succeeded");
   },
 
   async dispatchAll(
@@ -42,7 +49,10 @@ export const notificationService = {
 
     const failed = results.filter((r) => r.status === "rejected");
     if (failed.length > 0) {
-      logger.warn({ failedCount: failed.length, total: active.length }, "Some workflow notifications failed");
+      logger.warn(
+        { component: "notification.service", failedCount: failed.length, total: active.length },
+        "Some workflow notifications failed",
+      );
     }
   },
 };

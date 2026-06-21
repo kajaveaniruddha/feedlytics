@@ -20,6 +20,10 @@ export const emailWorker = new Worker(
   { connection: emailQueue.opts.connection, concurrency: 5 },
 );
 
+emailWorker.on("active", (job: Job) => {
+  logger.info({ component: "email.worker", queue: "emailQueue", bullJobId: job.id, jobName: job.name }, "Email job started");
+});
+
 emailWorker.on("completed", (job: Job) => {
   logger.info({ jobId: job.id, jobName: job.name }, "Email job completed");
 });

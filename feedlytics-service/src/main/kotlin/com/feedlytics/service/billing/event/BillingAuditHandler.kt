@@ -55,6 +55,7 @@ class BillingAuditHandler(
             metadata = mapOf(
                 "priceId" to event.priceId,
                 "interval" to event.interval,
+                "stripeSubscriptionId" to event.stripeSubscriptionId,
             ),
         )
     }

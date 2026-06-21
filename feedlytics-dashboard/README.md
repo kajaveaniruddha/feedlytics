@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# feedlytics-dashboard
 
-## Getting Started
+Next.js **App Router** frontend for Feedlytics: workspaces, feedback, billing UI, and Google sign-in. It talks to **`feedlytics-service`** over HTTP using **`NEXT_PUBLIC_API_BASE_URL`** (see repo root `.env.development.example`).
 
-First, run the development server:
+## Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Use **pnpm** (version pinned via `packageManager` in `package.json`). From the monorepo root, copy `.env.development.example` → `.env.development` and set at least `NEXT_PUBLIC_API_BASE_URL` (e.g. `http://localhost:8081`) and the Google client IDs as documented in the root README.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Description |
+| ------- | ----------- |
+| `pnpm dev` | Next.js dev server (default port **3000**; root `docker-compose.dev.yml` overrides `PORT` when running in Docker) |
+| `pnpm build` | Production build |
+| `pnpm start` | Start production server |
+| `pnpm lint` | ESLint |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docker dev
 
-## Learn More
+The root compose file runs:
 
-To learn more about Next.js, take a look at the following resources:
+`pnpm exec next dev --webpack -H 0.0.0.0`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+so the app binds on `0.0.0.0:3000` inside the container (webpack mode is used for reliability with fonts/TLS in some Docker setups).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## More documentation
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Monorepo quick start, ports, and deployment: **[../README.md](../README.md)**
+- Plan copy shown on marketing UI: `src/features/workspace/lib/plan-features.ts` (keep aligned with enforcement in **feedlytics-service** `*PlanLimitStrategy` classes).

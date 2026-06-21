@@ -33,4 +33,9 @@ export const queryKeys = {
     root: ["invites"] as const,
     pending: () => ["invites", "pending"] as const,
   },
+  notifications: {
+    root: ["notifications"] as const,
+    unread: () => ["notifications", "unread-count"] as const,
+    list: (cursor?: string | null) => ["notifications", "list", cursor ?? "first"] as const,
+  },
 } as const;

@@ -26,6 +26,12 @@ export const endpoints = {
     workspaceInviteResend: (workspacePublicId: string, inviteId: string) =>
       `/api/v1/workspaces/${workspacePublicId}/invites/${inviteId}/resend`,
   },
+  notifications: {
+    list: "/api/v1/notifications",
+    unreadCount: "/api/v1/notifications/unread-count",
+    byId: (publicId: string) => `/api/v1/notifications/${publicId}`,
+    stream: "/api/v1/notifications/stream",
+  },
   workspace: {
     root: "/api/v1/workspaces",
     byId: (publicId: string) => `/api/v1/workspaces/${publicId}`,

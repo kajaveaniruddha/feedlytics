@@ -26,7 +26,10 @@ import com.feedlytics.service.workspace.service.InviteService
 import com.feedlytics.service.common.notification.Notification
 import com.feedlytics.service.common.notification.NotificationChannelType
 import com.feedlytics.service.common.notification.NotificationService
+import com.feedlytics.service.workspace.notification.WorkspaceInviteInAppNotificationEmitter
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionSynchronization
@@ -44,6 +47,8 @@ class InviteServiceImpl(
     private val workspaceMemberRepository: WorkspaceMembersRepository,
     private val userRepository: UserRepository,
     private val notificationService: NotificationService,
+    private val workspaceInviteInAppNotificationEmitter: WorkspaceInviteInAppNotificationEmitter,
+    @Qualifier("inviteSideEffectsExecutor") private val inviteSideEffectsExecutor: TaskExecutor,
     private val planLimitStrategyFactory: PlanLimitStrategyFactory,
 ) : InviteService {
 
@@ -124,15 +129,15 @@ class InviteServiceImpl(
         logger.info("Invite created for {} to workspace {} with role {}. Token: {}", 
             request.email, workspace.id, request.role, token)
 
-        val inviterName = userRepository.findById(inviterId)
-            .map(User::name)
-            .orElse("A teammate")
-        scheduleInvitationEmailAfterCommit(
-            email = savedInvite.email,
+        scheduleInviteDeliveryAfterCommit(
+            newInviteId = savedInvite.id,
+            workspaceId = workspace.id,
+            inviterId = inviterId,
+            inviteeExistingUserId = existingUser?.id,
+            invitationEmail = savedInvite.email,
             workspaceName = workspace.name,
-            inviterName = inviterName,
-            role = savedInvite.role.name,
             inviteToken = token,
+            roleName = savedInvite.role.name,
             expiresAtEpochMs = savedInvite.expiresAt.toEpochMilli(),
         )
 
@@ -175,6 +180,7 @@ class InviteServiceImpl(
         assertInviteEmailMatchesUser(invite, user)
         invite.status = InviteStatusEnum.REJECTED
         inviteRepository.save(invite)
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_rejected")
         logger.info("User {} rejected invite {}", userId, inviteId)
     }
 
@@ -205,6 +211,7 @@ class InviteServiceImpl(
         if (workspaceMemberRepository.existsByUserIdAndWorkspaceId(userId, invite.workspaceId)) {
             invite.status = InviteStatusEnum.ACCEPTED
             inviteRepository.save(invite)
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
             throw ConflictException("ALREADY_MEMBER", "You are already a member of this workspace")
         }
 
@@ -221,6 +228,8 @@ class InviteServiceImpl(
 
         invite.status = InviteStatusEnum.ACCEPTED
         inviteRepository.save(invite)
+
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
 
         logger.info("User {} accepted invite to workspace {}", userId, invite.workspaceId)
 
@@ -258,6 +267,10 @@ class InviteServiceImpl(
         invite.status = InviteStatusEnum.CANCELLED
         inviteRepository.save(invite)
 
+        userRepository.findByEmail(invite.email)?.let {
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(it.id, invite.id, "invite_cancelled")
+        }
+
         logger.info("Invite {} cancelled for workspace {}", inviteId, workspace.id)
     }
 
@@ -279,6 +292,10 @@ class InviteServiceImpl(
         }
 
         // Cancel old invite and create new one with fresh expiry
+        userRepository.findByEmail(invite.email)?.let {
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(it.id, invite.id, "invite_resent")
+        }
+
         invite.status = InviteStatusEnum.CANCELLED
         inviteRepository.save(invite)
 
@@ -294,15 +311,16 @@ class InviteServiceImpl(
 
         logger.info("Invite resent to {} for workspace {}. New token: {}", invite.email, workspace.id, newToken)
 
-        val requesterName = userRepository.findById(requesterId)
-            .map(User::name)
-            .orElse("A teammate")
-        scheduleInvitationEmailAfterCommit(
-            email = savedInvite.email,
+        val invitee = userRepository.findByEmail(savedInvite.email)
+        scheduleInviteDeliveryAfterCommit(
+            newInviteId = savedInvite.id,
+            workspaceId = workspace.id,
+            inviterId = requesterId,
+            inviteeExistingUserId = invitee?.id,
+            invitationEmail = savedInvite.email,
             workspaceName = workspace.name,
-            inviterName = requesterName,
-            role = savedInvite.role.name,
             inviteToken = newToken,
+            roleName = savedInvite.role.name,
             expiresAtEpochMs = savedInvite.expiresAt.toEpochMilli(),
         )
 
@@ -338,6 +356,7 @@ class InviteServiceImpl(
         if (workspaceMemberRepository.existsByUserIdAndWorkspaceId(userId, invite.workspaceId)) {
             invite.status = InviteStatusEnum.ACCEPTED
             inviteRepository.save(invite)
+            workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
             return null
         }
 
@@ -354,6 +373,8 @@ class InviteServiceImpl(
 
         invite.status = InviteStatusEnum.ACCEPTED
         inviteRepository.save(invite)
+
+        workspaceInviteInAppNotificationEmitter.consumeInviteClosed(userId, invite.id, "invite_accepted")
 
         logger.info("User {} auto-accepted invite to workspace {} after auth", userId, invite.workspaceId)
 
@@ -404,40 +425,79 @@ class InviteServiceImpl(
         }
     }
 
-    private fun scheduleInvitationEmailAfterCommit(
-        email: String,
+    private fun scheduleInviteDeliveryAfterCommit(
+        newInviteId: UUID,
+        workspaceId: Long,
+        inviterId: Long,
+        inviteeExistingUserId: Long?,
+        invitationEmail: String,
         workspaceName: String,
-        inviterName: String,
-        role: String,
         inviteToken: String,
+        roleName: String,
         expiresAtEpochMs: Long,
     ) {
-        TransactionSynchronizationManager.registerSynchronization(
-            object : TransactionSynchronization {
-                override fun afterCommit() {
+        val submitSideEffects: () -> Unit = {
+            inviteSideEffectsExecutor.execute {
+                try {
+                    val inviterName = userRepository.findById(inviterId)
+                        .map(User::name)
+                        .orElse("A teammate")
+                    notificationService.notify(
+                        NotificationChannelType.EMAIL,
+                        Notification.WorkspaceInvitation(
+                            email = invitationEmail,
+                            workspaceName = workspaceName,
+                            inviterName = inviterName,
+                            role = roleName,
+                            inviteToken = inviteToken,
+                            expiresAtEpochMs = expiresAtEpochMs,
+                        ),
+                    )
+                } catch (err: Exception) {
+                    logger.warn(
+                        "Failed async invitation email for email={} workspace={}: {}",
+                        invitationEmail,
+                        workspaceName,
+                        err.message,
+                    )
+                }
+            }
+            if (inviteeExistingUserId != null) {
+                inviteSideEffectsExecutor.execute {
                     try {
-                        notificationService.notify(
-                            NotificationChannelType.EMAIL,
-                            Notification.WorkspaceInvitation(
-                                email = email,
-                                workspaceName = workspaceName,
-                                inviterName = inviterName,
-                                role = role,
-                                inviteToken = inviteToken,
-                                expiresAtEpochMs = expiresAtEpochMs,
-                            ),
+                        val inv = inviteRepository.findById(newInviteId).orElse(null) ?: return@execute
+                        val ws = workspaceRepository.findById(workspaceId).orElse(null) ?: return@execute
+                        val inviterUser = userRepository.findById(inviterId).orElse(null) ?: return@execute
+                        val inviteeUser = userRepository.findById(inviteeExistingUserId).orElse(null) ?: return@execute
+                        workspaceInviteInAppNotificationEmitter.emitInviteCreated(
+                            invite = inv,
+                            workspace = ws,
+                            inviter = inviterUser,
+                            inviteeUser = inviteeUser,
                         )
                     } catch (err: Exception) {
                         logger.warn(
-                            "Failed to enqueue invitation email for email={} workspace={}: {}",
-                            email,
-                            workspaceName,
+                            "Failed async in-app invite notification inviteId={}: {}",
+                            newInviteId,
                             err.message,
+                            err,
                         )
                     }
                 }
-            },
-        )
+            }
+        }
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        submitSideEffects()
+                    }
+                },
+            )
+        } else {
+            submitSideEffects()
+        }
     }
 
     private fun findWorkspaceByPublicId(publicId: UUID): WorkspacesEntity {

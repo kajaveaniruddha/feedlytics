@@ -17,13 +17,16 @@ const app = createApp();
 const port = env.PORT;
 
 app.listen(port, () => {
-  logger.info({ port }, "Services server started");
+  logger.info(
+    { channel: "http", port, nodeEnv: process.env.NODE_ENV ?? "development", logLevel: process.env.LOG_LEVEL ?? "info" },
+    "Express HTTP server listening",
+  );
 });
 
 startQueueGrpcServer(env.GRPC_PORT);
 
 async function shutdown(signal: string) {
-  logger.info({ signal }, "Shutting down");
+  logger.info({ signal, httpPort: port, grpcPort: env.GRPC_PORT }, "Shutting down");
   try {
     await flushAnalysisCallbacksOnShutdown();
   } catch (err) {

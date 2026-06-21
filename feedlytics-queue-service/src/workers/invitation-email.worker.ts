@@ -15,6 +15,13 @@ export const invitationEmailWorker = new Worker(
   { connection: invitationEmailQueue.opts.connection, concurrency: 5 },
 );
 
+invitationEmailWorker.on("active", (job: Job) => {
+  logger.info(
+    { component: "invitation-email.worker", queue: "invitationEmailQueue", bullJobId: job.id, jobName: job.name },
+    "Invitation email job started",
+  );
+});
+
 invitationEmailWorker.on("completed", (job: Job) => {
   logger.info({ jobId: job.id, jobName: job.name }, "Invitation email job completed");
 });

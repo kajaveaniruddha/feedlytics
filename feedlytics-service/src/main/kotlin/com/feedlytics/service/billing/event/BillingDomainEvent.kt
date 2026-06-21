@@ -17,6 +17,7 @@ sealed class BillingDomainEvent {
     data class SubscriptionUpdated(
         val workspaceId: Long,
         val stripeCustomerId: String,
+        val stripeSubscriptionId: String,
         val priceId: String,
         val previousPlan: PlansEnum?,
         val newPlan: PlansEnum,
@@ -27,6 +28,7 @@ sealed class BillingDomainEvent {
     data class SubscriptionDeleted(
         val workspaceId: Long,
         val stripeCustomerId: String,
+        val stripeSubscriptionId: String,
         val previousPlan: PlansEnum?,
         val stripeEventId: String,
     ) : BillingDomainEvent()
@@ -34,6 +36,7 @@ sealed class BillingDomainEvent {
     data class InvoicePaid(
         val workspaceId: Long,
         val stripeCustomerId: String,
+        val stripeSubscriptionId: String?,
         val stripeEventId: String,
     ) : BillingDomainEvent()
 

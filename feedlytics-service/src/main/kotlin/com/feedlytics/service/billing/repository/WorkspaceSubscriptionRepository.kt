@@ -5,9 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface WorkspaceSubscriptionRepository : JpaRepository<WorkspaceSubscriptionEntity, Long> {
 
-    fun findByWorkspaceId(workspaceId: Long): WorkspaceSubscriptionEntity?
+    /** Prefer [findByStripeSubscriptionId]; use this only when workspace has no Stripe sub id (legacy rows). */
+    fun findFirstByWorkspaceIdOrderByUpdatedAtDesc(workspaceId: Long): WorkspaceSubscriptionEntity?
 
     fun findByStripeSubscriptionId(stripeSubscriptionId: String): WorkspaceSubscriptionEntity?
-
-    fun findByStripeCustomerId(stripeCustomerId: String): WorkspaceSubscriptionEntity?
 }

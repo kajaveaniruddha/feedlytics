@@ -47,7 +47,9 @@ class BillingServiceImpl(
         val isOwner = workspace.ownerId == userId
         val hasSub = workspace.stripeSubscriptionId != null
 
-        val subscription = subscriptionRepository.findByWorkspaceId(workspace.id)
+        val subscription = workspace.stripeSubscriptionId?.let { sid ->
+            subscriptionRepository.findByStripeSubscriptionId(sid)
+        } ?: subscriptionRepository.findFirstByWorkspaceIdOrderByUpdatedAtDesc(workspace.id)
 
         return BillingInfoResponse(
             plan = workspace.plan,

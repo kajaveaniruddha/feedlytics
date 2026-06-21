@@ -2,15 +2,18 @@ type LogLevel = "debug" | "info" | "warn" | "error";
 
 const LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
 
-const currentLevel = (process.env.LOG_LEVEL as LogLevel) || "info";
+const SERVICE = "feedlytics-queue-service";
+
+const rawLevel = (process.env.LOG_LEVEL || "info").toLowerCase();
+const currentLevel: LogLevel = rawLevel in LEVELS ? (rawLevel as LogLevel) : "info";
 
 function shouldLog(level: LogLevel): boolean {
-  return LEVELS[level] >= (LEVELS[currentLevel] ?? LEVELS.info);
+  return LEVELS[level] >= LEVELS[currentLevel];
 }
 
 function formatMessage(level: LogLevel, context: Record<string, unknown>, message?: string): string {
   const timestamp = new Date().toISOString();
-  const parts = [`[${timestamp}]`, `[${level.toUpperCase()}]`];
+  const parts = [`[${SERVICE}]`, `[${timestamp}]`, `[${level.toUpperCase()}]`];
   if (message) parts.push(message);
   const contextKeys = Object.keys(context);
   if (contextKeys.length > 0) parts.push(JSON.stringify(context));

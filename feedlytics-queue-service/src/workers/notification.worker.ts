@@ -13,6 +13,19 @@ export const notificationWorker = new Worker(
   { connection: notificationQueue.opts.connection, concurrency: 5 }
 );
 
+notificationWorker.on("active", (job: Job<WorkflowNotificationPayload>) => {
+  let webhookHost = "unknown";
+  try {
+    webhookHost = new URL(job.data.webhookUrl).host;
+  } catch {
+    /* ignore */
+  }
+  logger.info(
+    { component: "notification.worker", queue: "notificationQueue", bullJobId: job.id, webhookHost },
+    "Notification job started",
+  );
+});
+
 notificationWorker.on("completed", (job: Job) => {
   logger.info({ jobId: job.id }, "Notification job completed");
 });
